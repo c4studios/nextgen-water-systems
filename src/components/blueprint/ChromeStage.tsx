@@ -237,9 +237,10 @@ function JourneyLights({ progress }: { progress: MutableRefObject<number> }) {
     <>
       <ambientLight ref={amb} intensity={0.12} />
       {/* warm key for form; two cyan rims rake the edges as brand accent */}
-      <directionalLight ref={key} position={[4, 6, 5]} intensity={0.85} color="#eaf6ff" />
-      <directionalLight ref={rim} position={[-5.5, 1.5, -3]} intensity={0.6} color="#29c2ee" />
-      <directionalLight ref={fill} position={[-1.5, -1, 4.5]} intensity={0.22} color="#7fd8f5" />
+      <directionalLight ref={key} position={[4, 6, 5]} intensity={0.85} color="#f2f3f4" />
+      {/* rim was #29c2ee cyan — it painted every steel highlight blue. Neutral rim = real studio stainless. */}
+      <directionalLight ref={rim} position={[-5.5, 1.5, -3]} intensity={0.6} color="#e9ebed" />
+      <directionalLight ref={fill} position={[-1.5, -1, 4.5]} intensity={0.22} color="#c9ced2" />
     </>
   );
 }
@@ -250,8 +251,11 @@ type Key = { p: number; pos: [number, number, number]; tgt: [number, number, num
    PROBLEM beat holds the mains-in side while contaminants gather, the PROOF
    beat holds the house-out side as clean water exits. */
 const CAM: Key[] = [
-  { p: 0.0, pos: [2.9, -0.5, 9.0], tgt: [-1.9, 0.15, 0] }, // hero ¾ — machine right of centre, the landing copy owns the left
-  { p: 0.045, pos: [5.2, 1.0, 6.6], tgt: [0, 0, 0] }, // drift around
+  // Rest pose == dock pose. The hero used to be a low ¾ that orbited into the
+  // dock, which is what made the machine look tilted and spinning on arrival.
+  // Now: front elevation, static, from p=0 — the photoreal still sits over
+  // exactly this framing and dissolves into it before the ink trace begins.
+  { p: 0.0, pos: [0, 0.12, 8.8], tgt: [0, 0.12, 0] }, // rest (= dock)
   { p: 0.075, pos: [0, 0.12, 8.8], tgt: [0, 0.12, 0] }, // front dock (trace)
   { p: 0.26, pos: [0, 0.12, 8.8], tgt: [0, 0.12, 0] }, // hold dock until the plate exits
   { p: 0.305, pos: [-3.6, -0.25, 6.2], tgt: [-2.5, 0.35, 0] }, // PROBLEM — mains-in side, V1 inlet + feed pipe
@@ -916,9 +920,15 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
       // centred 60px left of the sheet centre and higher than world origin —
       // computed from the camera projection, then tuned against ink overlays
       g.position.x = lerp(-0.4, 0, reg);
-      g.position.y = lerp(0.56, 0, reg) + Math.sin(state.clock.elapsedTime * 0.4) * 0.025 * (1 - dock);
+      g.position.y = lerp(0.56, 0, reg);
       g.scale.setScalar(lerp(0.781, 1, reg));
-      g.rotation.y = (1 - dock) * 0.35 + state.clock.elapsedTime * 0.04 * (1 - dock);
+      // The rest pose is SET. This used to add a 0.35rad yaw plus a continuous
+      // elapsedTime spin and a vertical bob before the dock — the machine
+      // rotated and floated on the hero, and read as a turntable render. A
+      // product at rest doesn't move. Yaw 0 also means the rest pose IS the
+      // dock pose, so the photoreal still, the live 3D and the ink trace share
+      // one registration and can dissolve into each other without a jump.
+      g.rotation.y = 0;
     }
 
     // per-vessel: sump ghosts in its window; cartridge fades in (and stays
@@ -1754,10 +1764,10 @@ export default function ChromeStage({ progress, active, sheetRatio, onReady }: P
         {/* warm overhead softbox rounds the head shoulders */}
         <Lightformer form="rect" position={[0, 8, 2]} rotation-x={-Math.PI / 2} scale={[10, 6, 1]} intensity={3.2} color="#fdf4e6" />
         {/* floor bounce lifts the domes */}
-        <Lightformer form="rect" position={[0, -7, 3]} rotation-x={Math.PI / 2} scale={[9, 5, 1]} intensity={1.3} color="#8fb0c4" />
+        <Lightformer form="rect" position={[0, -7, 3]} rotation-x={Math.PI / 2} scale={[9, 5, 1]} intensity={1.3} color="#a4a8ac" />
         {/* dim sheets behind + in front keep reflections alive at every angle */}
-        <Lightformer form="rect" position={[0, 1.5, -7]} scale={[12, 8, 1]} intensity={1.5} color="#42566a" />
-        <Lightformer form="rect" position={[0, 0.5, 8]} rotation-y={Math.PI} scale={[11, 7, 1]} intensity={1.1} color="#2c3a48" />
+        <Lightformer form="rect" position={[0, 1.5, -7]} scale={[12, 8, 1]} intensity={1.5} color="#4c5054" />
+        <Lightformer form="rect" position={[0, 0.5, 8]} rotation-y={Math.PI} scale={[11, 7, 1]} intensity={1.1} color="#33373b" />
       </Environment>
 
       <JourneyLights progress={progress} />

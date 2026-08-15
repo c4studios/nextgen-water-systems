@@ -7,10 +7,15 @@
  *
  * Geometry mirrors the original CSS: radial 50% x 42% centred at (50%, 40%).
  */
+// Neutral studio graphite. This was a deep-blue pool (#0a141c → #05080c),
+// which tinted every reflection on the stainless blue and read as generic
+// dark-tech. Product photography on dark is a NEUTRAL soft spot behind the
+// object — chroma ~0 — so the steel reads as steel and any colour that does
+// appear (the ring accent) is deliberate.
 export const BACKDROP_STOPS: [number, string][] = [
-  [0, "#0a141c"],
-  [0.58, "#06090f"],
-  [1, "#05080c"],
+  [0, "#1a1b1d"],
+  [0.58, "#0e0e10"],
+  [1, "#0a0a0b"],
 ];
 
 export const BACKDROP_CENTER = { x: 0.5, y: 0.4 }; // from the TOP, CSS-style

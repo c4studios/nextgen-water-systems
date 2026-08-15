@@ -53,12 +53,6 @@ export function Opening() {
         />
       </figure>
 
-      {/* Hands the reader down into the machine, which is now the proof rather
-          than the pitch. Decorative: the heading below is the real landmark. */}
-      <span className="opening-cue" aria-hidden="true">
-        <span className="opening-cue-rule" />
-        Then look inside it
-      </span>
     </section>
   );
 }

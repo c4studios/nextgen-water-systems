@@ -23,7 +23,7 @@ export type Beat = {
   f: number;
   /** FULL literal class name — Tailwind's @layer scanner purges classes it
    *  can't find as literals in source, so never construct these */
-  pos: "pb--left" | "pb--right" | "pb--tl" | "pb--bc";
+  pos: "pb--left" | "pb--right" | "pb--tl" | "pb--bc" | "pb--below";
   eyebrow: string;
   h: string;
   body: string;
@@ -47,12 +47,15 @@ export const VESSEL_TIPS = [
 
 export const STORY_BEATS: Beat[] = [
   {
-    id: "hero", a: -0.05, b: 0.052, f: 0.022, pos: "pb--left",
+    // Sits UNDER the resting machine as a caption, centred. The dock pose puts
+    // the assembly high-centre, so the band beneath it is the one place copy
+    // can live without touching a vessel. No CTA here — Act 0 has the primary
+    // one a single screen above; repeating it is noise, not conversion.
+    id: "hero", a: -0.05, b: 0.052, f: 0.022, pos: "pb--below",
     eyebrow: "NGW-01 · WHOLE-HOME FILTRATION",
     h: "One machine at the mains.",
     body: "Three stainless vessels feed every tap in the house filtered water — no jugs, no under-sink clutter.",
-    cta: true,
-    cue: "SCROLL — THE DRAWING EXPLAINS ITSELF",
+    cta: false,
   },
   {
     // the PROBLEM — told while the camera holds the mains-in side of the

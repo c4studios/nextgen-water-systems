@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { BACKDROP_CSS } from "./backdrop";
+import { asset } from "@/lib/asset";
 import { STORY_BEATS, VESSEL_BEAT_P, VESSEL_TIPS } from "@/content/journeyStory";
 import {
   ASSEMBLY_PATHS,
@@ -64,6 +65,9 @@ export function LivingDrawing() {
   const svgRef = useRef<SVGSVGElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
   const canvasWrapRef = useRef<HTMLDivElement>(null);
+  // the photoreal rest still — sits over the live 3D at p=0 and dissolves
+  // into it before the ink trace (see applyFrame)
+  const restStillRef = useRef<HTMLDivElement>(null);
   const u3d = useRef(0); // the there-and-back scalar, shared with the 3D stage
   // sheet height / viewport height — the full-bleed canvas needs it to zoom
   // the dock registration back to SHEET scale (see Rig in ChromeStage)
@@ -294,6 +298,14 @@ export function LivingDrawing() {
           // 3D reads the raw journey scalar; the canvas hides only while the
           // vellum plate is full (so the drawing reads as ink, not ink-over-chrome)
           u3d.current = p;
+          // Rest still: fully opaque while the machine is at rest, gone by the
+          // time the ink trace starts at ~0.06. The 3D underneath is at the
+          // identical dock pose, so this is a photo→render dissolve, not a cut.
+          if (restStillRef.current) {
+            const so = gsap.utils.clamp(0, 1, 1 - (p - 0.024) / 0.036);
+            restStillRef.current.style.opacity = String(so);
+            restStillRef.current.style.visibility = so <= 0.001 ? "hidden" : "visible";
+          }
           if (canvasWrapRef.current) {
             canvasWrapRef.current.style.opacity = String(
               gsap.utils.clamp(0, 1, gsap.utils.mapRange(0.46, 0.62, 1, 0, bpU)),
@@ -383,6 +395,14 @@ export function LivingDrawing() {
             <ChromeStage progress={u3d} active={active} sheetRatio={sheetRatio} onReady={handleReady} />
           </div>
         )}
+        {/* Act 1 opener — the machine at rest, photographed rather than
+            rendered. Positioned to the SAME framing as the docked 3D beneath it
+            (front elevation, camera [0,0.12,8.8], assembly at 0.781 scale
+            offset -0.4/+0.56), so the dissolve into the live asset is
+            seamless and the ink trace that follows registers to both. */}
+        <div className="rest-still" ref={restStillRef} aria-hidden="true">
+          <img src={asset("/photos/machine-rest.jpg")} alt="" draggable={false} />
+        </div>
         <div className="plate-sheet" ref={sheetRef} data-hot={plateHot ?? undefined}>
           <div className="plate-shadow" aria-hidden="true" />
           <svg ref={svgRef} className="plate-svg" viewBox="0 0 1200 900" preserveAspectRatio="xMidYMid meet">
@@ -647,15 +667,17 @@ export function LivingDrawing() {
                     which is the section below it, not the page. */}
                 <h2 className="pbh-h">{bt.h}</h2>
                 <p className="pb-body">{bt.body}</p>
-                <div className="pbh-actions">
-                  <a className="pb-cta" href="#plate-cta">
-                    Book your free water test
-                  </a>
-                  <a className="pbh-ghost" href="#drawing">
-                    Read the drawing ↓
-                  </a>
-                </div>
-                <span className="pb-cue">{bt.cue}</span>
+                {/* CTA and scroll cue removed from this beat: Act 0 carries the
+                    primary CTA one screen above, and the drawing starting to
+                    move IS the scroll cue. Repeating either here was noise. */}
+                {bt.cta && (
+                  <div className="pbh-actions">
+                    <a className="pb-cta" href="#plate-cta">
+                      Book your free water test
+                    </a>
+                  </div>
+                )}
+                {bt.cue && <span className="pb-cue">{bt.cue}</span>}
               </div>
             ) : (
             <div key={bt.id} className={`pbeat ${bt.pos}`} data-a={bt.a} data-b={bt.b} data-f={bt.f}>
