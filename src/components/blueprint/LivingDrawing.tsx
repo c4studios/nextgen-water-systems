@@ -642,7 +642,10 @@ export function LivingDrawing() {
                   <i aria-hidden="true" />
                   <span>WHOLE-HOME FILTRATION</span>
                 </div>
-                <h1 className="pbh-h">{bt.h}</h1>
+                {/* h2, not h1: Act 0 above is now the page's opening statement
+                    and owns the single H1. This beat introduces the machine,
+                    which is the section below it, not the page. */}
+                <h2 className="pbh-h">{bt.h}</h2>
                 <p className="pb-body">{bt.body}</p>
                 <div className="pbh-actions">
                   <a className="pb-cta" href="#plate-cta">

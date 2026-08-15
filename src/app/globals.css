@@ -2802,3 +2802,138 @@
     display: block;
   }
 }
+/* ===========================================================================
+   Act 0 — the opening outcome
+   Leads with the result; the pinned journey below is now the proof.
+   Hard split (type on void | photograph) rather than type-over-photo: the
+   photo has no large field that holds 4.5:1 without a scrim, and the scrim is
+   the thing that would make it look like a template.
+   =========================================================================== */
+.opening {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  min-height: 100svh;
+  background: var(--void);
+  isolation: isolate;
+}
+@media (min-width: 900px) {
+  .opening { grid-template-columns: 1fr 52%; }
+}
+
+.opening-copy {
+  grid-row: 1;
+  padding: clamp(88px, 12vh, 160px) clamp(22px, 6vw, 96px) clamp(40px, 8vh, 96px);
+  max-width: 46rem;
+  z-index: 1;
+}
+
+/* Restraint is the premium signal: this sits deliberately BELOW the 104px the
+   journey hero uses. Smaller and better beats louder. */
+.opening-h {
+  font-family: var(--font-satoshi), system-ui, sans-serif;
+  font-weight: 500;
+  font-size: clamp(38px, 5.2vw, 72px);
+  line-height: 1.04;
+  letter-spacing: -0.032em;
+  color: var(--ice);
+  text-wrap: balance;
+  margin: 0;
+}
+
+.opening-body {
+  margin: clamp(20px, 3vh, 32px) 0 0;
+  max-width: 46ch;
+  font-family: var(--font-hanken), system-ui, sans-serif;
+  /* light-on-dark reads lighter than it is — extra leading, and --steel rather
+     than --muted, which fails contrast against --void at body size */
+  font-size: clamp(15.5px, 1.25vw, 18px);
+  line-height: 1.72;
+  color: var(--steel);
+  text-wrap: pretty;
+}
+
+.opening-act { margin-top: clamp(30px, 4.5vh, 46px); }
+
+.opening-cta {
+  display: inline-block;
+  padding: 15px 26px;
+  border: 1px solid var(--cyan);
+  border-radius: 2px;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ice);
+  background: transparent;
+  transition: background 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+              color 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.opening-cta:hover { background: var(--cyan); color: var(--void); }
+.opening-cta:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+
+.opening-installer {
+  margin: 16px 0 0;
+  font-family: var(--font-hanken), system-ui, sans-serif;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.opening-figure {
+  grid-row: 2;
+  position: relative;
+  margin: 0;
+  height: 42svh;
+  overflow: hidden;
+}
+@media (min-width: 900px) {
+  .opening-figure { grid-row: 1; height: 100svh; }
+}
+.opening-figure img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 38% 50%;
+}
+/* Ties the photograph's left edge back into the void so the split reads as one
+   composition rather than two panels butted together. */
+.opening-figure::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--void) 0%, rgba(5, 8, 12, 0.55) 22%, rgba(5, 8, 12, 0) 62%);
+  pointer-events: none;
+}
+
+.opening-cue {
+  position: absolute;
+  left: clamp(22px, 6vw, 96px);
+  bottom: clamp(20px, 4vh, 40px);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  z-index: 1;
+}
+.opening-cue-rule {
+  display: block;
+  width: 44px;
+  height: 1px;
+  background: var(--line);
+  transform-origin: left;
+  animation: opening-cue-draw 3.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+@keyframes opening-cue-draw {
+  0%, 100% { transform: scaleX(0.35); opacity: 0.5; }
+  50%      { transform: scaleX(1);    opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .opening-cue-rule { animation: none; transform: scaleX(1); }
+  .opening-cta { transition: none; }
+}
