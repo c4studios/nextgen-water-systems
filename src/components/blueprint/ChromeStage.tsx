@@ -724,7 +724,7 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
   const actionMats = useMemo(
     () => [
       [
-        new THREE.MeshStandardMaterial({ color: "#b3552e", roughness: 0.8, transparent: true, opacity: 0, depthWrite: false }),
+        new THREE.MeshStandardMaterial({ color: "#8a4a30", roughness: 0.88, transparent: true, opacity: 0, depthWrite: false }),
         new THREE.MeshStandardMaterial({ color: "#8a8378", roughness: 0.85, transparent: true, opacity: 0, depthWrite: false }),
       ],
       [
@@ -775,13 +775,13 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
      time-driven but window-gated: they play while the camera dwells and
      are fully scroll-reversible. */
 
-  // dirty inflow: rust flakes / grey silt / chlorine-green shimmer drifting
+  // dirty inflow: rust flakes / grey silt / pale scale flecks drifting
   // along the feed pipe into V1 during the PROBLEM beat
   const inflowMats = useMemo(
     () => [
-      new THREE.MeshStandardMaterial({ color: "#b3552e", roughness: 0.85, transparent: true, opacity: 0, depthWrite: false }),
+      new THREE.MeshStandardMaterial({ color: "#8a4a30", roughness: 0.9, transparent: true, opacity: 0, depthWrite: false }),
       new THREE.MeshStandardMaterial({ color: "#8a8378", roughness: 0.9, transparent: true, opacity: 0, depthWrite: false }),
-      new THREE.MeshStandardMaterial({ color: "#9dbb6e", emissive: "#7a9a4a", emissiveIntensity: 0.35, roughness: 0.6, transparent: true, opacity: 0, depthWrite: false }),
+      new THREE.MeshStandardMaterial({ color: "#c3ced4", roughness: 0.55, transparent: true, opacity: 0, depthWrite: false }),
     ],
     [],
   );
@@ -818,7 +818,7 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
   );
   const platingRefs = useRef<(THREE.Mesh | null)[]>([]);
   const h2sGasMat = useMemo(
-    () => new THREE.MeshStandardMaterial({ color: "#d9e2c9", emissive: "#a9b686", emissiveIntensity: 0.3, transparent: true, opacity: 0, depthWrite: false }),
+    () => new THREE.MeshStandardMaterial({ color: "#b8c4cb", emissive: "#8fa3ad", emissiveIntensity: 0.22, transparent: true, opacity: 0, depthWrite: false }),
     [],
   );
   const h2sGrainMat = useMemo(
