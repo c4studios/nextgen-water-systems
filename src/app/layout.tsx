@@ -4,6 +4,8 @@ import { satoshi, hanken, geistMono } from "./fonts";
 import { SmoothScroll } from "@/lib/providers/SmoothScroll";
 import { Cursor } from "@/components/Cursor";
 import { asset } from "@/lib/asset";
+import { LAUNCHED } from "@/lib/seo";
+import { localBusinessJsonLd } from "@/lib/jsonld";
 
 const DESCRIPTION =
   "Premium whole-home water refining, engineered in Australia. Measurable contaminant reduction, award-winning design. Book a free in-home water test. (Concept demo — C4 Studios.)";
@@ -15,6 +17,7 @@ export const metadata: Metadata = {
     template: "%s | Next Gen Water Systems",
   },
   description: DESCRIPTION,
+  alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     locale: "en_AU",
@@ -22,7 +25,9 @@ export const metadata: Metadata = {
     title: "Next Gen Water Systems — Premium home water refining",
     description: DESCRIPTION,
   },
-  robots: { index: false, follow: false }, // concept/demo — not for indexing yet
+  // Held out of the index until launch. Flip LAUNCHED in src/lib/seo.ts — it
+  // drives this and robots.txt together so they can't drift apart.
+  robots: LAUNCHED ? { index: true, follow: true } : { index: false, follow: false },
 };
 
 export const viewport: Viewport = {
@@ -53,6 +58,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         />
       </head>
       <body>
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd) }}
+        />
         <SmoothScroll>
           <Cursor />
           {children}
