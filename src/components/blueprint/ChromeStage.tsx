@@ -269,7 +269,7 @@ const CAM: Key[] = [
   { p: 0.725, pos: [3.6, 0.3, 6.4], tgt: [2.7, 0.45, 0] }, // PROOF — machine left of centre, the schedule owns the right
   { p: 0.78, pos: [5.4, 1.6, 5.6], tgt: [0, 0.3, 0] }, // pull back (credibility orbit)
   { p: 0.845, pos: [5.0, 2.6, 6.2], tgt: [0, 0.35, 0] }, // rise…
-  { p: 0.885, pos: [4.2, 3.2, 6.0], tgt: [0, 0.4, 0] }, // …to the elevated service view (parts lifted)
+  { p: 0.885, pos: [5.6, 3.6, 8.6], tgt: [0.15, -0.3, 0.55] }, // …to the elevated service view — far enough back that the set-down sumps AND the exposed cartridges both sit in frame
   { p: 1.0, pos: [2.8, 0.15, 8.8], tgt: [0, 0.12, 0] }, // settle front, reassembled
 ];
 
@@ -371,6 +371,10 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
   const ringMats = useRef<(THREE.MeshStandardMaterial | null)[]>([]);
   const headGroups = useRef<(THREE.Group | null)[]>([]);
   const cartGroups = useRef<(THREE.Group | null)[]>([]);
+  // the sump assembly (bowl, dome, o-ring, seam, drain, label, light ring)
+  // moves as ONE part on the service beat — see the useFrame comment there
+  const sumpGroups = useRef<(THREE.Group | null)[]>([]);
+  const ringMeshes = useRef<(THREE.Mesh | null)[]>([]);
   const boreLight = useRef<THREE.PointLight>(null);
   // Phase 3: printed label wraps (ghost with their sump) + cartridge end caps
   const labelMatRefs = useRef<(THREE.MeshStandardMaterial | null)[]>([]);
@@ -886,6 +890,7 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
   // ONE shared frame/cage material — one opacity drive fades the whole cage
   // out during the ink trace (the SVG plate doesn't draw the frame)
   const frameMat = useMemo(() => new THREE.MeshStandardMaterial({ ...FRAME, transparent: true }), []);
+  const supplyMat = useMemo(() => new THREE.MeshStandardMaterial({ ...MACHINED, transparent: true }), []);
 
   useFrame((state, delta) => {
     const p = progress.current;
@@ -995,14 +1000,37 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
         const ringTarget = hover === i && p > 0.26 ? 2.2 : lerp(1.1, 0.15, through);
         rm.emissiveIntensity = THREE.MathUtils.damp(rm.emissiveIntensity, ringTarget, HOVER_EMISSIVE_LAMBDA, delta);
       }
-      // service explode, staggered in TIME: heads lead in a wave, and the
-      // ALREADY-SEATED cartridges rise out of the open mouths a beat later
-      const headLift = ss(p, 0.82 + i * 0.01, 0.88 + i * 0.01) * (1 - reformHeads);
-      const cartLift = ss(p, 0.855 + i * 0.012, 0.915) * (1 - reformCarts);
+      // SERVICE — the way the real housing is actually serviced.
+      //
+      // On a Big Blue housing the head is bolted to the manifold plate and
+      // NEVER moves; the sump screws UP into it (docs/filter-reference.md).
+      // The old animation lifted the heads and raised the cartridges, which is
+      // (a) mechanically wrong and (b) exactly why they phased straight
+      // through the top plate — the plate is what the heads are mounted to.
+      //
+      // Now, per vessel, staggered: the sump UNSCREWS (a visible turn) and
+      // drops just enough to clear the threads, then comes FORWARD out of the
+      // open-fronted cage and sets down in front of it. The cartridge stays
+      // where it was, revealed hanging under the fixed head. Nothing goes up.
+      // Nothing passes through steel. Reassembly mirrors it: sump back, then
+      // screws home.
+      const unscrew = ss(p, 0.82 + i * 0.012, 0.85 + i * 0.012) * (1 - reformHeads);
+      const pullOut = ss(p, 0.845 + i * 0.012, 0.905 + i * 0.012) * (1 - reformCarts);
+      const sg = sumpGroups.current[i];
+      if (sg) {
+        sg.rotation.y = -unscrew * 1.75; // just over a quarter turn — reads as a turn, not a spin
+        sg.position.y = -0.14 * unscrew - 0.06 * pullOut; // thread clearance, then down onto the floor
+        sg.position.z = 1.36 * pullOut; // clears the front bottom rail (z 0.705) plus the sump radius (0.62)
+      }
+      const rg = ringMeshes.current[i];
+      if (rg) {
+        rg.position.y = -1.5 - 0.14 * unscrew - 0.06 * pullOut;
+        rg.position.z = 1.36 * pullOut;
+      }
       const hg = headGroups.current[i];
-      if (hg) hg.position.y = headLift * 1.15;
+      if (hg) hg.position.y = 0; // heads are fixed to the plate
       const cg = cartGroups.current[i];
-      if (cg) cg.position.y = cartLift * (0.95 + i * 0.12);
+      if (cg) cg.position.y = 0; // cartridge revealed in place, not lifted
     }
 
     // the core water RISES — scroll the streak map while any interior is open
@@ -1022,15 +1050,25 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
 
     // ---- Slice 3: the transformation plays while the camera dwells ----
     const tt2 = state.clock.elapsedTime;
-    // dirty inflow along the feed pipe (PROBLEM beat -> V1 arrival)
-    const wIn = ss(p, 0.26, 0.3) * (1 - ss(p, 0.41, 0.45));
+    // dirty inflow INSIDE the mains supply run (PROBLEM beat -> V1 arrival).
+    // Two things were wrong before: the stream faded in at 0.26 while the
+    // frame and pipework were still ghosted for the ink trace (until 0.34), so
+    // the particles floated in empty black; and the path started at x=-3.55,
+    // left of the elbow, where no pipe existed at all. Now the stream can't
+    // start until the frame is solid, it travels inside a real supply pipe
+    // that turns translucent to show it, and it ends at V1's inlet.
+    const wIn = ss(p, 0.335, 0.375) * (1 - ss(p, 0.41, 0.45));
+    supplyMat.opacity = (1 - traceHold) * (1 - 0.72 * wIn);
+    supplyMat.depthWrite = supplyMat.opacity > 0.5;
     if (inflowGroup.current) inflowGroup.current.visible = wIn > 0.02;
     if (wIn > 0.02) {
       inflowSpecs.forEach((sp, k) => {
         const m = inflowRefs.current[k];
         if (!m) return;
         const t01 = (tt2 * sp.speed + sp.phase) % 1;
-        m.position.set(-3.55 + t01 * 1.4, 0.92 + sp.dy + Math.sin(t01 * 9 + k) * 0.05, sp.dz);
+        // x: from well inside the supply run to V1's inlet boss; y/z: bounded
+        // to the pipe bore (r 0.11) so nothing drifts outside the wall
+        m.position.set(-5.0 + t01 * 2.45, 0.9 + sp.dy * 0.9 + Math.sin(t01 * 9 + k) * 0.03, sp.dz * 0.5);
         m.scale.setScalar(sp.size);
       });
       inflowMats.forEach((m) => (m.opacity = wIn * 0.9));
@@ -1228,6 +1266,17 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
               <sphereGeometry args={[0.14, 18, 14]} />
             </mesh>
           ))}
+          {/* the mains SUPPLY run, arriving from off-left into the elbow. The
+              dirty-water stream travels inside it and the pipe turns
+              translucent to show that (supplyMat, useFrame). Before this
+              existed the stream had nothing to be in. */}
+          <mesh material={supplyMat} position={[-4.35, 0.9, 0]} rotation={[0, 0, Math.PI / 2]}>
+            <cylinderGeometry args={[0.11, 0.11, 2.3, 24, 1, true]} />
+          </mesh>
+          {/* house-out run, mirrored, so the machine is plumbed both ends */}
+          <mesh material={frameMat} position={[4.2, 0.9, 0]} rotation={[0, 0, Math.PI / 2]}>
+            <cylinderGeometry args={[0.11, 0.11, 2.0, 24]} />
+          </mesh>
         </>
       )}
 
@@ -1327,9 +1376,15 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
             </group>
           )}
 
-          {/* sump (ghosts during this vessel's window) */}
+          {/* sump (ghosts during this vessel's window). Grouped so the whole
+              bowl — dome, o-ring, seam, drain, printed label — unscrews and
+              comes away as one part on the service beat. */}
           {!hidden("housing") && (
-            <>
+            <group
+              ref={(el) => {
+                sumpGroups.current[i] = el;
+              }}
+            >
               <mesh position={[0, -0.4, 0]}>
                 <cylinderGeometry args={[0.62, 0.62, 2.3, 48]} />
                 <meshPhysicalMaterial
@@ -1408,7 +1463,7 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
                   />
                 </mesh>
               )}
-            </>
+            </group>
           )}
 
           {/* cartridge (revealed in-window; rises out on the explode).
@@ -1704,8 +1759,16 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
             </group>
           )}
 
-          {/* cyan brand ring seated at the sump base */}
-          <mesh position={[0, -1.5, 0]} rotation={[Math.PI / 2, 0, 0]} visible={!hidden("ring")}>
+          {/* cyan brand ring seated at the sump base — travels with the sump
+              when it comes away on the service beat */}
+          <mesh
+            ref={(el) => {
+              ringMeshes.current[i] = el;
+            }}
+            position={[0, -1.5, 0]}
+            rotation={[Math.PI / 2, 0, 0]}
+            visible={!hidden("ring")}
+          >
             <torusGeometry args={[0.655, 0.015, 12, 64]} />
             <meshStandardMaterial
               ref={(el) => {

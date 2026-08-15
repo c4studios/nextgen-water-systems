@@ -114,8 +114,8 @@ export const STORY_BEATS: Beat[] = [
     // BENEFITS share the explode dwell — the machine is open on screen
     id: "service", a: 0.852, b: 0.924, f: 0.02, pos: "pb--tl",
     eyebrow: "SERVICEABLE BY DESIGN",
-    h: "Heads lift. Life gets easier.",
-    body: "A cartridge change takes minutes — tap a label to read each part. Then it's ordinary life, better: appliances protected, softer showers, no bottles.*",
+    h: "Sumps drop. Life gets easier.",
+    body: "Unscrew the sump, swap the cartridge, screw it home — minutes. Tap a label to read each part. Then it's ordinary life, better: appliances protected, softer showers, no bottles.",
   },
   {
     // INSTALL steps letter in while the machine reassembles

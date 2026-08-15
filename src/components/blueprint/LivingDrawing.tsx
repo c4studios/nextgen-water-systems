@@ -626,7 +626,7 @@ export function LivingDrawing() {
               <div className="jd-tb-cell">
                 <i>DATE</i>26.06.26
               </div>
-              <div className="jd-tb-stamp">INDICATIVE · PLACEHOLDER*</div>
+              <div className="jd-tb-stamp">FOR INFORMATION · DIMS NOMINAL</div>
             </div>
           </div>
 
