@@ -664,7 +664,7 @@
   }
   .pb--hero .pb-body {
     margin-top: 20px;
-    font-size: 16px;
+    font-size: 17px;
     max-width: 44ch;
   }
   .pbh-actions {
@@ -741,12 +741,21 @@
     color: #eef7fc;
     text-wrap: balance;
   }
+  /* Prose is NOT monospace. .plate-hud sets mono for the whole HUD, which is
+     correct for its labels, stamps and data rows — those are instrument
+     readouts. Sentences inherited it too, and mono at 14.5px over a lit 3D
+     asset is the main reason the journey read cheap: it's costume, not voice.
+     Data stays mono; anything that reads as a sentence gets the text face. */
   .pb-body {
-    margin-top: 12px;
-    font-size: 14.5px;
-    line-height: 1.55;
-    color: #c6dcea;
-    max-width: 38ch;
+    margin-top: 14px;
+    font-family: var(--font-hanken), system-ui, sans-serif;
+    font-size: 16px;
+    /* light-on-dark needs more leading than the mono did */
+    line-height: 1.68;
+    letter-spacing: 0.002em;
+    color: #cfe2ee;
+    max-width: 42ch;
+    text-wrap: pretty;
   }
   .pb--bc .pb-body {
     margin-inline: auto;

@@ -792,7 +792,12 @@ export default function C4FooterCredit({
             <feGaussianBlur in="SourceGraphic" stdDeviation="14" />
           </filter>
           <clipPath id={cClipId} clipPathUnits="userSpaceOnUse">
-            <circle ref={cClipRectRef} />
+            {/* cx/cy/r are driven imperatively, but the element still has to be
+                valid before that first write lands. Rendered bare, the browser
+                logs "attribute cx: Expected length" three times per paint —
+                harmless but noisy, and it fires on every project that ships
+                this component. r=0 clips nothing, so the reveal is unchanged. */}
+            <circle ref={cClipRectRef} cx="0" cy="0" r="0" />
           </clipPath>
           <clipPath id={stemUpperClipId} clipPathUnits="userSpaceOnUse">
             <polygon points={FOUR_SEGMENTS.stemUpper} />

@@ -1456,11 +1456,18 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
                   ref={(el) => {
                     coreMats.current[i] = el;
                   }}
-                  color="#8fd8ec"
+                  color="#7fc4dd"
                   map={coreFlowMap ?? undefined}
-                  emissive="#29c2ee"
+                  emissive="#1f9ec4"
                   emissiveMap={coreFlowMap ?? undefined}
-                  emissiveIntensity={1.15}
+                  /* Was 1.15, which saturated the whole surface to a uniform
+                     glow and drowned the streak map — the flat glowing stick
+                     this material's own comment says it isn't. Dropped so the
+                     map's variation is what you actually see, and the column
+                     reads as moving water rather than a lit plastic rod. */
+                  emissiveIntensity={0.38}
+                  roughness={0.14}
+                  metalness={0}
                   transparent
                   depthWrite={false}
                   opacity={0}
@@ -1547,13 +1554,13 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
               ].map((pos, k) => (
                 <mesh key={k} position={pos as [number, number, number]}>
                   <capsuleGeometry args={[0.028, 0.17, 4, 12]} />
-                  <meshStandardMaterial
-                    color="#9fe8ff"
-                    emissive="#29c2ee"
-                    emissiveIntensity={0.8}
+                  <meshBasicMaterial
+                    color="#8fdcf7"
                     transparent
-                    opacity={0.8}
+                    opacity={0.34}
+                    blending={THREE.AdditiveBlending}
                     depthWrite={false}
+                    toneMapped={false}
                   />
                 </mesh>
               ))}
@@ -1564,26 +1571,26 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
               ].map((pos, k) => (
                 <mesh key={k} position={pos as [number, number, number]} rotation={[0, 0, Math.PI / 2]}>
                   <capsuleGeometry args={[0.024, 0.13, 4, 12]} />
-                  <meshStandardMaterial
-                    color="#bfeefb"
-                    emissive="#7fd8f5"
-                    emissiveIntensity={0.6}
+                  <meshBasicMaterial
+                    color="#a8e6fb"
                     transparent
-                    opacity={0.75}
+                    opacity={0.28}
+                    blending={THREE.AdditiveBlending}
                     depthWrite={false}
+                    toneMapped={false}
                   />
                 </mesh>
               ))}
               {/* core up-streak */}
               <mesh position={[0, 0.62, 0]}>
                 <capsuleGeometry args={[0.04, 0.24, 4, 12]} />
-                <meshStandardMaterial
+                <meshBasicMaterial
                   color="#9fe8ff"
-                  emissive="#29c2ee"
-                  emissiveIntensity={1.0}
                   transparent
-                  opacity={0.85}
+                  opacity={0.4}
+                  blending={THREE.AdditiveBlending}
                   depthWrite={false}
+                  toneMapped={false}
                 />
               </mesh>
             </group>
