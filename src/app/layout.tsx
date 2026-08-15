@@ -13,7 +13,7 @@ const DESCRIPTION =
 export const metadata: Metadata = {
   metadataBase: new URL("https://nextgenwatersystems.com.au"),
   title: {
-    default: "Next Gen Water Systems — Premium home water refining",
+    default: "Next Gen Water Systems — Whole-home water filtration, Perth",
     template: "%s | Next Gen Water Systems",
   },
   description: DESCRIPTION,
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_AU",
     siteName: "Next Gen Water Systems",
-    title: "Next Gen Water Systems — Premium home water refining",
+    title: "Next Gen Water Systems — Whole-home water filtration, Perth",
     description: DESCRIPTION,
   },
   // Held out of the index until launch. Flip LAUNCHED in src/lib/seo.ts — it

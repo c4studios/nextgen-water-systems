@@ -613,12 +613,22 @@
   }
   .rest-still img {
     position: absolute;
-    top: 0;
-    left: 50%;
-    height: 100%;
+    /* REGISTRATION to the docked 3D underneath. Measured, not guessed: the
+       photograph's machine is ~1.25× the render's in frame and centred, the
+       render's sits at the dock offset (-0.4 world → ~12.6svh left of centre)
+       and slightly high. So the photo is scaled to 80svh tall and shifted so
+       the two machines coincide, and the dissolve is a photo→render cross-
+       fade of the same object rather than a jump. */
+    top: calc(50% - 44.2svh);
+    left: calc(50% - 8.8svh);
+    height: 78svh;
     width: auto;
     max-width: none;
     transform: translateX(-50%);
+    /* the studio floor in the photograph becomes a soft pool of light that
+       falls into the page's void, instead of a grey rectangle with edges */
+    -webkit-mask-image: radial-gradient(52% 58% at 50% 50%, #000 42%, rgba(0, 0, 0, 0.6) 66%, transparent 96%);
+    mask-image: radial-gradient(52% 58% at 50% 50%, #000 42%, rgba(0, 0, 0, 0.6) 66%, transparent 96%);
   }
   /* ── Phase 2: pointer routing — the sheet and HUD are overlays; only their
      genuinely interactive children take hits, everything else falls through
@@ -2997,4 +3007,26 @@
 @media (prefers-reduced-motion: reduce) {
   .opening-cue-rule { animation: none; transform: scaleX(1); }
   .opening-cta { transition: none; }
+}
+
+/* ── exploded-part callouts on narrow viewports ──
+   At ≤640px three 236px labels can't sit beside three vessels that share a
+   390px frame; the audit showed .xlabel/.xl-card running past the right edge
+   (clipped by the HUD, so unreadable rather than scrolling). Compact the tag
+   to number + plus, and open the spec card as a bottom sheet instead of an
+   in-place drop-down. */
+@media (max-width: 640px) {
+  .xlabel { width: auto; }
+  .xl-tag > span { display: none; }
+  .xl-tag { padding: 6px 8px; }
+  .xlabel.is-open .xl-card {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    max-height: 52svh;
+    max-width: none;
+    overflow: auto;
+    z-index: 40;
+  }
 }

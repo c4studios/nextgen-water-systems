@@ -301,15 +301,20 @@ export function LivingDrawing() {
           // Rest still: fully opaque while the machine is at rest, gone by the
           // time the ink trace starts at ~0.06. The 3D underneath is at the
           // identical dock pose, so this is a photo→render dissolve, not a cut.
+          const so = gsap.utils.clamp(0, 1, 1 - (p - 0.024) / 0.036); // rest-still opacity
           if (restStillRef.current) {
-            const so = gsap.utils.clamp(0, 1, 1 - (p - 0.024) / 0.036);
             restStillRef.current.style.opacity = String(so);
             restStillRef.current.style.visibility = so <= 0.001 ? "hidden" : "visible";
           }
           if (canvasWrapRef.current) {
-            canvasWrapRef.current.style.opacity = String(
-              gsap.utils.clamp(0, 1, gsap.utils.mapRange(0.46, 0.62, 1, 0, bpU)),
-            );
+            // The canvas is HIDDEN while the photograph is opaque — a generated
+            // still can't register to the render to the pixel, and any bleed
+            // through the still's soft mask reads as a double image. It fades
+            // in exactly as the still fades out (the 3D keeps rendering
+            // underneath, so there's no hitch when it appears), then the
+            // vellum-plate rule takes over.
+            const plateHide = gsap.utils.clamp(0, 1, gsap.utils.mapRange(0.46, 0.62, 1, 0, bpU));
+            canvasWrapRef.current.style.opacity = String(plateHide * (1 - so));
           }
 
           // fallback-only parallax tilt on the SVG still (when there's no live 3D

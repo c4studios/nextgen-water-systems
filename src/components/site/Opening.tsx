@@ -33,7 +33,7 @@ export function Opening() {
         </p>
 
         <div className="opening-act">
-          <a className="opening-cta" href="#book">
+          <a className="opening-cta" href="#plate-cta">
             Book a free water test
           </a>
           <p className="opening-installer">
