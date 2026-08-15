@@ -67,7 +67,7 @@ const VESSELS = [
   {
     x: 0.0, n: "02", title: "KDF 55/85 + carbon", sub: "heavy metals · chlorine*",
     cart: "#a97142", cartMetal: 0.65, cartRough: 0.5,
-    media: "Copper-zinc granules + coconut carbon", rating: "redox bed", service: "up to 18 months*",
+    media: "Copper-zinc granules + coconut carbon", rating: "redox bed", service: "Long-interval",
     removes: ["Heavy metals", "Chlorine", "Bacteria control*"],
   },
   {

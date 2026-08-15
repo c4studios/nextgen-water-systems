@@ -76,27 +76,27 @@ export const STORY_BEATS: Beat[] = [
     eyebrow: "STAGE 02 · KDF 55/85 + CARBON",
     h: "The redox bed.",
     body: "Copper-zinc granules trade electrons with what's dissolved — metals bind to the media, chlorine converts. Coconut carbon polishes taste behind it.",
-    stat: "up to 18-month cartridge life*",
+    stat: "Long-interval cartridges",
   },
   {
     id: "s3", a: 0.582, b: 0.692, f: 0.02, pos: "pb--right",
     eyebrow: "STAGE 03 · LIMESCALE CARBON",
     h: "The finish.",
     body: "Scale-reduction media changes how minerals crystallise, so they rinse through instead of coating your appliances.",
-    stat: "1 µm final polish*",
+    stat: "1 µm final polish",
   },
   {
     // the PROOF — figures surface as clean water exits the house-out side
     // (machine frames left of centre here; the schedule owns the right)
     id: "proof", a: 0.702, b: 0.772, f: 0.02, pos: "pb--right",
-    eyebrow: "TEST SCHEDULE · INDICATIVE*",
-    h: "Numbers, drawn to tolerance.",
-    body: "Independent NATA-accredited certification comes before launch — every figure carries its method, like any drawing carries its tolerances.",
+    eyebrow: "WHAT EACH STAGE DOES",
+    h: "Drawn to tolerance.",
+    body: "Every stage does one physical thing to the water, and we will tell you exactly what. Independent certification is in progress; until it is in hand we describe the mechanism rather than quote a number we cannot source.",
     rows: [
-      ["CHLORINE", "up to 99%*"],
-      ["LEAD", "up to 98%*"],
-      ["IRON & H₂S", "up to 95%*"],
-      ["SEDIMENT", "> 99%*"],
+      ["CHLORINE", "Taste and smell gone"],
+      ["LEAD", "Plated out as metal"],
+      ["IRON & H₂S", "Precipitated out"],
+      ["SEDIMENT", "Caught in graded depth"],
     ],
   },
   {

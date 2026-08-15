@@ -97,8 +97,8 @@ function ProofTable() {
   return (
     <div className="proof">
       <div className="proof-head">
-        <span>TEST SCHEDULE — REDUCTION BY CONTAMINANT</span>
-        <span className="proof-stamp">INDICATIVE · PENDING CERTIFICATION*</span>
+        <span>WHAT EACH STAGE DOES</span>
+        <span className="proof-stamp">MECHANISM · NOT A PERFORMANCE CLAIM</span>
       </div>
       {PROOF_ROWS.map((r, i) => (
         <div key={r.c} className={`proof-row${open === i ? " is-open" : ""}`}>
@@ -114,8 +114,10 @@ function ProofTable() {
         </div>
       ))}
       <p className="proof-note">
-        Figures are placeholders pending independent NATA-accredited testing — no PFAS, fluoride or TDS claims are
-        made: those require reverse osmosis, which this system deliberately isn&rsquo;t.
+        This describes what each stage physically does to the water, not how much of anything it removes —
+        independent certification is in progress and we won&rsquo;t quote a figure we can&rsquo;t source. No PFAS,
+        fluoride or TDS claims are made either: those require reverse osmosis, which this system deliberately
+        isn&rsquo;t.
       </p>
     </div>
   );
