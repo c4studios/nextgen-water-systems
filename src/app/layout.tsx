@@ -8,7 +8,7 @@ import { LAUNCHED } from "@/lib/seo";
 import { localBusinessJsonLd } from "@/lib/jsonld";
 
 const DESCRIPTION =
-  "Premium whole-home water refining, engineered in Australia. Measurable contaminant reduction, award-winning design. Book a free in-home water test. (Concept demo — C4 Studios.)";
+  "Whole-home water filtration for Perth — one three-stage system at the mains, installed by licensed plumbers. Book a free in-home water test.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://nextgenwatersystems.com.au"),

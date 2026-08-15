@@ -104,11 +104,17 @@ export const STORY_BEATS: Beat[] = [
   },
   {
     // CREDIBILITY — while the camera orbits the settled machine
+    // Credibility that is actually true. This beat previously claimed UNSW
+    // and Curtin research partnerships and international design awards,
+    // asterisked "pending permission" — invented endorsements on a client's
+    // site, the same category of problem as fabricated reviews. Gone. What is
+    // verifiable is the installer: Aqua-Safe Plumbing & Maintenance, licensed
+    // (PL10802 / GF22810), with a real 12-month workmanship warranty.
     id: "cred", a: 0.778, b: 0.842, f: 0.02, pos: "pb--left",
-    eyebrow: "APPROVALS BLOCK*",
-    h: "Argued over by people who care.",
-    body: "Developed with university research partners and recognised by international design juries — every mark shown pending written permission, so they're drawn, not dropped in.*",
-    stat: "UNSW* · CURTIN* · INTERNATIONAL DESIGN AWARDS*",
+    eyebrow: "INSTALLED BY LICENSED PLUMBERS",
+    h: "Fitted by a plumber, not a courier.",
+    body: "Every system is installed by Aqua-Safe Plumbing & Maintenance — licensed Perth plumbers and gas fitters — and the installation carries a 12-month workmanship warranty.",
+    stat: "PL10802 · GF22810 · 12-MONTH WORKMANSHIP WARRANTY",
   },
   {
     // BENEFITS share the explode dwell — the machine is open on screen

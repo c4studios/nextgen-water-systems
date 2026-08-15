@@ -144,10 +144,13 @@ export function SiteSpine() {
 
         <div className="tail-rule" aria-hidden="true" />
         <p className="tail-fine">
-          NSF &amp; WaterMark certified hardware* · 5-year manufacturer&rsquo;s warranty* · licensed installation,
-          Perth-wide* — every figure marked * is indicative and awaits NATA-accredited certification before launch.
+          Installed Perth-wide by Aqua-Safe Plumbing &amp; Maintenance, licensed plumbers and gas fitters
+          (PL10802 · GF22810), with a 12-month workmanship warranty on the installation.
         </p>
-        <p className="tail-fine">© 2026 Next Gen Water Systems · ABN 00 000 000 000* · designed in Australia</p>
+        {/* ABN is the real one — NEXT GEN WATER SYSTEMS is a registered business
+            name under it (public ABR record). "designed in Australia" was an
+            origin claim nobody has substantiated; a location isn't. */}
+        <p className="tail-fine">© 2026 Next Gen Water Systems · ABN 25 770 821 226 · Perth, Western Australia</p>
         <C4FooterCredit />
       </div>
     </section>

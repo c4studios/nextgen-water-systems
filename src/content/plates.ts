@@ -18,6 +18,11 @@ export const SITE_REVISIONS: Revision[] = [
 ];
 
 export const CONTACT = {
-  phone: "1300 000 000",
+  // ⚠️ CONFIRM WITH AARON. This was "1300 000 000" — a fake number rendered on
+  // the site. Bookings are taken by the installer, Aqua-Safe, so this is
+  // Aaron's real business line. If Next Gen gets its own number, change here.
+  phone: "0473 072 642",
+  // ⚠️ Not verified that this mailbox exists — the domain resolves but serves
+  // nothing. The booking form's mailto fallback sends here. See the audit.
   email: "hello@nextgenwatersystems.com.au",
 };

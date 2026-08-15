@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Environment, ContactShadows, Html, Lightformer } from "@react-three/drei";
+import { Environment, ContactShadows, Html, Lightformer, RoundedBox } from "@react-three/drei";
 import { EffectComposer, Bloom, Vignette, ChromaticAberration, DepthOfField } from "@react-three/postprocessing";
 import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import * as THREE from "three";
@@ -106,6 +106,46 @@ const HEAD = { color: "#23272c", metalness: 0.9, roughness: 0.5 } as const; // m
 const FRAME = { color: "#2c3034", metalness: 0.42, roughness: 0.6 } as const; // powder-coat cage
 const BRASS = { color: "#b28a4e", metalness: 1, roughness: 0.34 } as const; // connector ports
 const CA_OFFSET = new THREE.Vector2(0.0006, 0.0004);
+
+/** Mounting tab with two real through-holes (the old one was a box with a
+ *  torus sat on top of it — a ring, not a hole). Extruded from a rounded
+ *  rectangle Shape with two circular holes. */
+function tabGeometry(w: number, d: number, t: number, holeR: number) {
+  const r = Math.min(w, d) * 0.22;
+  const sh = new THREE.Shape();
+  sh.moveTo(-w / 2 + r, -d / 2);
+  sh.lineTo(w / 2 - r, -d / 2);
+  sh.quadraticCurveTo(w / 2, -d / 2, w / 2, -d / 2 + r);
+  sh.lineTo(w / 2, d / 2 - r);
+  sh.quadraticCurveTo(w / 2, d / 2, w / 2 - r, d / 2);
+  sh.lineTo(-w / 2 + r, d / 2);
+  sh.quadraticCurveTo(-w / 2, d / 2, -w / 2, d / 2 - r);
+  sh.lineTo(-w / 2, -d / 2 + r);
+  sh.quadraticCurveTo(-w / 2, -d / 2, -w / 2 + r, -d / 2);
+  for (const hx of [-w * 0.24, w * 0.24]) {
+    const h = new THREE.Path();
+    h.absarc(hx, 0, holeR, 0, Math.PI * 2, true);
+    sh.holes.push(h);
+  }
+  const g = new THREE.ExtrudeGeometry(sh, {
+    depth: t, bevelEnabled: true, bevelThickness: 0.004, bevelSize: 0.004, bevelSegments: 2, curveSegments: 18,
+  });
+  g.rotateX(-Math.PI / 2); // extrude along +y, so the tab lies flat
+  g.translate(0, -t / 2, 0);
+  return g;
+}
+
+/** Corner gusset — a right-triangle plate welded into a post/rail corner. */
+function gussetGeometry(leg: number, t: number) {
+  const sh = new THREE.Shape();
+  sh.moveTo(0, 0);
+  sh.lineTo(leg, 0);
+  sh.lineTo(0, leg);
+  sh.closePath();
+  const g = new THREE.ExtrudeGeometry(sh, { depth: t, bevelEnabled: false });
+  g.translate(0, 0, -t / 2);
+  return g;
+}
 
 /** Fullscreen pool-of-light INSIDE the GL frame — same stops as the page CSS
  *  (see backdrop.ts), so the canvas cross-fade at the trace beat is seamless.
@@ -890,7 +930,21 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
   // ONE shared frame/cage material — one opacity drive fades the whole cage
   // out during the ink trace (the SVG plate doesn't draw the frame)
   const frameMat = useMemo(() => new THREE.MeshStandardMaterial({ ...FRAME, transparent: true }), []);
+  useEffect(() => {
+    // powder-coat isn't one roughness value — give the frame the noise map,
+    // tiled fine, so the finish has the faint orange-peel a coated frame has
+    if (!roughMap) return;
+    const t = roughMap.clone();
+    t.needsUpdate = true;
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    t.repeat.set(3, 3);
+    frameMat.roughnessMap = t;
+    frameMat.needsUpdate = true;
+  }, [frameMat, roughMap]);
+  const tabGeo = useMemo(() => tabGeometry(0.52, 0.34, 0.14, 0.055), []);
+  const gussetGeo = useMemo(() => gussetGeometry(0.22, 0.05), []);
   const supplyMat = useMemo(() => new THREE.MeshStandardMaterial({ ...MACHINED, transparent: true }), []);
+  const outMat = useMemo(() => new THREE.MeshStandardMaterial({ ...MACHINED, transparent: true }), []);
 
   useFrame((state, delta) => {
     const p = progress.current;
@@ -1135,8 +1189,14 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
       h2sGasMat.opacity = h2sGrainMat.opacity = clGasMat.opacity = clIonMat.opacity = 0;
     }
 
-    // clean exit: the payoff — still clear water rising at the OUT elbow
+    // clean exit: the payoff. Clear water LEAVES along the house-out run —
+    // inside the pipe, which turns translucent to show it, mirroring how the
+    // dirty water arrived on the other side. It used to bubble UP out of the
+    // elbow into open air, which is not something water in a closed pipe does,
+    // and it left droplets floating in black through the credibility orbit.
     const wOut = ss(p, 0.69, 0.72) * (1 - ss(p, 0.78, 0.82));
+    outMat.opacity = (1 - traceHold) * (1 - 0.72 * wOut);
+    outMat.depthWrite = outMat.opacity > 0.5;
     if (exitGroup.current) exitGroup.current.visible = wOut > 0.02;
     if (exitLight.current) exitLight.current.intensity = wOut * 0.9;
     if (wOut > 0.02) {
@@ -1144,8 +1204,9 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
         const m = exitRefs.current[k];
         if (!m) return;
         const t01 = (tt2 * sp.speed + sp.phase) % 1;
-        m.position.set(3.22 + sp.dx + Math.sin(t01 * 6 + k) * 0.03, 1.0 + t01 * 1.05, sp.dz);
-        m.scale.setScalar(sp.size * Math.sin(t01 * Math.PI));
+        // along the pipe bore, out toward the house (+x)
+        m.position.set(3.3 + t01 * 1.25, 0.9 + sp.dz * 0.5 + Math.sin(t01 * 7 + k) * 0.025, sp.dx * 0.5);
+        m.scale.setScalar(sp.size * (0.55 + 0.45 * Math.sin(t01 * Math.PI)));
       });
       exitMat.opacity = wOut * 0.95;
     } else {
@@ -1208,51 +1269,83 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
             scale={sp.size}
           />
         ))}
-        <pointLight ref={exitLight} position={[3.25, 1.4, 0.6]} color="#bfe9ff" intensity={0} distance={2.6} decay={2} />
+        <pointLight ref={exitLight} position={[3.9, 0.95, 0.55]} color="#dff3fb" intensity={0} distance={2.4} decay={2} />
       </group>
 
       {/* ── the open charcoal steel FRAME/CAGE — the FHWR-3SI-20 silhouette:
           the vessels hang from a top manifold plate INSIDE a rectangular tube
-          frame (per the real product photos) + series pipework ── */}
+          frame (per the real product photos) + series pipework.
+
+          Every member is a ROUNDED box now, not a sharp one. Real steel tube
+          and plate have an edge radius, and that radius is what catches the
+          highlight — sharp CG boxes read as CG no matter what the material
+          does. Plus the hardware a welded, bolted frame actually carries:
+          hex bolts + washers where the plate meets the posts and where each
+          head bracket bolts through the plate, corner gussets at the joints,
+          a mounting tab with real through-holes, and a powder-coat roughness
+          map so the finish is not one uniform value. ── */}
       {!hidden("kit") && (
         <>
           {/* top manifold plate the vessels hang from */}
-          <mesh material={frameMat} position={[0, 1.33, 0]}>
-            <boxGeometry args={[5.72, 0.14, 1.5]} />
-          </mesh>
+          <RoundedBox args={[5.72, 0.14, 1.5]} radius={0.022} smoothness={4} material={frameMat} position={[0, 1.33, 0]} />
+          {/* head mounting brackets — each head bolts up through the plate via
+              a short cast bracket; two bolt heads show on the plate top */}
+          {VESSELS.map((v) => (
+            <group key={`hbr${v.n}`} position={[v.x, 0, 0]}>
+              <RoundedBox args={[0.98, 0.09, 0.62]} radius={0.014} smoothness={3} material={frameMat} position={[0, 1.215, 0]} />
+              {[-0.34, 0.34].map((bx) => (
+                <group key={bx} position={[bx, 1.4, 0]}>
+                  <mesh position={[0, 0.012, 0]}>
+                    <cylinderGeometry args={[0.058, 0.058, 0.014, 20]} />
+                    <meshStandardMaterial {...MACHINED} />
+                  </mesh>
+                  <mesh position={[0, 0.045, 0]}>
+                    <cylinderGeometry args={[0.04, 0.04, 0.05, 6]} />
+                    <meshStandardMaterial {...MACHINED} metalness={0.9} roughness={0.38} />
+                  </mesh>
+                </group>
+              ))}
+            </group>
+          ))}
           {/* four corner posts */}
           {([[-2.72, 0.66], [2.72, 0.66], [-2.72, -0.66], [2.72, -0.66]] as const).map(([px, pz], k) => (
-            <mesh key={`post${k}`} material={frameMat} position={[px, -0.3, pz]}>
-              <boxGeometry args={[0.09, 3.28, 0.09]} />
-            </mesh>
+            <RoundedBox key={`post${k}`} args={[0.09, 3.28, 0.09]} radius={0.012} smoothness={3} material={frameMat} position={[px, -0.3, pz]} />
           ))}
           {/* bottom rectangle rails */}
-          <mesh material={frameMat} position={[0, -1.9, 0.66]}>
-            <boxGeometry args={[5.53, 0.09, 0.09]} />
-          </mesh>
-          <mesh material={frameMat} position={[0, -1.9, -0.66]}>
-            <boxGeometry args={[5.53, 0.09, 0.09]} />
-          </mesh>
-          <mesh material={frameMat} position={[-2.72, -1.9, 0]}>
-            <boxGeometry args={[0.09, 0.09, 1.41]} />
-          </mesh>
-          <mesh material={frameMat} position={[2.72, -1.9, 0]}>
-            <boxGeometry args={[0.09, 0.09, 1.41]} />
-          </mesh>
+          <RoundedBox args={[5.53, 0.09, 0.09]} radius={0.012} smoothness={3} material={frameMat} position={[0, -1.9, 0.66]} />
+          <RoundedBox args={[5.53, 0.09, 0.09]} radius={0.012} smoothness={3} material={frameMat} position={[0, -1.9, -0.66]} />
+          <RoundedBox args={[0.09, 0.09, 1.41]} radius={0.012} smoothness={3} material={frameMat} position={[-2.72, -1.9, 0]} />
+          <RoundedBox args={[0.09, 0.09, 1.41]} radius={0.012} smoothness={3} material={frameMat} position={[2.72, -1.9, 0]} />
           {/* top side rails tie the posts to the plate corners */}
-          <mesh material={frameMat} position={[-2.72, 1.27, 0]}>
-            <boxGeometry args={[0.09, 0.12, 1.41]} />
-          </mesh>
-          <mesh material={frameMat} position={[2.72, 1.27, 0]}>
-            <boxGeometry args={[0.09, 0.12, 1.41]} />
-          </mesh>
-          {/* mounting-hole tab, top-left (a real detail from the photo) */}
-          <mesh material={frameMat} position={[-3.04, 1.33, 0]}>
-            <boxGeometry args={[0.5, 0.14, 0.34]} />
-          </mesh>
-          <mesh material={frameMat} position={[-3.14, 1.34, 0]} rotation={[Math.PI / 2, 0, 0]}>
-            <torusGeometry args={[0.06, 0.02, 8, 20]} />
-          </mesh>
+          <RoundedBox args={[0.09, 0.12, 1.41]} radius={0.012} smoothness={3} material={frameMat} position={[-2.72, 1.27, 0]} />
+          <RoundedBox args={[0.09, 0.12, 1.41]} radius={0.012} smoothness={3} material={frameMat} position={[2.72, 1.27, 0]} />
+          {/* plate-to-post bolts at the four top corners */}
+          {([[-2.72, 0.66], [2.72, 0.66], [-2.72, -0.66], [2.72, -0.66]] as const).map(([px, pz], k) => (
+            <group key={`pb${k}`} position={[px, 1.4, pz]}>
+              <mesh position={[0, 0.012, 0]}>
+                <cylinderGeometry args={[0.062, 0.062, 0.014, 20]} />
+                <meshStandardMaterial {...MACHINED} />
+              </mesh>
+              <mesh position={[0, 0.048, 0]}>
+                <cylinderGeometry args={[0.042, 0.042, 0.055, 6]} />
+                <meshStandardMaterial {...MACHINED} metalness={0.9} roughness={0.38} />
+              </mesh>
+            </group>
+          ))}
+          {/* corner gussets — welded into the bottom post/rail joints. Real
+              frames are stiffened; floating tubes that just touch read as a
+              render. */}
+          {([[-2.72, 0.66, 1], [2.72, 0.66, -1], [-2.72, -0.66, 1], [2.72, -0.66, -1]] as const).map(([px, pz, dir], k) => (
+            <mesh
+              key={`gus${k}`}
+              geometry={gussetGeo}
+              material={frameMat}
+              position={[px + dir * 0.045, -1.855, pz]}
+              rotation={[0, 0, dir > 0 ? 0 : Math.PI / 2]}
+            />
+          ))}
+          {/* mounting tab, top-left, with two REAL through-holes */}
+          <mesh geometry={tabGeo} material={frameMat} position={[-3.06, 1.33, 0]} />
 
           {/* series pipework (mains → V1 → V2 → V3 → house), under the plate */}
           {[-2.94, -0.95, 0.95, 2.94].map((x, i) => (
@@ -1273,9 +1366,10 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
           <mesh material={supplyMat} position={[-4.35, 0.9, 0]} rotation={[0, 0, Math.PI / 2]}>
             <cylinderGeometry args={[0.11, 0.11, 2.3, 24, 1, true]} />
           </mesh>
-          {/* house-out run, mirrored, so the machine is plumbed both ends */}
-          <mesh material={frameMat} position={[4.2, 0.9, 0]} rotation={[0, 0, Math.PI / 2]}>
-            <cylinderGeometry args={[0.11, 0.11, 2.0, 24]} />
+          {/* house-out run, mirrored — goes translucent while clean water is
+              shown leaving through it (outMat, useFrame) */}
+          <mesh material={outMat} position={[3.9, 0.9, 0]} rotation={[0, 0, Math.PI / 2]}>
+            <cylinderGeometry args={[0.11, 0.11, 1.4, 24, 1, true]} />
           </mesh>
         </>
       )}
@@ -1842,7 +1936,7 @@ export default function ChromeStage({ progress, active, sheetRatio, onReady }: P
       {typeof window !== "undefined" && new URLSearchParams(window.location.search).has("ngdbgray") && <DebugRay />}
 
       {!hidden("shadows") && (
-        <ContactShadows position={[0, -1.72, 0]} opacity={0.55} scale={14} blur={3} far={5} color="#000000" />
+        <ContactShadows position={[0, -1.955, 0]} opacity={0.6} scale={16} blur={2.6} far={5.5} color="#000000" />
       )}
 
       {!hidden("post") && (
