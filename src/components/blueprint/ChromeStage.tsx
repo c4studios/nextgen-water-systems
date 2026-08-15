@@ -58,23 +58,28 @@ const POINTER_LAMBDA = 5; // pointer parallax: smooth float
 /* ---- the three vessels (x spacing 1.9; sump r .62, head r .74) ----
    spec fields feed the interactive explode cards (Phase 2) */
 const VESSELS = [
+  // No asterisks, no service-life estimates, no health claims. The old strings
+  // carried "*" footnotes to figures nobody could source, "~6 months*" and
+  // "~12 months*" service lives, and "Bacteria control*" — a health claim
+  // about drinking water, which is regulated. What remains describes the
+  // media and what it targets.
   {
-    x: -1.9, n: "01", title: "Sediment", sub: "10/5/1µm 3-layer*",
+    x: -1.9, n: "01", title: "Sediment", sub: "10/5/1µm 3-layer",
     cart: "#e8ecee", cartMetal: 0.05, cartRough: 0.85,
-    media: "Graded polypropylene · 3 layers", rating: "10 / 5 / 1 µm*", service: "~6 months*",
+    media: "Graded polypropylene · 3 layers", rating: "10 / 5 / 1 µm", service: "Replaceable cartridge",
     removes: ["Grit", "Rust", "Silt"],
   },
   {
-    x: 0.0, n: "02", title: "KDF 55/85 + carbon", sub: "heavy metals · chlorine*",
+    x: 0.0, n: "02", title: "KDF 55/85 + carbon", sub: "heavy metals · chlorine",
     cart: "#a97142", cartMetal: 0.65, cartRough: 0.5,
     media: "Copper-zinc granules + coconut carbon", rating: "redox bed", service: "Long-interval",
-    removes: ["Heavy metals", "Chlorine", "Bacteria control*"],
+    removes: ["Heavy metals", "Chlorine", "Taste"],
   },
   {
-    x: 1.9, n: "03", title: "Limescale carbon", sub: "scale · taste · 1µm*",
+    x: 1.9, n: "03", title: "Limescale carbon", sub: "scale · taste · 1µm",
     cart: "#232c33", cartMetal: 0.1, cartRough: 0.7,
-    media: "Scale-reduction media + carbon", rating: "1 µm polish", service: "~12 months*",
-    removes: ["Scale formation*", "Taste", "Odour"],
+    media: "Scale-reduction media + carbon", rating: "1 µm polish", service: "Replaceable cartridge",
+    removes: ["Scale formation", "Taste", "Odour"],
   },
 ] as const;
 
@@ -817,6 +822,76 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
   );
   const sphereGeo = useMemo(() => new THREE.SphereGeometry(1, 10, 8), []);
 
+  /* ---- CUTAWAY CARTRIDGE textures ----
+     The section face of a graded-density sediment cartridge: three bands,
+     coarse (outer, fluffier, more open) to fine (inner, denser), with faint
+     fibre grain and a hairline where each layer meets the next. This is what
+     the media looks like when you cut it — and it's the Section A–A language
+     the drawing already speaks. No text on it (image text is composited in
+     the HUD, never drawn). */
+  const sectionMap = useMemo(() => {
+    if (typeof document === "undefined") return null;
+    const W = 256, H = 512;
+    const cv = document.createElement("canvas");
+    cv.width = W; cv.height = H;
+    const g = cv.getContext("2d");
+    if (!g) return null;
+    // u runs from the CORE (0) to the OUTER surface (1) — bands by radius:
+    // core wall 0–0.06, fine 0.06–0.36, mid 0.36–0.66, coarse 0.66–1
+    const bands: [number, number, string][] = [
+      [0, 0.06, "#2a2e33"],
+      [0.06, 0.36, "#d9d3c4"],
+      [0.36, 0.66, "#e6e1d5"],
+      [0.66, 1.0, "#f1eee6"],
+    ];
+    for (const [a, c, col] of bands) { g.fillStyle = col; g.fillRect(a * W, 0, (c - a) * W + 1, H); }
+    // fibre grain — coarser and more open toward the outside
+    const img = g.getImageData(0, 0, W, H);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const u = x / W;
+      if (u < 0.06) continue;
+      const open = 0.35 + u * 0.65; // how "open" the fibre is
+      const n = (Math.random() - 0.5) * 34 * open;
+      const i4 = (y * W + x) * 4;
+      img.data[i4] += n; img.data[i4 + 1] += n; img.data[i4 + 2] += n;
+    }
+    g.putImageData(img, 0, 0);
+    // hairlines between layers
+    g.fillStyle = "rgba(60,58,52,0.55)";
+    for (const u of [0.36, 0.66]) g.fillRect(u * W - 1, 0, 2, H);
+    const tex = new THREE.CanvasTexture(cv);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 8;
+    return tex;
+  }, []);
+
+  /* perforated core tube — a rigid tube with a grid of holes; the risen water
+     shows through them and through the section cut */
+  const perfMap = useMemo(() => {
+    if (typeof document === "undefined") return null;
+    const S = 256;
+    const cv = document.createElement("canvas");
+    cv.width = cv.height = S;
+    const g = cv.getContext("2d");
+    if (!g) return null;
+    g.fillStyle = "#fff"; g.fillRect(0, 0, S, S);
+    g.fillStyle = "#000";
+    const cols = 8, rows = 8;
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      const cx = ((c + 0.5 + (r % 2) * 0.5) / cols) * S, cy = ((r + 0.5) / rows) * S;
+      g.beginPath(); g.arc(cx % S, cy, S / cols * 0.22, 0, Math.PI * 2); g.fill();
+    }
+    const tex = new THREE.CanvasTexture(cv);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(3, 6);
+    return tex;
+  }, []);
+  // every cartridge material for a vessel, so the whole cutaway fades as one
+  const cartMatList = useRef<THREE.Material[][]>([[], [], []]);
+  const regCart = (i: number) => (m: THREE.Material | null) => {
+    if (m && !cartMatList.current[i].includes(m)) cartMatList.current[i].push(m);
+  };
+
   /* ---- Slice 3: THE TRANSFORMATION (filter-reference SA-KDF) ----
      dirty water visibly enters at the mains -> each stage does watchable
      chemistry -> clean still water rises at the house-out side. Events are
@@ -886,11 +961,11 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
   const h2sGasRefs = useRef<(THREE.Mesh | null)[]>([]);
   const h2sGrainRefs = useRef<(THREE.Mesh | null)[]>([]);
   const clGasMat = useMemo(
-    () => new THREE.MeshStandardMaterial({ color: "#b9d98a", emissive: "#8fae55", emissiveIntensity: 0.5, transparent: true, opacity: 0, depthWrite: false }),
+    () => new THREE.MeshStandardMaterial({ color: "#d3dadf", emissive: "#9aa5ad", emissiveIntensity: 0.35, transparent: true, opacity: 0, depthWrite: false }),
     [],
   );
   const clIonMat = useMemo(
-    () => new THREE.MeshStandardMaterial({ color: "#eaf6f0", emissive: "#bfe3d4", emissiveIntensity: 0.4, transparent: true, opacity: 0, depthWrite: false }),
+    () => new THREE.MeshStandardMaterial({ color: "#eef2f5", emissive: "#c9d3da", emissiveIntensity: 0.4, transparent: true, opacity: 0, depthWrite: false }),
     [],
   );
   const clSpecs = useMemo(
@@ -1009,6 +1084,7 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
       // reads through the media wall. Nothing ever fades in or 'appears'.
       const cm = cartMats.current[i];
       if (cm) cm.opacity = lerp(1, 0.85, w[i]);
+      cartMatList.current[i].forEach((m) => { m.opacity = lerp(1, 0.9, w[i]); });
       capMatRefs.current[i].forEach((m) => {
         if (m) m.opacity = lerp(1, 0.85, w[i]);
       });
@@ -1041,7 +1117,10 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
           if (!mesh) return;
           const t01 = (tt * s.speed + s.phase) % 1;
           const eased = 1 - (1 - t01) * (1 - t01); // decelerates INTO the media wall
-          const r = lerp(0.6, 0.415, eased);
+          // graded depth: big rust flakes stop at the coarse outer surface,
+          // finer silt lodges deeper — the whole point of a 10/5/1 cartridge
+          const rStop = i === 0 ? lerp(0.24, 0.4, (s.size - 0.022) / 0.024) : 0.415;
+          const r = lerp(0.6, rStop, eased);
           mesh.position.set(Math.sin(s.angle) * r, s.y - t01 * 0.1, Math.cos(s.angle) * r);
           const sc = i === 2 ? s.size * (1 - eased * 0.85) : s.size; // V3: flecks dissolve
           mesh.scale.setScalar(Math.max(sc, 1e-4));
@@ -1230,7 +1309,7 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
       const breathe = 1 + Math.sin(state.clock.elapsedTime * 2.1) * 0.12;
       boreLight.current.intensity = through * 0.5 * breathe;
       if (through > 0.02)
-        boreLight.current.color.set(w[0] >= w[1] && w[0] >= w[2] ? "#e3c39a" : w[1] >= w[2] ? "#cfeef8" : "#bfe9ff");
+        boreLight.current.color.set(w[0] >= w[1] && w[0] >= w[2] ? "#efe6d8" : w[1] >= w[2] ? "#dbe9f0" : "#d6e6ee");
     }
   });
 
@@ -1569,29 +1648,97 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
                 cartGroups.current[i] = el;
               }}
             >
-              <mesh position={[0, -0.42, 0]}>
-                <cylinderGeometry args={[0.4, 0.4, 2.05, 40]} />
-                {/* Phase 3: three visibly DIFFERENT manufactured parts —
-                    white pleated poly / copper-zinc granules / carbon block */}
-                <meshStandardMaterial
-                  ref={(el) => {
-                    cartMats.current[i] = el;
-                  }}
-                  color={(i === 0 && pleatMaps) || (i === 1 && granuleMap) || (i === 2 && carbonMap) ? "#ffffff" : v.cart}
-                  map={i === 0 ? pleatMaps?.map ?? undefined : i === 1 ? granuleMap ?? undefined : carbonMap ?? undefined}
-                  bumpMap={i === 0 ? pleatMaps?.bump ?? undefined : undefined}
-                  bumpScale={i === 0 ? 0.035 : 0}
-                  metalness={i === 1 ? v.cartMetal : 0.02}
-                  roughness={i === 0 ? 0.9 : i === 1 ? v.cartRough : 0.82}
-                  transparent
-                  depthWrite={false}
-                  opacity={0}
-                />
-              </mesh>
-              {/* moulded end caps — the "this is a replaceable part" cue */}
+              {/* ── the cartridge, SECTIONED. A 90° wedge is cut from the front
+                  (toward the camera's parked position for this vessel) so the
+                  media reads in section: for stage 1, three graded layers —
+                  coarse outside, fine inside — around a perforated core; for
+                  2 and 3, the granule bed / carbon block cut through. This is
+                  what the inside of a filter looks like, and it is the drawing's
+                  own Section A–A made physical, instead of a textured tube
+                  ghosted through a translucent shell. ── */}
+              {(() => {
+                const TH0 = Math.PI * 0.3, THL = Math.PI * 1.4; // 108° wedge open toward +z — wide enough that both section faces read from the parked camera
+                const H = 2.05, Y = -0.42;
+                const layers: { r: number; color: string; useMap: boolean }[] =
+                  i === 0
+                    ? [
+                        { r: 0.4, color: "#ffffff", useMap: true },
+                        { r: 0.31, color: "#e6e1d5", useMap: false },
+                        { r: 0.22, color: "#d9d3c4", useMap: false },
+                      ]
+                    : [{ r: 0.4, color: "#ffffff", useMap: true }];
+                const secMap = i === 0 ? sectionMap : i === 1 ? granuleMap : carbonMap;
+                const face = (theta: number, rIn: number, rOut: number, key: string) => (
+                  <mesh
+                    key={key}
+                    position={[Math.sin(theta) * (rIn + rOut) / 2, Y, Math.cos(theta) * (rIn + rOut) / 2]}
+                    rotation={[0, theta - Math.PI / 2, 0]}
+                  >
+                    <planeGeometry args={[rOut - rIn, H]} />
+                    <meshStandardMaterial
+                      ref={regCart(i)}
+                      map={secMap ?? undefined}
+                      color={secMap ? "#ffffff" : v.cart}
+                      roughness={0.95}
+                      metalness={i === 1 ? 0.35 : 0}
+                      side={THREE.DoubleSide}
+                      transparent
+                      opacity={0}
+                      depthWrite={false}
+                    />
+                  </mesh>
+                );
+                return (
+                  <>
+                    {layers.map((L, li) => (
+                      <mesh key={`layer${li}`} position={[0, Y, 0]}>
+                        <cylinderGeometry args={[L.r, L.r, H, 48, 1, true, TH0, THL]} />
+                        <meshStandardMaterial
+                          ref={li === 0 ? (el) => { cartMats.current[i] = el; regCart(i)(el); } : regCart(i)}
+                          color={L.useMap && (i === 0 ? pleatMaps : i === 1 ? granuleMap : carbonMap) ? "#ffffff" : L.color}
+                          map={L.useMap ? (i === 0 ? pleatMaps?.map ?? undefined : i === 1 ? granuleMap ?? undefined : carbonMap ?? undefined) : undefined}
+                          bumpMap={L.useMap && i === 0 ? pleatMaps?.bump ?? undefined : undefined}
+                          bumpScale={L.useMap && i === 0 ? 0.035 : 0}
+                          metalness={i === 1 ? v.cartMetal : 0.02}
+                          roughness={i === 0 ? 0.92 : i === 1 ? v.cartRough : 0.82}
+                          side={THREE.DoubleSide}
+                          transparent
+                          depthWrite={false}
+                          opacity={0}
+                        />
+                      </mesh>
+                    ))}
+                    {/* section faces on both cut planes — one quad per layer.
+                        The stage-1 section map spans core→outer in u, so a
+                        single full-radius quad carries all three bands. */}
+                    {i === 0
+                      ? [TH0, -TH0].map((th, k) => face(th, 0.1, 0.4, `sec${k}`))
+                      : [TH0, -TH0].map((th, k) => face(th, 0.1, 0.4, `sec${k}`))}
+                    {/* perforated core tube — the rigid part the water rises
+                        inside; wedge-cut with the media so the column shows */}
+                    <mesh position={[0, Y, 0]}>
+                      <cylinderGeometry args={[0.1, 0.1, H, 32, 1, true, TH0, THL]} />
+                      <meshStandardMaterial
+                        ref={regCart(i)}
+                        color="#1e2226"
+                        roughness={0.7}
+                        metalness={0.05}
+                        alphaMap={perfMap ?? undefined}
+                        alphaTest={0.5}
+                        side={THREE.DoubleSide}
+                        transparent
+                        opacity={0}
+                        depthWrite={false}
+                      />
+                    </mesh>
+                  </>
+                );
+              })()}
+              {/* moulded end caps — the "this is a replaceable part" cue.
+                  Wedge-cut with the media so the section reads as one cut. */}
               {[1.02, -1.02].map((dy, ci) => (
                 <mesh key={dy} position={[0, -0.42 + dy, 0]}>
-                  <cylinderGeometry args={[0.43, 0.43, 0.07, 40]} />
+                  <cylinderGeometry args={[0.43, 0.43, 0.07, 40, 1, false, Math.PI * 0.3, Math.PI * 1.4]} />
                   <meshStandardMaterial
                     ref={(el) => {
                       capMatRefs.current[i][ci] = el;
@@ -1599,6 +1746,7 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
                     color={["#e3e1d8", "#23282e", "#0e1114"][i]}
                     roughness={0.55}
                     metalness={0.05}
+                    side={THREE.DoubleSide}
                     transparent
                     depthWrite={false}
                     opacity={0}
@@ -1712,7 +1860,7 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
                 [0.28, -0.5, 0.45],
               ].map((pos, k) => (
                 <mesh key={k} position={pos as [number, number, number]}>
-                  <capsuleGeometry args={[0.028, 0.17, 4, 12]} />
+                  <capsuleGeometry args={[0.011, 0.3, 3, 10]} />
                   <meshBasicMaterial
                     color="#8fdcf7"
                     transparent
@@ -1729,7 +1877,7 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
                 [-0.5, -0.85, 0.0],
               ].map((pos, k) => (
                 <mesh key={k} position={pos as [number, number, number]} rotation={[0, 0, Math.PI / 2]}>
-                  <capsuleGeometry args={[0.024, 0.13, 4, 12]} />
+                  <capsuleGeometry args={[0.01, 0.24, 3, 10]} />
                   <meshBasicMaterial
                     color="#a8e6fb"
                     transparent
@@ -1742,7 +1890,7 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
               ))}
               {/* core up-streak */}
               <mesh position={[0, 0.62, 0]}>
-                <capsuleGeometry args={[0.04, 0.24, 4, 12]} />
+                <capsuleGeometry args={[0.014, 0.4, 3, 10]} />
                 <meshBasicMaterial
                   color="#9fe8ff"
                   transparent

@@ -40,9 +40,9 @@ export const VESSEL_BEAT_P = [0.425, 0.52, 0.635] as const;
 
 /** drafted tooltip line per vessel (blueprint hover) */
 export const VESSEL_TIPS = [
-  "01 — GRADED SEDIMENT · 10/5/1 µm*",
-  "02 — KDF 55/85 + CARBON · REDOX*",
-  "03 — LIMESCALE CARBON · 1 µm*",
+  "01 — GRADED SEDIMENT · 10/5/1 µm",
+  "02 — KDF 55/85 + CARBON · REDOX",
+  "03 — LIMESCALE CARBON · 1 µm",
 ] as const;
 
 export const STORY_BEATS: Beat[] = [
@@ -71,7 +71,7 @@ export const STORY_BEATS: Beat[] = [
     eyebrow: "STAGE 01 · GRADED SEDIMENT",
     h: "The coarse work, first.",
     body: "Three graded layers catch grit, rust and silt, so the finer media behind them never clogs early.",
-    stat: "10 / 5 / 1 µm*",
+    stat: "10 / 5 / 1 µm",
   },
   {
     // the redox bed gets DOUBLE dwell — it's the machine's signature chemistry
