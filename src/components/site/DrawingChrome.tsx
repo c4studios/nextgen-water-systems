@@ -70,7 +70,7 @@ export function DrawingChrome() {
           </div>
           <div className="chrome-tb-cell chrome-tb-view">
             <i>VIEW</i>
-            {active.name || "—"}
+            {active.name || "··"}
           </div>
         </div>
         <div className={`chrome-tb-stamp ${approved ? "approved" : ""}`.trim()}>

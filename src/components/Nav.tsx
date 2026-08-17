@@ -1,12 +1,26 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/Button";
+"use client";
 
-/** Slim premium nav — monogram, restrained menu, the one CTA. */
+import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { navRoutes } from "@/content/site";
+
+/**
+ * Slim premium nav: monogram, the pages, the one CTA.
+ *
+ * It used to hold a single "The drawing" anchor, because the whole site was one
+ * page. Now that there is a drawing set behind it, the nav is the way into it,
+ * and the current sheet is marked rather than merely coloured.
+ */
 export function Nav() {
+  const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const here = (href: string) => pathname === href || pathname === href.replace(/\/$/, "");
+
   return (
-    <header>
+    <header className={`site-nav${open ? " is-open" : ""}`}>
       <div className="wrap">
-        <Link className="brand" href="/" data-cursor>
+        <Link className="brand" href="/" data-cursor onClick={() => setOpen(false)}>
           <svg className="mark" viewBox="0 0 40 40" fill="none" aria-hidden="true">
             <defs>
               <linearGradient id="ngmark" x1="20" y1="6" x2="20" y2="34" gradientUnits="userSpaceOnUse">
@@ -18,17 +32,48 @@ export function Nav() {
           </svg>
           Next&nbsp;Gen
         </Link>
-        {/* Slice 1: the story lives inside the journey — the nav is the
-            drawing and the one CTA */}
+
         <nav className="nav-links" aria-label="Primary">
-          <a className="navlink" href="#drawing" data-cursor>
-            The drawing
-          </a>
-          <Button variant="ghost" href="#plate-cta">
+          {navRoutes.map((r) => (
+            <Link
+              key={r.href}
+              className={`navlink${here(r.href) ? " is-here" : ""}`}
+              href={r.href}
+              aria-current={here(r.href) ? "page" : undefined}
+              data-cursor
+            >
+              {r.label}
+            </Link>
+          ))}
+          <Link className="nav-cta" href="/water-test/" data-cursor>
             Book water test
-          </Button>
+          </Link>
         </nav>
+
+        <button
+          className="nav-burger"
+          onClick={() => setOpen((o) => !o)}
+          aria-label={open ? "Close menu" : "Open menu"}
+          aria-expanded={open}
+          aria-controls="ng-menu"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+            {open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 8h16M4 16h16" />}
+          </svg>
+        </button>
       </div>
+
+      <nav id="ng-menu" className={`nav-sheet${open ? " is-open" : ""}`} aria-label="Menu">
+        {navRoutes.map((r) => (
+          <Link key={r.href} href={r.href} onClick={() => setOpen(false)}>
+            <b>{r.sheet}</b>
+            {r.label}
+          </Link>
+        ))}
+        <Link className="nav-sheet-cta" href="/water-test/" onClick={() => setOpen(false)}>
+          Book your free water test
+        </Link>
+      </nav>
     </header>
   );
 }

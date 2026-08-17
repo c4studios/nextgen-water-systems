@@ -37,7 +37,7 @@ export function Opening() {
             Book a free water test
           </a>
           <p className="opening-installer">
-            Installed by Aqua-Safe — licensed Perth plumbers.
+            Installed by Aqua-Safe, licensed Perth plumbers.
           </p>
         </div>
       </div>

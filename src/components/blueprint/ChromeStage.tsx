@@ -93,7 +93,10 @@ const VESSELS = [
 function interiorWindows(p: number): [number, number, number] {
   const w1 = ss(p, 0.37, 0.405) * (1 - ss(p, 0.445, 0.47));
   const w2 = ss(p, 0.445, 0.47) * (1 - ss(p, 0.575, 0.6));
-  const w3 = ss(p, 0.575, 0.6) * (1 - ss(p, 0.675, 0.7));
+  // V3 closes at 0.668, comfortably before the camera starts backing out at
+  // 0.675. It used to re-form over 0.675-0.70, i.e. the vessel wall grew back
+  // through the lens while the lens was whipping sideways — the reported glitch.
+  const w3 = ss(p, 0.575, 0.6) * (1 - ss(p, 0.638, 0.668));
   return [w1, w2, w3];
 }
 const interiorMax = (p: number) => Math.max(...interiorWindows(p));
@@ -310,11 +313,21 @@ const CAM: Key[] = [
   { p: 0.47, pos: [0, 0.05, 4.6], tgt: [0, -0.1, 0] }, // slide to V2 (KDF)
   { p: 0.575, pos: [0, -0.05, 4.05], tgt: [0, -0.15, 0] }, // deep push through V2 (double dwell)
   { p: 0.6, pos: [1.9, 0.05, 4.6], tgt: [1.9, -0.1, 0] }, // slide to V3
-  { p: 0.675, pos: [1.9, -0.05, 4.1], tgt: [1.9, -0.15, 0] }, // push through V3
-  { p: 0.725, pos: [3.6, 0.3, 6.4], tgt: [2.7, 0.45, 0] }, // PROOF — machine left of centre, the schedule owns the right
+  { p: 0.662, pos: [1.9, -0.05, 4.1], tgt: [1.9, -0.15, 0] }, // deepest inside V3
+  // Getting from inside a vessel to the proof pose is ~2.9 world units, and
+  // there is nowhere near enough scroll left to travel that at the rail's usual
+  // ~6 units per p. Doing it as one move produced a whip. A dolly straight back
+  // reads fine at any speed because nothing rotates, so the exit is now split:
+  // pull out along V3's own axis first, THEN make a small swing to the right.
+  { p: 0.708, pos: [1.9, -0.02, 7.2], tgt: [1.9, -0.06, 0] }, // straight back out, no rotation
+  { p: 0.756, pos: [3.3, 0.3, 6.9], tgt: [2.5, 0.42, 0] }, // PROOF — machine left of centre, the schedule owns the right
   { p: 0.78, pos: [5.4, 1.6, 5.6], tgt: [0, 0.3, 0] }, // pull back (credibility orbit)
   { p: 0.845, pos: [5.0, 2.6, 6.2], tgt: [0, 0.35, 0] }, // rise…
-  { p: 0.885, pos: [5.6, 3.6, 8.6], tgt: [0.15, -0.3, 0.55] }, // …to the elevated service view — far enough back that the set-down sumps AND the exposed cartridges both sit in frame
+  // …to the service view. The sumps now finish on the floor (y=-1.955) a good
+  // way forward (z=2.15), so this pulls back and drops its aim: the row of
+  // set-down sumps AND the cartridges left hanging under the fixed heads both
+  // have to be in frame, or the beat shows a teardown you can't see.
+  { p: 0.898, pos: [4.7, 2.2, 10.6], tgt: [0.25, -0.5, 1.0] },
   { p: 0.955, pos: [3.6, 0.9, 8.6], tgt: [-1.55, 0.05, 0] }, // INSTALL — reassembled, machine right of centre so the copy column is clear
   { p: 1.0, pos: [3.0, 0.4, 9.0], tgt: [-1.55, 0.1, 0] }, // settle, same offset for the hand-off copy
 ];
@@ -1037,8 +1050,8 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
     // time-staggered deconstruction: heads lift first (in a slight wave),
     // cartridges follow per-vessel; reassembly mirrors it (carts seat, then
     // heads close) under the INSTALL beat, into the settle
-    const reformCarts = ss(p, 0.92, 0.945);
-    const reformHeads = ss(p, 0.935, 0.96);
+    const reformCarts = ss(p, 0.944, 0.962);
+    const reformHeads = ss(p, 0.950, 0.968);
     const reform = ss(p, 0.92, 0.96);
     const explode = ss(p, 0.82, 0.92) * (1 - reform); // overall scalar (opacities/labels)
 
@@ -1148,18 +1161,32 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
       // where it was, revealed hanging under the fixed head. Nothing goes up.
       // Nothing passes through steel. Reassembly mirrors it: sump back, then
       // screws home.
-      const unscrew = ss(p, 0.82 + i * 0.012, 0.85 + i * 0.012) * (1 - reformHeads);
-      const pullOut = ss(p, 0.845 + i * 0.012, 0.905 + i * 0.012) * (1 - reformCarts);
+      // Three phases, in the order a plumber actually does it, and STRICTLY
+      // sequential — the previous version overlapped the turn with the pull, so
+      // the sump slid sideways while its top was still inside the head skirt.
+      // That is what read as passing through solid material.
+      //   1 UNSCREW  turn, and drop far enough to clear the head thread
+      //   2 DRAW OUT forward out of the open bay (posts are at x=+-2.72 only,
+      //              and the low front rail tops out at y=-1.855, below the
+      //              lowered sump at -1.64) — nothing to pass through
+      //   3 SET DOWN only once it is clear of the cage does it go to the floor
+      //              (y=-1.955, the contact-shadow plane), which is what finally
+      //              gets the sump out of the sightline of the cartridge
+      const unscrew = ss(p, 0.850 + i * 0.006, 0.872 + i * 0.006) * (1 - reformHeads);
+      const pullOut = ss(p, 0.872 + i * 0.006, 0.898 + i * 0.006) * (1 - reformCarts);
+      const setDown = ss(p, 0.894 + i * 0.006, 0.918 + i * 0.006) * (1 - reformCarts);
+      const sumpY = -0.42 * unscrew - 0.455 * setDown;
+      const sumpZ = 2.15 * pullOut;
       const sg = sumpGroups.current[i];
       if (sg) {
-        sg.rotation.y = -unscrew * 1.75; // just over a quarter turn — reads as a turn, not a spin
-        sg.position.y = -0.14 * unscrew - 0.06 * pullOut; // thread clearance, then down onto the floor
-        sg.position.z = 1.36 * pullOut; // clears the front bottom rail (z 0.705) plus the sump radius (0.62)
+        sg.rotation.y = -unscrew * 2.4; // most of a turn off the thread
+        sg.position.y = sumpY;
+        sg.position.z = sumpZ;
       }
       const rg = ringMeshes.current[i];
       if (rg) {
-        rg.position.y = -1.5 - 0.14 * unscrew - 0.06 * pullOut;
-        rg.position.z = 1.36 * pullOut;
+        rg.position.y = -1.5 + sumpY;
+        rg.position.z = sumpZ;
       }
       const hg = headGroups.current[i];
       if (hg) hg.position.y = 0; // heads are fixed to the plate

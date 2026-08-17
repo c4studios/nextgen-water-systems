@@ -23,7 +23,7 @@ export const localBusinessJsonLd = {
   "@id": BUSINESS_ID,
   name: "Next Gen Water Systems",
   description:
-    "Whole-home water filtration supplied and installed across the Perth metro by licensed plumbers — three-stage systems fitted where the water enters the house, with an under-sink reverse-osmosis option.",
+    "Whole-home water filtration supplied and installed across the Perth metro by licensed plumbers.  three-stage systems fitted where the water enters the house, with an under-sink reverse-osmosis option.",
   url: `${SITE_ORIGIN}/`,
   email: "hello@nextgenwatersystems.com.au",
   identifier: {

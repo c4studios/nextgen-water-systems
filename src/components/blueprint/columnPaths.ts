@@ -35,7 +35,7 @@ export const BOM_ROWS = [
 export const REVISIONS = [
   { rev: "A", desc: "GENERAL ARRANGEMENT", at: 0.3 },
   { rev: "B", desc: "BILL OF MATERIALS", at: 0.56 },
-  { rev: "C", desc: "SECTION A — A ADDED", at: 0.82 },
+  { rev: "C", desc: "SECTION A–A ADDED", at: 0.82 },
 ];
 
 /* ===========================================================================

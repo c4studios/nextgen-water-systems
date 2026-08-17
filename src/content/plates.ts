@@ -14,7 +14,7 @@ export type Revision = { rev: string; sheet: string; desc: string; id: string };
 /** Slice 1: the story lives INSIDE the journey now — the only destination
  *  below it is the booking tail. */
 export const SITE_REVISIONS: Revision[] = [
-  { rev: "D", sheet: "02", desc: "BOOKING — APPROVED FOR ISSUE", id: "plate-cta" },
+  { rev: "D", sheet: "02", desc: "BOOKING · APPROVED FOR ISSUE", id: "plate-cta" },
 ];
 
 export const CONTACT = {

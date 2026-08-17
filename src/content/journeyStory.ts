@@ -40,9 +40,9 @@ export const VESSEL_BEAT_P = [0.425, 0.52, 0.635] as const;
 
 /** drafted tooltip line per vessel (blueprint hover) */
 export const VESSEL_TIPS = [
-  "01 — GRADED SEDIMENT · 10/5/1 µm",
-  "02 — KDF 55/85 + CARBON · REDOX",
-  "03 — LIMESCALE CARBON · 1 µm",
+  "01 · GRADED SEDIMENT · 10/5/1 µm",
+  "02 · KDF 55/85 + CARBON · REDOX",
+  "03 · LIMESCALE CARBON · 1 µm",
 ] as const;
 
 export const STORY_BEATS: Beat[] = [
@@ -54,7 +54,7 @@ export const STORY_BEATS: Beat[] = [
     id: "hero", a: -0.05, b: 0.052, f: 0.022, pos: "pb--below",
     eyebrow: "NGW-01 · WHOLE-HOME FILTRATION",
     h: "One machine at the mains.",
-    body: "Three stainless vessels feed every tap in the house filtered water — no jugs, no under-sink clutter.",
+    body: "Three stainless vessels sit where the water comes into your house. Every tap runs through them.",
     cta: false,
   },
   {
@@ -62,44 +62,44 @@ export const STORY_BEATS: Beat[] = [
     // machine (V1 frames right of centre, so the words own the left)
     id: "problem", a: 0.268, b: 0.348, f: 0.02, pos: "pb--left",
     eyebrow: "DETAIL A · MAINS IN",
-    h: "Safe to supply isn't clean.",
-    body: "On the way to your tap, town water picks up chlorine, dissolved lead from older fittings, iron you can smell and sediment you can see. Watch what the machine does with it.",
-    stat: "CHLORINE · LEAD · IRON & H₂S · SEDIMENT",
+    h: "The kettle. The glassware. The taste.",
+    body: "Perth mains water arrives safe and then spends the rest of its life being a nuisance. Chlorine you can taste. Scale that fogs the glassware. Grit and rust picked up from the pipes on the way. Here is what the machine does with it.",
+    stat: "WHAT GOES IN · CHLORINE · SCALE · SEDIMENT · RUST",
   },
   {
     id: "s1", a: 0.378, b: 0.462, f: 0.02, pos: "pb--right",
     eyebrow: "SECTION A–A · STAGE 01",
-    h: "The coarse work, first.",
-    body: "Three graded layers catch grit, rust and silt, so the finer media behind them never clogs early.",
+    h: "First, the grit.",
+    body: "Three layers, coarse through to fine, catch the sand and rust the pipes carry. Everything behind them stays clean and lasts longer for it.",
     stat: "10 / 5 / 1 µm",
   },
   {
     // the redox bed gets DOUBLE dwell — it's the machine's signature chemistry
     id: "s2", a: 0.452, b: 0.592, f: 0.02, pos: "pb--left",
     eyebrow: "SECTION B–B · STAGE 02",
-    h: "The redox bed.",
-    body: "Copper-zinc granules trade electrons with what's dissolved — metals bind to the media, chlorine converts. Coconut carbon polishes taste behind it.",
-    stat: "Long-interval cartridges",
+    h: "Then the taste and the smell.",
+    body: "Copper-zinc granules change the chlorine as the water passes through them, and the taste and the smell go with it. Coconut carbon behind them catches what is left. This is the stage you notice at the kitchen tap.",
+    stat: "THE ONE YOU TASTE",
   },
   {
-    id: "s3", a: 0.582, b: 0.692, f: 0.02, pos: "pb--right",
+    id: "s3", a: 0.582, b: 0.702, f: 0.02, pos: "pb--right",
     eyebrow: "SECTION C–C · STAGE 03",
-    h: "The finish.",
-    body: "Scale-reduction media changes how minerals crystallise, so they rinse through instead of coating your appliances.",
-    stat: "1 µm final polish",
+    h: "Last, the scale.",
+    body: "The final stage changes the way the minerals behave, so they rinse away instead of baking onto your kettle, your glassware and the shower screen.",
+    stat: "1 µm FINAL POLISH",
   },
   {
     // the PROOF — figures surface as clean water exits the house-out side
     // (machine frames left of centre here; the schedule owns the right)
-    id: "proof", a: 0.702, b: 0.772, f: 0.02, pos: "pb--right",
+    id: "proof", a: 0.708, b: 0.784, f: 0.02, pos: "pb--right",
     eyebrow: "SCHEDULE 1 · WHAT EACH STAGE DOES",
-    h: "Drawn to tolerance.",
-    body: "Every stage does one physical thing to the water, and we will tell you exactly what. Independent certification is in progress; until it is in hand we describe the mechanism rather than quote a number we cannot source.",
+    h: "What each stage actually does.",
+    body: "You will not find a percentage on this page. Independent testing is still in progress, and until it is in hand we would rather tell you the physical job each stage does than quote a number we cannot stand behind.",
     rows: [
-      ["CHLORINE", "Taste and smell gone"],
-      ["LEAD", "Plated out as metal"],
-      ["IRON & H₂S", "Precipitated out"],
-      ["SEDIMENT", "Caught in graded depth"],
+      ["TASTE & SMELL", "Chlorine changed on contact, then carbon"],
+      ["SCALE", "Minerals rinse instead of stick"],
+      ["RUST & SAND", "Held in three graded layers"],
+      ["DISSOLVED METAL", "Bound to the copper-zinc media"],
     ],
   },
   {
@@ -110,32 +110,32 @@ export const STORY_BEATS: Beat[] = [
     // site, the same category of problem as fabricated reviews. Gone. What is
     // verifiable is the installer: Aqua-Safe Plumbing & Maintenance, licensed
     // (PL10802 / GF22810), with a real 12-month workmanship warranty.
-    id: "cred", a: 0.778, b: 0.842, f: 0.02, pos: "pb--left",
+    id: "cred", a: 0.790, b: 0.846, f: 0.02, pos: "pb--left",
     eyebrow: "NOTE 1 · INSTALLATION",
-    h: "Fitted by a plumber, not a courier.",
-    body: "Every system is installed by Aqua-Safe Plumbing & Maintenance — licensed Perth plumbers and gas fitters — and the installation carries a 12-month workmanship warranty.",
+    h: "A licensed plumber fits it.",
+    body: "Every system is installed by Aqua-Safe Plumbing and Maintenance, licensed Perth plumbers and gas fitters. The work carries a 12-month warranty. Nothing arrives in a box for you to work out yourself.",
     stat: "PL10802 · GF22810 · 12-MONTH WORKMANSHIP WARRANTY",
   },
   {
     // BENEFITS share the explode dwell — the machine is open on screen
-    id: "service", a: 0.852, b: 0.924, f: 0.02, pos: "pb--tl",
+    id: "service", a: 0.850, b: 0.940, f: 0.02, pos: "pb--tl",
     eyebrow: "DETAIL B · SERVICE",
-    h: "Sumps drop. Life gets easier.",
-    body: "Unscrew the sump, swap the cartridge, screw it home — minutes. Tap a label to read each part. Then it's ordinary life, better: appliances protected, softer showers, no bottles.",
+    h: "Servicing is a small job.",
+    body: "Unscrew the bowl, lift the old cartridge out, drop the new one in. Your plumber does it on a schedule, so it is one less thing you have to remember. Tap a label to see what each stage holds.",
   },
   {
     // INSTALL steps letter in while the machine reassembles
-    id: "install", a: 0.928, b: 0.972, f: 0.018, pos: "pb--left",
+    id: "install", a: 0.944, b: 0.978, f: 0.018, pos: "pb--left",
     eyebrow: "SEQUENCE · INSTALL",
-    h: "Assess. Install. Enjoy.",
-    body: "A free in-home water test, a clean fit at the mains in a few hours, filtered water at every tap.",
+    h: "It takes an afternoon.",
+    body: "A free test at your kitchen tap first, so you know what is actually in your water. Then a clean fit at the mains, usually inside a few hours.",
     stat: "NO OBLIGATION AFTER THE TEST",
   },
   {
-    id: "handoff", a: 0.974, b: 2, f: 0.02, pos: "pb--left",
+    id: "handoff", a: 0.980, b: 2, f: 0.02, pos: "pb--left",
     eyebrow: "APPROVED FOR ISSUE",
     h: "Find out what's in your water.",
-    body: "Book the free test below — a technician tests your actual supply, at your kitchen tap.",
+    body: "Book the free test below. A technician comes out and tests your own supply, at your own tap, and tells you what is in it.",
     cue: "BOOK YOUR FREE WATER TEST ↓",
   },
 ];

@@ -30,12 +30,12 @@ export const PROOF_ROWS: ProofRow[] = [
     c: "CHLORINE",
     v: "Taste and smell gone",
     m: "carbon + KDF redox",
-    d: "Taste, odour and disinfection by-products — the everyday complaint at the tap.",
+    d: "Taste, odour and disinfection by-products. The everyday complaint at the tap.",
   },
   {
     c: "LEAD",
     v: "Plated out as solid metal",
-    m: "KDF 55 redox — soluble cations",
+    m: "KDF 55 redox · soluble cations",
     d: "Dissolved lead from older fittings gains electrons at the media and plates on as solid metal.",
   },
   {
@@ -54,7 +54,7 @@ export const PROOF_ROWS: ProofRow[] = [
     c: "SCALE FORMATION",
     v: "Crystallisation inhibited",
     m: "limescale-reduction media",
-    d: "Crystallisation is inhibited so minerals rinse through — formation reduction, not hardness removal.",
+    d: "Crystallisation is inhibited so minerals rinse through · formation reduction, not hardness removal.",
   },
   {
     c: "SEDIMENT",

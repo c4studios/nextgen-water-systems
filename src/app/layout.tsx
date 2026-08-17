@@ -6,14 +6,16 @@ import { Cursor } from "@/components/Cursor";
 import { asset } from "@/lib/asset";
 import { LAUNCHED } from "@/lib/seo";
 import { localBusinessJsonLd } from "@/lib/jsonld";
+import { Nav } from "@/components/Nav";
+import { SiteFooter } from "@/components/site/SiteFooter";
 
 const DESCRIPTION =
-  "Whole-home water filtration for Perth — one three-stage system at the mains, installed by licensed plumbers. Book a free in-home water test.";
+  "Whole-home water filtration for Perth. One three-stage system at the mains, installed by licensed plumbers. Book a free in-home water test.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://nextgenwatersystems.com.au"),
   title: {
-    default: "Next Gen Water Systems — Whole-home water filtration, Perth",
+    default: "Next Gen Water Systems | Whole-home water filtration, Perth",
     template: "%s | Next Gen Water Systems",
   },
   description: DESCRIPTION,
@@ -22,7 +24,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_AU",
     siteName: "Next Gen Water Systems",
-    title: "Next Gen Water Systems — Whole-home water filtration, Perth",
+    title: "Next Gen Water Systems | Whole-home water filtration, Perth",
     description: DESCRIPTION,
   },
   // Held out of the index until launch. Flip LAUNCHED in src/lib/seo.ts — it
@@ -65,7 +67,12 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         />
         <SmoothScroll>
           <Cursor />
+          <a className="skip-link" href="#main">
+            Skip to content
+          </a>
+          <Nav />
           {children}
+          <SiteFooter />
         </SmoothScroll>
       </body>
     </html>

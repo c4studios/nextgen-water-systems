@@ -290,9 +290,25 @@ export function LivingDrawing() {
             const b2 = parseFloat(el.dataset.b || "1");
             const f = parseFloat(el.dataset.f || "0.03");
             const io = gsap.utils.clamp(0, 1, Math.min((p - a) / f, (b2 - p) / f));
-            el.style.opacity = String(io);
-            el.style.transform = `translateY(${(1 - io) * 16}px)`;
+            el.style.opacity = "1";
+            el.style.transform = "";
             el.style.visibility = io <= 0.001 ? "hidden" : "visible";
+            // Each part rides its own slice of the same window, so the beat
+            // letters in: eyebrow, heading, sentence, then the schedule. The
+            // whole block fading up as one lump was the thing that read as a
+            // slide rather than as writing appearing on a drawing.
+            const parts = el.querySelectorAll<HTMLElement>("[data-stagger]");
+            if (parts.length) {
+              for (const part of parts) {
+                const d = Number(part.dataset.stagger || 0) * 0.16;
+                const kio = gsap.utils.clamp(0, 1, (io - d) / (1 - d));
+                part.style.opacity = String(kio);
+                part.style.transform = `translateY(${(1 - kio) * 13}px)`;
+              }
+            } else {
+              el.style.opacity = String(io);
+              el.style.transform = `translateY(${(1 - io) * 16}px)`;
+            }
           }
 
           // 3D reads the raw journey scalar; the canvas hides only while the
@@ -624,7 +640,7 @@ export function LivingDrawing() {
           <div className="jd-titleblock" aria-hidden="true">
             <div className="jd-tb-grid">
               <div className="jd-tb-co">NEXT GEN WATER SYSTEMS</div>
-              <div className="jd-tb-title">WHOLE-HOME FILTRATION — 3-VESSEL ASSEMBLY</div>
+              <div className="jd-tb-title">WHOLE-HOME FILTRATION · 3-VESSEL ASSEMBLY</div>
               <div className="jd-tb-cell">
                 <i>DWG NO</i>NGW-01 · 1 / 4
               </div>
@@ -692,11 +708,15 @@ export function LivingDrawing() {
               </div>
             ) : (
             <div key={bt.id} className={`pbeat ${bt.pos}`} data-a={bt.a} data-b={bt.b} data-f={bt.f}>
-              <span className="pb-eyebrow">{bt.eyebrow}</span>
-              <h2 className="pb-h">{bt.h}</h2>
-              <p className="pb-body">{bt.body}</p>
+              {/* data-stagger: the beat's parts arrive one after another off
+                  the same scroll scalar, instead of the whole block sliding up
+                  as one lump. The heading lands first, so the eye has somewhere
+                  to go before the sentence appears. */}
+              <span className="pb-eyebrow" data-stagger="0">{bt.eyebrow}</span>
+              <h2 className="pb-h" data-stagger="1">{bt.h}</h2>
+              <p className="pb-body" data-stagger="2">{bt.body}</p>
               {bt.rows && (
-                <dl className="pb-rows">
+                <dl className="pb-rows" data-stagger="3">
                   {bt.rows.map(([k, v]) => (
                     <div key={k}>
                       <dt>{k}</dt>
@@ -705,9 +725,9 @@ export function LivingDrawing() {
                   ))}
                 </dl>
               )}
-              {bt.stat && <span className="pb-stat">{bt.stat}</span>}
+              {bt.stat && <span className="pb-stat" data-stagger="3">{bt.stat}</span>}
               {bt.cta && (
-                <a className="pb-cta" href="#plate-cta">
+                <a className="pb-cta" data-stagger="4" href="#plate-cta">
                   Book your free water test
                 </a>
               )}

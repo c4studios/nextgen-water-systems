@@ -1,4 +1,3 @@
-import { Nav } from "@/components/Nav";
 import { LivingDrawing } from "@/components/blueprint/LivingDrawing";
 import { DrawingChrome } from "@/components/site/DrawingChrome";
 import { Opening } from "@/components/site/Opening";
@@ -8,9 +7,8 @@ import { SiteSpine } from "@/components/site/SiteSpine";
 export default function Home() {
   return (
     <>
-      <Nav />
       <DrawingChrome />
-      <main>
+      <main id="main">
         {/* Act 0 — the outcome, in the homeowner's terms. The machine used to
             open the page; per PRODUCT.md it now backs this up instead. */}
         <Opening />
