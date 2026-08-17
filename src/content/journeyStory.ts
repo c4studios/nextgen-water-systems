@@ -61,14 +61,14 @@ export const STORY_BEATS: Beat[] = [
     // the PROBLEM — told while the camera holds the mains-in side of the
     // machine (V1 frames right of centre, so the words own the left)
     id: "problem", a: 0.268, b: 0.348, f: 0.02, pos: "pb--left",
-    eyebrow: "UNFILTERED SUPPLY · DETAIL A",
+    eyebrow: "DETAIL A · MAINS IN",
     h: "Safe to supply isn't clean.",
     body: "On the way to your tap, town water picks up chlorine, dissolved lead from older fittings, iron you can smell and sediment you can see. Watch what the machine does with it.",
     stat: "CHLORINE · LEAD · IRON & H₂S · SEDIMENT",
   },
   {
     id: "s1", a: 0.378, b: 0.462, f: 0.02, pos: "pb--right",
-    eyebrow: "STAGE 01 · GRADED SEDIMENT",
+    eyebrow: "SECTION A–A · STAGE 01",
     h: "The coarse work, first.",
     body: "Three graded layers catch grit, rust and silt, so the finer media behind them never clogs early.",
     stat: "10 / 5 / 1 µm",
@@ -76,14 +76,14 @@ export const STORY_BEATS: Beat[] = [
   {
     // the redox bed gets DOUBLE dwell — it's the machine's signature chemistry
     id: "s2", a: 0.452, b: 0.592, f: 0.02, pos: "pb--left",
-    eyebrow: "STAGE 02 · KDF 55/85 + CARBON",
+    eyebrow: "SECTION B–B · STAGE 02",
     h: "The redox bed.",
     body: "Copper-zinc granules trade electrons with what's dissolved — metals bind to the media, chlorine converts. Coconut carbon polishes taste behind it.",
     stat: "Long-interval cartridges",
   },
   {
     id: "s3", a: 0.582, b: 0.692, f: 0.02, pos: "pb--right",
-    eyebrow: "STAGE 03 · LIMESCALE CARBON",
+    eyebrow: "SECTION C–C · STAGE 03",
     h: "The finish.",
     body: "Scale-reduction media changes how minerals crystallise, so they rinse through instead of coating your appliances.",
     stat: "1 µm final polish",
@@ -92,7 +92,7 @@ export const STORY_BEATS: Beat[] = [
     // the PROOF — figures surface as clean water exits the house-out side
     // (machine frames left of centre here; the schedule owns the right)
     id: "proof", a: 0.702, b: 0.772, f: 0.02, pos: "pb--right",
-    eyebrow: "WHAT EACH STAGE DOES",
+    eyebrow: "SCHEDULE 1 · WHAT EACH STAGE DOES",
     h: "Drawn to tolerance.",
     body: "Every stage does one physical thing to the water, and we will tell you exactly what. Independent certification is in progress; until it is in hand we describe the mechanism rather than quote a number we cannot source.",
     rows: [
@@ -111,7 +111,7 @@ export const STORY_BEATS: Beat[] = [
     // verifiable is the installer: Aqua-Safe Plumbing & Maintenance, licensed
     // (PL10802 / GF22810), with a real 12-month workmanship warranty.
     id: "cred", a: 0.778, b: 0.842, f: 0.02, pos: "pb--left",
-    eyebrow: "INSTALLED BY LICENSED PLUMBERS",
+    eyebrow: "NOTE 1 · INSTALLATION",
     h: "Fitted by a plumber, not a courier.",
     body: "Every system is installed by Aqua-Safe Plumbing & Maintenance — licensed Perth plumbers and gas fitters — and the installation carries a 12-month workmanship warranty.",
     stat: "PL10802 · GF22810 · 12-MONTH WORKMANSHIP WARRANTY",
@@ -119,16 +119,16 @@ export const STORY_BEATS: Beat[] = [
   {
     // BENEFITS share the explode dwell — the machine is open on screen
     id: "service", a: 0.852, b: 0.924, f: 0.02, pos: "pb--tl",
-    eyebrow: "SERVICEABLE BY DESIGN",
+    eyebrow: "DETAIL B · SERVICE",
     h: "Sumps drop. Life gets easier.",
     body: "Unscrew the sump, swap the cartridge, screw it home — minutes. Tap a label to read each part. Then it's ordinary life, better: appliances protected, softer showers, no bottles.",
   },
   {
     // INSTALL steps letter in while the machine reassembles
     id: "install", a: 0.928, b: 0.972, f: 0.018, pos: "pb--left",
-    eyebrow: "INSTALLATION SEQUENCE",
+    eyebrow: "SEQUENCE · INSTALL",
     h: "Assess. Install. Enjoy.",
-    body: "A free in-home water test, a clean fit at the mains in a few hours, filtered water at every tap.*",
+    body: "A free in-home water test, a clean fit at the mains in a few hours, filtered water at every tap.",
     stat: "NO OBLIGATION AFTER THE TEST",
   },
   {

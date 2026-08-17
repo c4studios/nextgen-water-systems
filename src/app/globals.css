@@ -781,11 +781,21 @@
     text-align: center;
     max-width: 560px;
   }
+  /* View references, not eyebrows. Every view on a drawing carries a reference
+     tag — DETAIL A, SECTION B–B, SCHEDULE 1 — and that is what these are now:
+     a bordered tag in the same family as the DWG/SHEET stamp, in the sheet's
+     ink colour rather than the accent. Cyan tracked caps floating above every
+     heading was generic scaffolding; a drawing reference is this site's own
+     annotation system. */
   .pb-eyebrow {
-    display: block;
-    font-size: 11px;
-    letter-spacing: 0.22em;
-    color: #29c2ee;
+    display: inline-block;
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    color: var(--steel);
+    border: 1px solid var(--line);
+    padding: 4px 8px 3px;
+    border-radius: 2px;
+    background: rgba(10, 10, 11, 0.55);
   }
   .pb-h {
     margin-top: 10px;
@@ -906,7 +916,7 @@
     /* the HERO reads copy-TOP / machine-BELOW on portrait (the camera drops
        the machine into the lower frame — see the Rig portrait block) */
     .pb--hero {
-      top: clamp(80px, 11vh, 130px);
+      top: clamp(122px, 15vh, 160px); /* clears the fixed nav (~110px on phones) */
       bottom: auto;
       max-width: 92vw;
     }
@@ -922,6 +932,20 @@
     }
     .pbh-rule i {
       display: none; /* the divider line squishes on narrow — drop it */
+    }
+    .pbh-rule span:first-child {
+      display: none; /* one kicker on phones: the drawing number is in the sheet stamp already */
+    }
+    .pbh-rule {
+      /* the hairline drafting face drops glyphs at this size on some phone
+         renderers (layout intact, paint missing — measured). The mono face
+         paints everywhere. */
+      font-family: var(--font-mono), monospace;
+      letter-spacing: 0.2em;
+    }
+    /* no photographic still on phones — see LivingDrawing applyFrame */
+    .rest-still {
+      display: none;
     }
     .pbh-actions {
       justify-content: center;

@@ -301,7 +301,13 @@ export function LivingDrawing() {
           // Rest still: fully opaque while the machine is at rest, gone by the
           // time the ink trace starts at ~0.06. The 3D underneath is at the
           // identical dock pose, so this is a photo→render dissolve, not a cut.
-          const so = gsap.utils.clamp(0, 1, 1 - (p - 0.024) / 0.036); // rest-still opacity
+          // Rest-still opacity. On phones there is no still: the portrait rig
+          // parks the 3D low in the frame under top-set copy, and a landscape
+          // photograph registered to the desktop dock lands on top of that copy
+          // (and shows two of three vessels). The 3D at rest is the greeting
+          // there. The CSS hides the layer; this keeps the canvas visible.
+          const stillOn = window.innerWidth > 760;
+          const so = stillOn ? gsap.utils.clamp(0, 1, 1 - (p - 0.024) / 0.036) : 0;
           if (restStillRef.current) {
             restStillRef.current.style.opacity = String(so);
             restStillRef.current.style.visibility = so <= 0.001 ? "hidden" : "visible";

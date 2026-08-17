@@ -303,7 +303,7 @@ const CAM: Key[] = [
   { p: 0.0, pos: [0, 0.12, 8.8], tgt: [0, 0.12, 0] }, // rest (= dock)
   { p: 0.075, pos: [0, 0.12, 8.8], tgt: [0, 0.12, 0] }, // front dock (trace)
   { p: 0.26, pos: [0, 0.12, 8.8], tgt: [0, 0.12, 0] }, // hold dock until the plate exits
-  { p: 0.305, pos: [-3.6, -0.25, 6.2], tgt: [-2.5, 0.35, 0] }, // PROBLEM — mains-in side, V1 inlet + feed pipe
+  { p: 0.305, pos: [-4.0, -0.2, 5.8], tgt: [-2.85, 0.3, 0] }, // PROBLEM — mains-in side: supply run + V1; V2 crops at the edge on purpose, V3 is out
   { p: 0.345, pos: [-2.7, -0.1, 5.2], tgt: [-2.1, 0.1, 0] }, // ease toward V1
   { p: 0.37, pos: [-1.9, 0.05, 4.6], tgt: [-1.9, -0.1, 0] }, // arrive V1
   { p: 0.445, pos: [-1.9, -0.05, 4.1], tgt: [-1.9, -0.15, 0] }, // slow push through V1
@@ -315,7 +315,8 @@ const CAM: Key[] = [
   { p: 0.78, pos: [5.4, 1.6, 5.6], tgt: [0, 0.3, 0] }, // pull back (credibility orbit)
   { p: 0.845, pos: [5.0, 2.6, 6.2], tgt: [0, 0.35, 0] }, // rise…
   { p: 0.885, pos: [5.6, 3.6, 8.6], tgt: [0.15, -0.3, 0.55] }, // …to the elevated service view — far enough back that the set-down sumps AND the exposed cartridges both sit in frame
-  { p: 1.0, pos: [2.8, 0.15, 8.8], tgt: [0, 0.12, 0] }, // settle front, reassembled
+  { p: 0.955, pos: [3.6, 0.9, 8.6], tgt: [-1.55, 0.05, 0] }, // INSTALL — reassembled, machine right of centre so the copy column is clear
+  { p: 1.0, pos: [3.0, 0.4, 9.0], tgt: [-1.55, 0.1, 0] }, // settle, same offset for the hand-off copy
 ];
 
 function segIndex(p: number): number {
@@ -580,7 +581,7 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
     cv.width = cv.height = s;
     const g = cv.getContext("2d");
     if (!g) return null;
-    g.fillStyle = "#191c20";
+    g.fillStyle = "#30353b"; // sintered carbon under studio light is matte anthracite, not black — the section cut has to read
     g.fillRect(0, 0, s, s);
     for (let x = 0; x < s; x += 6) {
       g.fillStyle = `rgba(0,0,0,${0.1 + 0.12 * Math.abs(Math.sin(x * 0.7))})`;
@@ -588,7 +589,7 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
     }
     for (let k = 0; k < 2600; k++) {
       const r = Math.random();
-      g.fillStyle = r < 0.55 ? "#0d0f12" : r < 0.85 ? "#262b31" : "#3a4149";
+      g.fillStyle = r < 0.55 ? "#1f2327" : r < 0.85 ? "#3b4147" : "#5a626b";
       g.fillRect(Math.random() * s, Math.random() * s, 1, 1 + Math.random());
     }
     const tex = new THREE.CanvasTexture(cv);
@@ -1028,7 +1029,7 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
     const reg = ss(p, 0.26, 0.33); // dock framing → journey framing (plate exits into the PROBLEM beat)
     // the cage fades out through the ink trace (the SVG plate draws only the
     // vessels), full at the hero and after the plate exits
-    const traceHold = ss(p, 0.06, 0.09) * (1 - ss(p, 0.3, 0.34));
+    const traceHold = ss(p, 0.06, 0.09) * (1 - ss(p, 0.265, 0.3)); // frame back before the camera parks at 0.305
     frameMat.opacity = 1 - traceHold;
     frameMat.depthWrite = frameMat.opacity > 0.5;
     const w = interiorWindows(p);
