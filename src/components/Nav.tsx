@@ -64,15 +64,22 @@ export function Nav() {
       </div>
 
       <nav id="ng-menu" className={`nav-sheet${open ? " is-open" : ""}`} aria-label="Menu">
-        {navRoutes.map((r) => (
-          <Link key={r.href} href={r.href} onClick={() => setOpen(false)}>
-            <b>{r.sheet}</b>
-            {r.label}
+        {/* single grid child: the 0fr collapse only sizes the first row, so the
+            links have to share one wrapper or the menu ships open */}
+        {/* inert as a STRING: React 18 has no boolean `inert` prop and warns
+            about one. Without it the collapsed menu is still keyboard
+            reachable, which is a focus trap you cannot see. */}
+        <div className="nav-sheet-in" {...({ inert: open ? undefined : "" } as Record<string, unknown>)}>
+          {navRoutes.map((r) => (
+            <Link key={r.href} href={r.href} onClick={() => setOpen(false)}>
+              <b>{r.sheet}</b>
+              {r.label}
+            </Link>
+          ))}
+          <Link className="nav-sheet-cta" href="/water-test/" onClick={() => setOpen(false)}>
+            Book your free water test
           </Link>
-        ))}
-        <Link className="nav-sheet-cta" href="/water-test/" onClick={() => setOpen(false)}>
-          Book your free water test
-        </Link>
+        </div>
       </nav>
     </header>
   );

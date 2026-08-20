@@ -49,9 +49,9 @@ const DIM = ASSEMBLY_PATHS.find((p) => p.id === "dim-width")!;
  *  by applyFrame so every beat is fully reversible. */
 
 const STROKE: Record<string, [string, number]> = {
-  centre: ["#86a8c3", 1],
-  heavy: ["#0d2738", 2.4],
-  hair: ["#2f6e9c", 1.3],
+  centre: ["#4d6a7d", 1],
+  heavy: ["#eaf4fa", 2.4],
+  hair: ["#5d90ad", 1.3],
 };
 
 // DEV/CAPTURE aid: ?ngjp=0.62 freezes the 3D journey scalar at that value so any
@@ -434,10 +434,15 @@ export function LivingDrawing() {
           <div className="plate-shadow" aria-hidden="true" />
           <svg ref={svgRef} className="plate-svg" viewBox="0 0 1200 900" preserveAspectRatio="xMidYMid meet">
             <defs>
+              {/* The sheet was cream. On a near-black site that is both a hard
+                  tonal break mid-scroll and the most saturated warm-neutral
+                  default going. It is a lit drafting surface now: light ink on
+                  a cool dark ground, which is also how you actually read a
+                  drawing off a backlit table or a CAD viewport. */}
               <radialGradient id="vellum" cx="46%" cy="40%" r="75%">
-                <stop offset="0%" stopColor="#f6f9fb" />
-                <stop offset="62%" stopColor="#ede4cf" />
-                <stop offset="100%" stopColor="#e3dcc8" />
+                <stop offset="0%" stopColor="#1d242b" />
+                <stop offset="62%" stopColor="#151b21" />
+                <stop offset="100%" stopColor="#0e1216" />
               </radialGradient>
               <linearGradient id="steel" x1="0" y1="0" x2="1" y2="0">
                 <stop offset="0%" stopColor="#161f27" />
@@ -472,10 +477,10 @@ export function LivingDrawing() {
                 <path d={ASSEMBLY_D} />
               </clipPath>
               <pattern id="grid5" width="20" height="20" patternUnits="userSpaceOnUse">
-                <path d="M20 0H0V20" fill="none" stroke="#0f2c3b" strokeWidth="0.4" opacity="0.10" />
+                <path d="M20 0H0V20" fill="none" stroke="#dce8f0" strokeWidth="0.4" opacity="0.10" />
               </pattern>
               <pattern id="grid25" width="100" height="100" patternUnits="userSpaceOnUse">
-                <path d="M100 0H0V100" fill="none" stroke="#0f2c3b" strokeWidth="0.7" opacity="0.16" />
+                <path d="M100 0H0V100" fill="none" stroke="#dce8f0" strokeWidth="0.7" opacity="0.16" />
               </pattern>
               <filter id="pencil" x="-5%" y="-5%" width="110%" height="110%">
                 <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="1" seed="7" result="n" />
@@ -490,8 +495,8 @@ export function LivingDrawing() {
             <rect data-paper className="jd-vellum" x="0" y="0" width="1200" height="900" fill="url(#vellum)" />
             <rect data-paper x="0" y="0" width="1200" height="900" fill="url(#grid5)" />
             <rect data-paper x="0" y="0" width="1200" height="900" fill="url(#grid25)" />
-            <rect data-paper x="22" y="22" width="1156" height="856" fill="none" stroke="#0f2c3b" strokeWidth="1" opacity="0.55" />
-            <rect data-paper x="30" y="30" width="1140" height="840" fill="none" stroke="#0f2c3b" strokeWidth="1.6" opacity="0.8" />
+            <rect data-paper x="22" y="22" width="1156" height="856" fill="none" stroke="#dce8f0" strokeWidth="1" opacity="0.55" />
+            <rect data-paper x="30" y="30" width="1140" height="840" fill="none" stroke="#dce8f0" strokeWidth="1.6" opacity="0.8" />
 
             <g className="jd-col">
               {/* shaded metal asset — what we meet before it becomes a drawing */}
@@ -551,7 +556,7 @@ export function LivingDrawing() {
                   d={DIM.d}
                   pathLength={1}
                   fill="none"
-                  stroke="#2f6e9c"
+                  stroke="#5d90ad"
                   strokeWidth="1.3"
                   vectorEffect="non-scaling-stroke"
                 />
@@ -569,9 +574,9 @@ export function LivingDrawing() {
               <g className="jd-bom">
                 {ASSEMBLY_BALLOONS.map((b) => (
                   <g key={b.n}>
-                    <line x1={b.x} y1={b.y + 14} x2={b.x} y2={240} stroke="#2f6e9c" strokeWidth="0.8" />
-                    <circle cx={b.x} cy={240} r="2" fill="#2f6e9c" />
-                    <circle cx={b.x} cy={b.y} r="13" fill="url(#vellum)" stroke="#0f2c3b" strokeWidth="1.2" />
+                    <line x1={b.x} y1={b.y + 14} x2={b.x} y2={240} stroke="#5d90ad" strokeWidth="0.8" />
+                    <circle cx={b.x} cy={240} r="2" fill="#5d90ad" />
+                    <circle cx={b.x} cy={b.y} r="13" fill="url(#vellum)" stroke="#dce8f0" strokeWidth="1.2" />
                     <text x={b.x} y={b.y + 4} className="jd-balloon-t" textAnchor="middle">
                       {b.n}
                     </text>
@@ -593,7 +598,7 @@ export function LivingDrawing() {
               >
                 <rect className="plate-glow" x={cx - 90} y={228} width={180} height={368} rx="12" />
                 <g className="plate-tip" transform={`translate(${cx} 680)`}>
-                  <rect x={-124} y={-21} width={248} height={30} fill="url(#vellum)" stroke="#0f2c3b" strokeWidth="1.1" />
+                  <rect x={-124} y={-21} width={248} height={30} fill="url(#vellum)" stroke="#dce8f0" strokeWidth="1.1" />
                   <text y={1} textAnchor="middle" className="plate-tip-t">
                     {VESSEL_TIPS[i]}
                   </text>
