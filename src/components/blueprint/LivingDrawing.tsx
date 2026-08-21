@@ -7,6 +7,7 @@ import { useReducedMotion } from "@/lib/useReducedMotion";
 import { BACKDROP_CSS } from "./backdrop";
 import { asset } from "@/lib/asset";
 import { STORY_BEATS, VESSEL_BEAT_P, VESSEL_TIPS } from "@/content/journeyStory";
+import { WaterTextDefs } from "@/components/ui/WaterText";
 import {
   ASSEMBLY_PATHS,
   ASSEMBLY_CONSTRUCTION,
@@ -379,6 +380,27 @@ export function LivingDrawing() {
               for (const part of parts) {
                 const d = Number(part.dataset.stagger || 0) * 0.16;
                 const kio = gsap.utils.clamp(0, 1, (io - d) / (1 - d));
+                const water = part.querySelector<HTMLElement>("[data-water]");
+                if (water) {
+                  // the heading is liquid on the way in and out, sharp while
+                  // the beat holds. Opacity stays 1 — the threshold filter is
+                  // doing the appearing, not a fade.
+                  part.style.opacity = "1";
+                  part.style.transform = "";
+                  const f = Math.max(kio, 0.0001);
+                  const a = water.querySelector<HTMLElement>(".wt-layer");
+                  const b = water.querySelector<HTMLElement>(".wt-layer--b");
+                  if (a) {
+                    a.style.filter = `blur(${Math.min(9 / f - 9, 42)}px)`;
+                    a.style.opacity = String(Math.pow(f, 0.42));
+                  }
+                  if (b) {
+                    const g = Math.max(Math.min(kio * 1.18, 1), 0.0001);
+                    b.style.filter = `blur(${Math.min(11 / g - 11, 48)}px)`;
+                    b.style.opacity = String(Math.pow(g, 0.6) * 0.55);
+                  }
+                  continue;
+                }
                 part.style.opacity = String(kio);
                 part.style.transform = `translateY(${(1 - kio) * 13}px)`;
               }
@@ -795,7 +817,17 @@ export function LivingDrawing() {
                   as one lump. The heading lands first, so the eye has somewhere
                   to go before the sentence appears. */}
               <span className="pb-eyebrow" data-stagger="0">{bt.eyebrow}</span>
-              <h2 className="pb-h" data-stagger="1">{bt.h}</h2>
+              {/* the title forms out of water: two blurred copies through an
+                  alpha threshold, driven by this beat's own fade scalar */}
+              <h2 className="pb-h" data-stagger="1">
+                <span className="wt" data-water>
+                  <span className="wt-stage" aria-hidden="true">
+                    <span className="wt-layer">{bt.h}</span>
+                    <span className="wt-layer wt-layer--b">{bt.h}</span>
+                  </span>
+                  <span className="sr-only">{bt.h}</span>
+                </span>
+              </h2>
               <p className="pb-body" data-stagger="2">{bt.body}</p>
               {bt.rows && (
                 <dl className="pb-rows" data-stagger="3">
@@ -818,6 +850,7 @@ export function LivingDrawing() {
             ),
           )}
         </div>
+        <WaterTextDefs />
         {/* the DOM half of the unified film stock */}
         <div className="plate-grain" aria-hidden="true" />
       </div>
