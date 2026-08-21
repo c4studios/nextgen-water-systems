@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { asset } from "@/lib/asset";
+import { scrollToY } from "@/lib/providers/SmoothScroll";
 
 /**
  * HOW IT WORKS — the still version of the journey.
@@ -67,6 +68,45 @@ const STAGES: Stage[] = [
 export function HowItWorks() {
   const [open, setOpen] = useState(0);
   const rootRef = useRef<HTMLElement>(null);
+  const panels = useRef<Array<HTMLDivElement | null>>([]);
+
+  /**
+   * The panels open to a MEASURED height rather than through a 0fr/1fr grid
+   * row. The grid trick is tidier to write, but an `fr` track in an
+   * auto-height container resolves against content rather than against a
+   * definite size, and it was jumping straight to full height instead of
+   * interpolating. A pixel height always interpolates.
+   *
+   * Once open the height is released back to `auto`, so a panel cannot be left
+   * clipped if the text rewraps on resize or a font loads late.
+   */
+  useEffect(() => {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    panels.current.forEach((el, i) => {
+      if (!el) return;
+      const shouldOpen = i === open;
+      const target = shouldOpen ? el.scrollHeight : 0;
+      if (reduced) {
+        el.style.transition = "none";
+        el.style.height = shouldOpen ? "auto" : "0px";
+        return;
+      }
+      el.style.transition = "";
+      // from whatever it is now, not from auto: `auto` is not interpolable
+      const from = el.style.height === "auto" ? `${el.scrollHeight}px` : el.style.height || "0px";
+      el.style.height = from;
+      // force the browser to accept the starting value before changing it
+      void el.offsetHeight;
+      el.style.height = `${target}px`;
+      if (!shouldOpen) return;
+      const done = (e: TransitionEvent) => {
+        if (e.propertyName !== "height") return;
+        el.style.height = "auto";
+        el.removeEventListener("transitionend", done);
+      };
+      el.addEventListener("transitionend", done);
+    });
+  }, [open]);
 
   // The journey is pinned above this section; jumping to a vessel means
   // scrolling back into that pin at the right fraction.
@@ -79,7 +119,8 @@ export function HowItWorks() {
     if (!plate) return;
     const p = VESSEL_BEAT_P[i] ?? 0.5;
     const y = plate.offsetTop + (plate.offsetHeight - window.innerHeight) * p;
-    window.scrollTo({ top: y, behavior: "smooth" });
+    // through Lenis, not window.scrollTo — see scrollToY
+    scrollToY(y);
   };
 
   return (
@@ -114,15 +155,39 @@ export function HowItWorks() {
                   <span className="hiw-in">{s.goesIn}</span>
                   <i aria-hidden="true">{on ? "–" : "+"}</i>
                 </button>
-                <div className="hiw-detail" hidden={!on}>
-                  <p>{s.happens}</p>
-                  <p className="hiw-out">
-                    <b>OUT</b>
-                    {s.comesOut}
-                  </p>
-                  <button type="button" className="hiw-jump" onClick={() => goToVessel(i)}>
-                    Watch this stage in the drawing
-                  </button>
+                {/* `hidden` made this snap: the panel was simply not there and
+                    then it was. The height animates through a 0fr/1fr grid row
+                    instead, which is the only way to transition to CONTENT
+                    height in CSS, and the contents ride in slightly behind it
+                    so the panel reads as opening rather than as resizing.
+                    Kept in the DOM and hidden from the accessibility tree with
+                    inert, so nothing inside can take focus while closed. */}
+                <div
+                  className="hiw-detail"
+                  aria-hidden={!on}
+                  ref={(el) => {
+                    panels.current[i] = el;
+                  }}
+                >
+                  <div
+                    className="hiw-detail-in"
+                    {...({ inert: on ? undefined : "" } as Record<string, unknown>)}
+                  >
+                    {/* the padding lives here, one level below the element that
+                        collapses: min-height:0 zeroes the CONTENT box, not the
+                        padding, so a padded grid item bottoms out at its own
+                        padding and the panel never fully closes */}
+                    <div className="hiw-detail-pad">
+                      <p>{s.happens}</p>
+                      <p className="hiw-out">
+                        <b>OUT</b>
+                        {s.comesOut}
+                      </p>
+                      <button type="button" className="hiw-jump" onClick={() => goToVessel(i)}>
+                        Watch this stage in the drawing
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </li>
             );

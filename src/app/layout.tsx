@@ -3,6 +3,7 @@ import "./globals.css";
 import { satoshi, hanken, geistMono } from "./fonts";
 import { SmoothScroll } from "@/lib/providers/SmoothScroll";
 import { Cursor } from "@/components/Cursor";
+import { LiquidMetalDefs } from "@/components/ui/LiquidMetal";
 import { asset } from "@/lib/asset";
 import { LAUNCHED } from "@/lib/seo";
 import { localBusinessJsonLd } from "@/lib/jsonld";
@@ -66,6 +67,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd) }}
         />
         <SmoothScroll>
+          <LiquidMetalDefs />
           <Cursor />
           <a className="skip-link" href="#main">
             Skip to content

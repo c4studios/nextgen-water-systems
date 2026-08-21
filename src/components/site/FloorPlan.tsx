@@ -72,6 +72,7 @@ const FIXTURES: Fixture[] = [
 
 export function FloorPlan() {
   const rootRef = useRef<HTMLElement>(null);
+  const plateRef = useRef<HTMLDivElement>(null);
   const trunkRef = useRef<SVGPathElement>(null);
   const waterRef = useRef<SVGPathElement>(null);
   const [reached, setReached] = useState<number>(-1);
@@ -116,10 +117,45 @@ export function FloorPlan() {
       raf = 0;
       const b = root.getBoundingClientRect();
       const vh = window.innerHeight;
-      // Keyed to the section's TOP crossing the viewport, over about three
-      // quarters of a screen. Spreading it over the section's full height meant
-      // the run was still a sixth full by the time it left the screen.
-      const t = Math.min(1, Math.max(0, (vh * 0.86 - b.top) / (vh * 0.72)));
+      // The run does not start until the WHOLE plan is on screen. Keying it to
+      // the section's top meant the water was already a third of the way down
+      // the house before the reader could see the house, so the one thing the
+      // section exists to show had partly happened off-screen. Now it waits for
+      // the map, then runs over about two thirds of a screen of scroll.
+      const plateEl = plateRef.current;
+      const plate = plateEl?.getBoundingClientRect();
+      let t: number;
+      // Ask the stylesheet whether the plan is actually being held, rather than
+      // guessing from its height. A height test picked the wrong branch by a
+      // single pixel here (775 tall against a 774 threshold) and silently fell
+      // back to the old mapping; this cannot drift out of step with the CSS.
+      const isHeld = plateEl ? getComputedStyle(plateEl).position === "sticky" : false;
+      if (plate && isHeld) {
+        // The plan is sticky, so once it has come fully into view it STAYS
+        // there and the reader watches the whole run without the top of the
+        // house sliding off. Progress is how far into the runway below it we
+        // have scrolled, which is exactly how long it is held for.
+        // Measured against the RUNWAY, not against the plan. Once an element
+        // is stuck its own top stops changing by definition, so anything
+        // derived from it is frozen. The runway sits directly below the plan in
+        // normal flow, so its top edge is where the plan's flow-bottom would
+        // be, and that keeps moving for exactly as long as the plan is held.
+        // Everything here is measured off the RUNWAY, which is never sticky and
+        // so keeps a stable document position. A stuck element's own rect stops
+        // moving by definition, so any progress derived from it freezes.
+        const stickyTop = parseFloat(getComputedStyle(plateEl!).top) || 0;
+        const runwayEl = root.querySelector(".fp-runway") as HTMLElement | null;
+        const runway = Math.max(1, runwayEl?.offsetHeight ?? vh * 0.6);
+        const runwayDocTop = (runwayEl?.getBoundingClientRect().top ?? 0) + window.scrollY;
+        // the scroll position at which the plan's natural top reaches the
+        // sticky line, i.e. the exact moment the whole plan is settled in view
+        const start = runwayDocTop - plate.height - stickyTop;
+        t = Math.min(1, Math.max(0, (window.scrollY - start) / runway));
+      } else {
+        // Too tall to hold (narrow screens): sticky is off there, so fall back
+        // to the section's top crossing rather than never running at all.
+        t = Math.min(1, Math.max(0, (vh * 0.86 - b.top) / (vh * 0.72)));
+      }
       // ease so the water arrives with some weight rather than linearly
       const e = t * t * (3 - 2 * t);
       water.style.strokeDashoffset = String(total * (1 - e));
@@ -155,7 +191,7 @@ export function FloorPlan() {
           </p>
         </header>
 
-        <div className="fp-plate">
+        <div className="fp-plate" ref={plateRef}>
           <svg
             viewBox="0 0 1120 700"
             className="fp-svg"
@@ -215,6 +251,9 @@ export function FloorPlan() {
             <path ref={waterRef} className="fp-water" d={TRUNK} />
           </svg>
         </div>
+        {/* scroll room for the sticky plan above: the water advances across
+            this distance while the house itself stays put */}
+        <div className="fp-runway" aria-hidden="true" />
 
         <p className="fp-foot">
           <span className="fp-count">

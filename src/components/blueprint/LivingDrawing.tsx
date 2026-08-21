@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
+import { scrollToY } from "@/lib/providers/SmoothScroll";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { BACKDROP_CSS } from "./backdrop";
 import { asset } from "@/lib/asset";
@@ -80,6 +81,13 @@ export function LivingDrawing() {
   // don't wait on the IntersectionObserver (which also fires unreliably under
   // headless virtual-time). The observer below still PAUSES it once off-screen.
   const [active, setActive] = useState(true);
+  /* The pipeline is warmed at load rather than at the moment of arrival.
+     Measured before this existed: an 8.9s frame the instant the journey
+     pinned, plus a cascade of 300-700ms blocks as each new object first
+     became visible. That is shader + post-chain compilation, and it was
+     landing while the visitor was mid-scroll. Now it lands while they are
+     still reading the opening, where nothing is moving. */
+  const [warm, setWarm] = useState(false);
   // interactive plate: which vessel is hot (hover on drawing OR its BOM row)
   const [plateHot, setPlateHot] = useState<number | null>(null);
 
@@ -87,12 +95,14 @@ export function LivingDrawing() {
     setWebgl(!reduced && hasWebGL());
   }, [reduced]);
 
-  // clickable balloons/vessels/BOM rows fly the scroll to that vessel's beat
+  // clickable balloons/vessels/BOM rows fly the scroll to that vessel's beat.
+  // Through Lenis, never window.scrollTo: with both running they fight for the
+  // scroll position every frame and the page tears back and forth.
   const flyToVessel = useCallback((i: number) => {
     const el = rootRef.current;
     if (!el) return;
     const y = el.offsetTop + VESSEL_BEAT_P[i] * (el.offsetHeight - window.innerHeight);
-    window.scrollTo({ top: y, behavior: "smooth" });
+    scrollToY(y);
   }, []);
 
   const handleReady = useCallback(() => setGlReady(true), []);
@@ -493,13 +503,29 @@ export function LivingDrawing() {
     return () => ctx.revert();
   }, [reduced, webgl]);
 
-  // pause the 3D frameloop when the section is off-screen
+  // pause the 3D frameloop when the section is off-screen. The margin wakes it
+  // a full viewport early: waking exactly on arrival means the first frame —
+  // the expensive one — renders under the visitor's thumb.
   useEffect(() => {
     const root = rootRef.current;
     if (!root || !webgl) return;
-    const io = new IntersectionObserver(([e]) => setActive(e.isIntersecting), { threshold: 0 });
+    const io = new IntersectionObserver(([e]) => setActive(e.isIntersecting), {
+      threshold: 0,
+      rootMargin: "100% 0px 100% 0px",
+    });
     io.observe(root);
     return () => io.disconnect();
+  }, [webgl]);
+
+  // Hold the frameloop open for a beat after load regardless of where the
+  // visitor is. Compiling the scene's materials covers the machine; it does
+  // not cover the post-processing chain, whose passes only compile when they
+  // first actually composite a frame. Rendering for a moment up here pays for
+  // both, off the critical path.
+  useEffect(() => {
+    if (!webgl) return;
+    const t = window.setTimeout(() => setWarm(true), 2200);
+    return () => window.clearTimeout(t);
   }, [webgl]);
 
   return (
@@ -518,7 +544,12 @@ export function LivingDrawing() {
             viewport; the vellum sheet is a prop that materialises over it */}
         {webgl && (
           <div className="plate-canvas" ref={canvasWrapRef}>
-            <ChromeStage progress={u3d} active={active} sheetRatio={sheetRatio} onReady={handleReady} />
+            <ChromeStage
+              progress={u3d}
+              active={active || !warm}
+              sheetRatio={sheetRatio}
+              onReady={handleReady}
+            />
           </div>
         )}
         {/* Act 1 opener — the machine at rest, photographed rather than

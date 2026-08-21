@@ -92,6 +92,7 @@ export function Nav() {
 
   const headRef = useRef<HTMLElement>(null);
   const orbRef = useRef<HTMLButtonElement>(null);
+  const ringBtnRef = useRef<HTMLButtonElement>(null);
   const jRef = useRef(0);
   const vRef = useRef(0);
   const [inJourney, setInJourney] = useState(false);
@@ -205,6 +206,22 @@ export function Nav() {
     return () => window.removeEventListener("contextmenu", onCtx);
   }, [openAt]);
 
+  /* Opens the ring under the trigger on a pointer device, and in the thumb
+     arc on a phone, same rule as the orb. */
+  const ringBtnClick = () => {
+    if (menuAt) {
+      setMenuAt(null);
+      return;
+    }
+    const b = ringBtnRef.current?.getBoundingClientRect();
+    if (!b) return;
+    const touch = window.innerWidth < 768;
+    openAt(
+      touch ? window.innerWidth / 2 : b.left + b.width / 2,
+      touch ? window.innerHeight * 0.58 : b.bottom + 150,
+    );
+  };
+
   const orbClick = () => {
     if (menuAt) {
       setMenuAt(null);
@@ -268,6 +285,23 @@ export function Nav() {
               Book water test
             </Link>
           </nav>
+
+          {/* The radial menu was previously reachable only from inside the
+              journey, which meant a visitor who never got that far never knew
+              it existed. It now has a permanent trigger sitting with the links,
+              so the ring is one click from every page. The right-click shortcut
+              inside the drawing still works and is now a shortcut rather than
+              the only way in. */}
+          <button
+            ref={ringBtnRef}
+            className="nav-ring-btn"
+            onClick={ringBtnClick}
+            aria-label={menuAt ? "Close menu" : "Open quick menu"}
+            aria-expanded={!!menuAt}
+            data-cursor
+          >
+            <MenuToggleIcon open={!!menuAt} />
+          </button>
 
           <button
             className="nav-burger"

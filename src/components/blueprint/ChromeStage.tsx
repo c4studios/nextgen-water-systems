@@ -384,15 +384,36 @@ function Warmup() {
     done.current = true;
     const saved: Array<[THREE.Object3D, boolean]> = [];
     scene.traverse((o) => {
+      // LIGHTS ARE LEFT ALONE. A program's cache key includes the scene's
+      // light configuration, so warming with a light count that does not match
+      // the real one compiles a set of programs that are then thrown away and
+      // recompiled at the first real frame. That is the same mechanism as the
+      // stage-3 stutter this warm-up was written to cure.
+      if ((o as unknown as THREE.Light).isLight) return;
       saved.push([o, o.visible]);
       o.visible = true;
     });
+    const restore = () => {
+      for (const [o, v] of saved) o.visible = v;
+    };
+    // compileAsync hands the work to KHR_parallel_shader_compile where the
+    // driver has it, so the page keeps scrolling while it runs. compile() is
+    // the same job on the main thread, and on a software renderer that is
+    // measured in seconds.
+    const async = (gl as unknown as { compileAsync?: typeof gl.compileAsync }).compileAsync;
+    if (typeof async === "function") {
+      async
+        .call(gl, scene, camera)
+        .then(restore)
+        .catch(restore);
+      return;
+    }
     try {
       gl.compile(scene, camera);
     } catch {
       /* a failed warm-up must never take the scene down with it */
     }
-    for (const [o, v] of saved) o.visible = v;
+    restore();
   });
   return null;
 }

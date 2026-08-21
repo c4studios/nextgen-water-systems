@@ -5,6 +5,7 @@ import { TasteKey } from "@/components/site/TasteKey";
 import { HowItWorks } from "@/components/site/HowItWorks";
 import { FloorPlan } from "@/components/site/FloorPlan";
 import { Band } from "@/components/site/Band";
+import { Exhibit } from "@/components/site/Exhibit";
 import { StaticStory } from "@/components/site/StaticStory";
 import { SiteSpine } from "@/components/site/SiteSpine";
 
@@ -20,14 +21,13 @@ export default function Home() {
             subject for one screen, and what they pick rides along to the
             booking so the technician knows before he arrives. */}
         <TasteKey />
-        {/* The complaint, photographed. It is the scale you notice second and
-            the taste you notice first. */}
-        <Band
-          src="/photos/kettle-scale.jpg"
-          alt="Looking down into an open stainless kettle in a clean kitchen; the element and base are furred with white limescale"
-          tag="DETAIL C · WHAT SCALE LOOKS LIKE"
-          caption="Scale is the one you stop seeing. It builds on the kettle element, the shower screen and the glassware, and it comes back a week after you have scrubbed it off."
-        />
+        {/* The complaint, photographed AND argued. This was a full-bleed photo
+            with a caption, and it is the screen the client reported scrolling
+            as feeling stuck. Nothing was wrong with the scrolling; measured, no
+            input is lost there. There was simply nothing happening on it. The
+            photograph is now marked up like a site inspection and hands off
+            into the drawing instead of dead-ending in front of it. */}
+        <Exhibit />
         {/* the pinned 3D journey — now the proof rather than the pitch */}
         <LivingDrawing />
         {/* reduced-motion fallback: the same story as a static document

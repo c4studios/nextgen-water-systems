@@ -99,7 +99,7 @@ export function BookingForm() {
         </label>
       </div>
       <div className="tform-actions">
-        <button className="tform-submit" type="submit" disabled={state === "sending"}>
+        <button className="tform-submit lm" type="submit" disabled={state === "sending"}>
           {state === "sending" ? "Logging…" : "Book your free water test"}
         </button>
         <a className="tform-call" href={`tel:${CONTACT.phone.replace(/\s/g, "")}`}>
