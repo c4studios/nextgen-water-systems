@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { CONTACT } from "@/content/plates";
 import { FORM_ENDPOINT } from "@/content/booking";
 
@@ -14,12 +14,31 @@ type SubmitState = "idle" | "sending" | "logged" | "error";
 
 export function BookingForm() {
   const [state, setState] = useState<SubmitState>("idle");
+  // What the visitor told the taste key upstream. It rides along so the
+  // technician knows what he is walking into before he is on the doorstep,
+  // which is the whole reason that component earns its place.
+  const [taste, setTaste] = useState("");
+
+  useEffect(() => {
+    const read = () => {
+      try {
+        setTaste(sessionStorage.getItem("ngw:taste") || "");
+      } catch {
+        /* private mode */
+      }
+    };
+    read();
+    const onTaste = (e: Event) => setTaste((e as CustomEvent<string>).detail || "");
+    window.addEventListener("ngw:taste", onTaste);
+    return () => window.removeEventListener("ngw:taste", onTaste);
+  }, []);
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(e.currentTarget).entries()) as Record<string, string>;
     if (!FORM_ENDPOINT) {
-      const body = `Hi Next Gen,\n\nI'd like to book a free in-home water test.\n\nName: ${data.name}\nSuburb: ${data.suburb}\nBest contact number: ${data.phone}\nPreferred day: ${data.day || "any"}\n\nThanks.`;
+      const said = taste ? `\nWhat I told you about my water: ${taste}` : "";
+      const body = `Hi Next Gen,\n\nI'd like to book a free in-home water test.\n\nName: ${data.name}\nSuburb: ${data.suburb}\nBest contact number: ${data.phone}\nPreferred day: ${data.day || "any"}${said}\n\nThanks.`;
       window.location.href = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
         "Free water test: booking request",
       )}&body=${encodeURIComponent(body)}`;
@@ -54,6 +73,13 @@ export function BookingForm() {
 
   return (
     <form className="tform" onSubmit={onSubmit}>
+      {taste && (
+        <p className="tform-carried">
+          <span>WHAT YOU TOLD US</span>
+          {taste}
+          <input type="hidden" name="taste" value={taste} />
+        </p>
+      )}
       <div className="tform-grid">
         <label>
           <span>NAME</span>
