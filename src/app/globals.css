@@ -5156,3 +5156,8 @@ header.site-nav.is-light .nav-ring-btn {
   .ex-tb { grid-template-columns: 52px minmax(0, 1fr) 62px; }
   .ex-tb-c--wide { display: none; }
 }
+
+/* the interior sheets carry the same ground as the home sections, so a visitor
+   moving between them stays on one surface rather than stepping onto flat
+   black halfway through the set */
+.doc.ground { min-height: 100vh; }

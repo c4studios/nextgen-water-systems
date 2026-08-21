@@ -31,7 +31,7 @@ export function Sheet({
   children: React.ReactNode;
 }) {
   return (
-    <main id="main" className="doc">
+    <main id="main" className="doc ground ground--ruled">
       <div className="doc-inner">
         <nav className="doc-trail" aria-label="Breadcrumb">
           <Link className="doc-home" href="/">
