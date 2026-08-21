@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CONTACT } from "@/content/plates";
+import { asset } from "@/lib/asset";
 
 /**
  * The shell every page other than the homepage sits in.
@@ -15,12 +16,18 @@ export function Sheet({
   kicker,
   title,
   lead,
+  photo,
+  photoAlt,
   children,
 }: {
   sheet: string;
   kicker: string;
   title: React.ReactNode;
   lead: string;
+  /** every sheet carries one photograph under its title block — the pages read
+   *  as documents without one, which is what made them feel dry */
+  photo?: string;
+  photoAlt?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -45,6 +52,12 @@ export function Sheet({
           <h1 className="doc-h">{title}</h1>
           <p className="doc-lead">{lead}</p>
         </header>
+
+        {photo && (
+          <figure className="doc-photo">
+            <img src={asset(photo)} alt={photoAlt || ""} loading="lazy" decoding="async" />
+          </figure>
+        )}
 
         <div className="doc-body">{children}</div>
 

@@ -28,6 +28,18 @@ export function Nav() {
 
   return (
     <header className={`site-nav${open ? " is-open" : ""}${shrunk && !open ? " is-shrunk" : ""}`}>
+      {/* The liquid-glass refraction. The bar is a translucent pane; this
+          filter bends what passes under it at the edges, which is what makes
+          glass read as glass rather than as a blurred rectangle. Kept to a low
+          displacement — past about 20 the text under it tears. */}
+      <svg className="nav-defs" aria-hidden="true" focusable="false">
+        <filter id="ng-liquid" x="-20%" y="-20%" width="140%" height="140%" colorInterpolationFilters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.008 0.014" numOctaves="2" seed="4" result="n" />
+          <feGaussianBlur in="n" stdDeviation="1.4" result="ns" />
+          <feDisplacementMap in="SourceGraphic" in2="ns" scale="12" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+      </svg>
+      <div className="nav-pane" aria-hidden="true" />
       <div className="wrap">
         <Link className="brand" href="/" data-cursor onClick={() => setOpen(false)}>
           <svg className="mark" viewBox="0 0 40 40" fill="none" aria-hidden="true">

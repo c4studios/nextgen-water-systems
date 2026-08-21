@@ -32,6 +32,8 @@ export default function InstallationPage() {
           </>
         }
         lead="Nothing arrives in a box for you to work out. The system is fitted at your mains by the same licensed plumbers who service it afterwards, and the work carries a warranty."
+        photo="/photos/installed.jpg"
+        photoAlt="A three-vessel filtration unit mounted on a rendered wall beside a garden bed, plumbed in with copper pipework and isolation valves"
       >
         <Block title="Who does the work">
           <p>

@@ -32,6 +32,8 @@ export default function SystemPage() {
           </>
         }
         lead="The NGW-01 sits where the water comes into your house. Everything downstream of it runs filtered: the kitchen tap, the shower, the washing machine, the ice maker. There is nothing to fill and nothing to plug in."
+        photo="/photos/cartridges.jpg"
+        photoAlt="The three filter cartridges laid out in order: pleated sediment, carbon, and a scale-reduction cartridge with a blue collar band"
       >
         <Block title="What it is">
           <p>

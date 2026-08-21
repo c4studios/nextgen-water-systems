@@ -34,6 +34,8 @@ export default function WaterTestPage() {
           </>
         }
         lead="Every house on the Perth network gets slightly different water by the time it reaches the tap, depending on the run and the age of the pipework. The only way to know what yours is doing is to test it where you drink it."
+        photo="/photos/water-test.jpg"
+        photoAlt="A handheld water testing meter beside a glass of water and a paper form on a kitchen benchtop"
       >
         <div className="doc-form">
           <BookingForm />

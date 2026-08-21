@@ -143,6 +143,8 @@ export default function QuestionsPage() {
           </>
         }
         lead="Filtration is a category with a lot of noise in it. Here is what this system does, what it does not, and where we would tell you to look elsewhere."
+        photo="/photos/kitchen-tap.jpg"
+        photoAlt="A kitchen mixer tap running clear water into a plain glass on a white benchtop, bright window light behind"
       >
         <dl className="qa">
           {QA.map(({ q, a }) => (
