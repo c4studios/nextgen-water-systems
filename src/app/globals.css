@@ -5181,3 +5181,90 @@ header.site-nav.is-light .nav-ring-btn {
   color: var(--ice);
   text-decoration-color: var(--cyan);
 }
+
+/* ===========================================================================
+   404 — a sheet that is not in this set.
+   Replaces the stock Next.js page, which rendered white inside a dark site and
+   offered no route back.
+   =========================================================================== */
+.nf {
+  min-height: 100vh;
+  display: grid;
+  align-items: center;
+  padding: clamp(120px, 18vh, 200px) clamp(18px, 5vw, 34px) var(--sec-y);
+}
+.nf-inner { max-width: 760px; margin: 0 auto; width: 100%; }
+.nf-stamp {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--line);
+  font-family: var(--font-mono), monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  margin-bottom: clamp(20px, 3vh, 30px);
+}
+.nf-stamp b { padding: 6px 11px; background: var(--cyan); color: #06131a; font-weight: 500; }
+.nf-stamp span { padding: 6px 11px; color: var(--muted); border-left: 1px solid var(--line); }
+.nf-h {
+  font-size: clamp(32px, 5.6vw, 60px);
+  line-height: 1.03;
+  letter-spacing: -0.02em;
+  color: var(--ice);
+  margin: 0 0 16px;
+  text-wrap: balance;
+}
+.nf-lead {
+  font-size: clamp(16px, 1.5vw, 18px);
+  line-height: 1.62;
+  color: var(--steel);
+  max-width: 56ch;
+  text-wrap: pretty;
+  margin: 0 0 clamp(30px, 5vh, 46px);
+}
+.nf-index { display: grid; border-top: 1px solid var(--line); }
+.nf-index-head {
+  padding: 12px 2px;
+  font-family: var(--font-mono), monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+}
+.nf-index a {
+  display: grid;
+  grid-template-columns: 3em minmax(0, 12em) minmax(0, 1fr);
+  gap: 16px;
+  align-items: baseline;
+  padding: 15px 2px;
+  min-height: 48px;
+  border-bottom: 1px solid var(--line);
+  transition: background 0.2s var(--ease);
+}
+.nf-index a:hover, .nf-index a:focus-visible { background: rgba(244, 249, 252, 0.04); }
+.nf-index a b {
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--cyan);
+  font-weight: 400;
+}
+.nf-index a span { font-size: 16.5px; color: var(--ice); }
+.nf-index a i { font-style: normal; font-size: 14px; color: var(--muted); }
+.nf-cta {
+  display: inline-flex;
+  align-items: center;
+  margin-top: clamp(28px, 5vh, 44px);
+  padding: 14px 24px;
+  border: 1px solid rgba(41, 194, 238, 0.45);
+  border-radius: 999px;
+  background: rgba(41, 194, 238, 0.08);
+  color: var(--ice);
+  font-size: 15px;
+  font-weight: 600;
+  transition: background 0.22s var(--ease), border-color 0.22s var(--ease);
+}
+.nf-cta:hover, .nf-cta:focus-visible { background: rgba(41, 194, 238, 0.17); border-color: var(--cyan); }
+@media (max-width: 640px) {
+  .nf-index a { grid-template-columns: 2.6em minmax(0, 1fr); }
+  .nf-index a i { grid-column: 2; }
+}
