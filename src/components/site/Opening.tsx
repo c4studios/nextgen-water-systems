@@ -1,5 +1,5 @@
-import Image from "next/image";
 import { asset } from "@/lib/asset";
+import { FrostedGlass } from "@/components/ui/FrostedGlass";
 
 /**
  * Act 0 — the outcome.
@@ -42,14 +42,12 @@ export function Opening() {
         </div>
       </div>
 
+      {/* The glass carries an easter egg: it opens under condensation and
+          wipes clear under a pointer. Nothing tells the visitor to try it. */}
       <figure className="opening-figure">
-        <Image
+        <FrostedGlass
           src={asset("/photos/kitchen-glass.jpg")}
           alt="A glass of tap water on a scratched steel benchtop in a Perth kitchen, late afternoon"
-          width={1920}
-          height={1072}
-          priority
-          sizes="(max-width: 900px) 100vw, 52vw"
         />
       </figure>
 

@@ -3461,3 +3461,28 @@
     .doc-home, .doc-home svg, .doc-btn, .nav-sheet { transition: none; }
     .doc-home:hover svg, .doc-btn:hover { transform: none; }
   }
+
+/* ---- the opening photograph's frosted glass (see components/ui/FrostedGlass) ---- */
+.frosted {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.frosted img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 38% 50%;
+  display: block;
+}
+.frosted-veil {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* the wipe is the reward for touching it, so the layer must not announce
+     itself before anyone does */
+  transition: opacity 0.4s var(--ease);
+}
+@media (prefers-reduced-motion: reduce) {
+  .frosted-veil { display: none; }
+}

@@ -163,6 +163,12 @@ export function LivingDrawing() {
     const paper = Array.from(svg.querySelectorAll<SVGElement>("[data-paper]"));
     const shade = q<SVGGElement>(".jd-shade");
     const beds = q<SVGGElement>(".jd-beds");
+    // individual media beds and balloons, so the hatching can fill each vessel
+    // in turn and the balloons can land one at a time — a single opacity fade
+    // on the whole group was over in one frame and left the rest of the plate
+    // static
+    const bedRects = Array.from(svg.querySelectorAll<SVGRectElement>(".jd-beds rect"));
+    const balloons = Array.from(svg.querySelectorAll<SVGGElement>(".jd-bom > g"));
     const bom = q<SVGGElement>(".jd-bom");
     const tip = q<SVGGElement>(".jd-tip");
     const construct = q<SVGGElement>(".jd-construct");
@@ -174,6 +180,21 @@ export function LivingDrawing() {
     const furniture = [".jd-note", ".jd-titleblock", ".jd-bomlist", ".jd-revtable"]
       .map((s) => root.querySelector<HTMLElement>(s))
       .filter(Boolean) as HTMLElement[];
+    // The furniture used to arrive as ONE block, which left most of the plate's
+    // scroll with nothing changing on it. These handles let each piece of
+    // writing land on its own beat instead.
+    const qa = <T extends Element>(s: string) => Array.from(root.querySelectorAll<T>(s));
+    const noteEyebrow = root.querySelector<HTMLElement>(".jd-eyebrow");
+    const noteBody = root.querySelector<HTMLElement>(".jd-note p");
+    const noteCta = root.querySelector<HTMLElement>(".jd-stamp-cta");
+    const tbCells = qa<HTMLElement>(".jd-tb-cell");
+    const tbTitle = root.querySelector<HTMLElement>(".jd-tb-title");
+    const tbStamp = root.querySelector<HTMLElement>(".jd-tb-stamp");
+    const bomHead = root.querySelector<HTMLElement>(".jd-bomlist-head");
+    const bomRows = qa<HTMLElement>(".jd-bomlist-row");
+    const revHead = root.querySelector<HTMLElement>(".jd-rev-head");
+    const written = [noteEyebrow, noteBody, noteCta, tbTitle, tbStamp, bomHead, revHead,
+      ...tbCells, ...bomRows].filter(Boolean) as HTMLElement[];
     // the sheet's drop shadow exists only while the paper does — a shadow
     // outlining an invisible sheet was the old "card on a background" tell
     const shadowEl = root.querySelector<HTMLElement>(".plate-shadow");
@@ -191,6 +212,8 @@ export function LivingDrawing() {
       hudEls.forEach((el) => (el.style.display = "none"));
       if (shade) shade.style.opacity = "0";
       if (beds) beds.style.opacity = "1";
+      bedRects.forEach((r) => (r.style.clipPath = "none"));
+      balloons.forEach((g) => (g.style.opacity = "1"));
       if (bom) bom.style.opacity = "1";
       if (dimG) dimG.style.opacity = "1";
       if (dimLabel) dimLabel.style.opacity = "1";
@@ -198,6 +221,10 @@ export function LivingDrawing() {
       if (inkG) inkG.style.color = "#15324a";
       if (tip) tip.style.opacity = "0";
       furniture.forEach((f) => (f.style.opacity = "1"));
+      written.forEach((w) => {
+        w.style.opacity = "1";
+        w.style.clipPath = "none";
+      });
       revRows.forEach((r) => (r.style.opacity = "1"));
       return;
     }
@@ -212,9 +239,16 @@ export function LivingDrawing() {
       const posterWanted = !webgl || (!glReadyRef.current && u3d.current > 0.04);
       gsap.set(shade, { opacity: posterWanted ? 1 : 0 });
       gsap.set([beds, bom, dimG], { opacity: 0 });
+      // each bed's hatching fills its vessel from the bottom up
+      gsap.set(bedRects, { clipPath: "inset(100% 0 0 0)" });
+      gsap.set(balloons, { opacity: 0 });
       gsap.set(dimLabel, { opacity: 0 });
       gsap.set(construct, { opacity: 1 });
       gsap.set(furniture, { opacity: 0 });
+      gsap.set(written, { opacity: 0 });
+      // the note and the title-block title WIPE on left to right, like a pen
+      // crossing the sheet, rather than fading up
+      gsap.set([noteBody, tbTitle].filter(Boolean), { clipPath: "inset(0 100% 0 0)", opacity: 1 });
       gsap.set(inkG, { color: "#f4f9fc" }); // white ink, traced over the chrome
       revRows.forEach((r) => gsap.set(r, { opacity: 0 }));
 
@@ -244,28 +278,67 @@ export function LivingDrawing() {
       // visibly longer than ticks, which is what hand-drawn reads as.
       const lens = ink.map((p) => Math.max(p.getTotalLength(), 1));
       const totalLen = lens.reduce((a, b) => a + b, 0);
+      // The pen now works across 0.12 -> 0.62 of the timeline instead of
+      // finishing at 0.46. Line being drawn is the one thing that reads as
+      // "something is happening" at a glance; small furniture text lettering in
+      // does not, at the size it sits on the sheet.
       let penAt = 0.12;
       ink.forEach((p, i) => {
-        const slot = 0.34 * (lens[i] / totalLen);
+        const slot = 0.66 * (lens[i] / totalLen);
         tl.to(p, { strokeDashoffset: 0, duration: slot * 0.88, ease: "power2.inOut" }, penAt);
         penAt += slot; // the remaining 12% of each slot is the pen lifting
       });
       // 3 — the world turns: paper rises, chrome dissolves, white ink settles to navy
-      tl.to(paper, { opacity: 1, duration: 0.12, ease: "power1.inOut" }, 0.4);
-      if (shadowEl) tl.to(shadowEl, { opacity: 1, duration: 0.12, ease: "power1.inOut" }, 0.4);
-      tl.to(furniture, { opacity: 1, duration: 0.12, ease: "power1.inOut" }, 0.42);
-      if (!webgl) tl.to(shade, { opacity: 0, duration: 0.12, ease: "power1.inOut" }, 0.4);
-      tl.to(inkG, { color: "#15324a", duration: 0.14, ease: "power1.inOut" }, 0.4);
+      tl.to(paper, { opacity: 1, duration: 0.12, ease: "power1.inOut" }, 0.34);
+      if (shadowEl) tl.to(shadowEl, { opacity: 1, duration: 0.12, ease: "power1.inOut" }, 0.34);
+      tl.to(furniture, { opacity: 1, duration: 0.12, ease: "power1.inOut" }, 0.38);
+      if (!webgl) tl.to(shade, { opacity: 0, duration: 0.12, ease: "power1.inOut" }, 0.34);
+      tl.to(inkG, { color: "#b9cbd8", duration: 0.14, ease: "power1.inOut" }, 0.34);
       // 4 — construction geometry dims once the ink carries the form
-      tl.to(construct, { opacity: 0.16, duration: 0.08, ease: "power1.inOut" }, 0.52);
+      tl.to(construct, { opacity: 0.16, duration: 0.08, ease: "power1.inOut" }, 0.5);
       // 5 — media beds hatch in, dimensions + balloons snap on
-      tl.to(beds, { opacity: 1, duration: 0.12 }, 0.6);
-      tl.to(dimG, { opacity: 1, duration: 0.02 }, 0.66);
-      dim.forEach((p, i) => tl.to(p, { strokeDashoffset: 0, duration: 0.06, ease: "power2.out" }, 0.66 + i * 0.03));
+      tl.to(beds, { opacity: 1, duration: 0.02 }, 0.54);
+      // hatching fills vessel by vessel, bottom to top, while the pen is still
+      // finishing the outline elsewhere on the sheet
+      bedRects.forEach((r, i) =>
+        tl.to(r, { clipPath: "inset(0% 0 0 0)", duration: 0.16, ease: "power1.inOut" }, 0.56 + i * 0.095),
+      );
+      tl.to(dimG, { opacity: 1, duration: 0.02 }, 0.82);
+      dim.forEach((p, i) => tl.to(p, { strokeDashoffset: 0, duration: 0.07, ease: "power2.out" }, 0.82 + i * 0.035));
       // the dimension VALUE letters in only after its lines exist
-      tl.to(dimLabel, { opacity: 1, duration: 0.04 }, 0.72);
-      tl.to(bom, { opacity: 1, duration: 0.1 }, 0.7);
-      // 6 — revision rows accrue (the progress spine, driven from the data)
+      tl.to(dimLabel, { opacity: 1, duration: 0.04 }, 0.92);
+      tl.to(bom, { opacity: 1, duration: 0.02 }, 0.68);
+      // balloons drop one at a time onto the vessels they label
+      balloons.forEach((g, i) =>
+        tl.fromTo(g, { opacity: 0, y: -7 }, { opacity: 1, y: 0, duration: 0.06, ease: "power2.out" }, 0.7 + i * 0.06),
+      );
+
+      // 6 — THE WRITING. Every piece of drafting furniture lands on its own
+      // beat, spread right to the end of the timeline. Before this the four
+      // panels arrived together at 0.42 and the back half of the plate's
+      // scroll had nothing happening on it at all, which is exactly what the
+      // client kept noticing.
+      tl.to(noteEyebrow, { opacity: 1, duration: 0.03 }, 0.44);
+      // the note WIPES on, left to right, at pen speed
+      if (noteBody) tl.to(noteBody, { clipPath: "inset(0 0% 0 0)", duration: 0.13, ease: "power1.inOut" }, 0.46);
+      tl.to(noteCta, { opacity: 1, duration: 0.04 }, 0.6);
+      if (tbTitle) tl.to(tbTitle, { clipPath: "inset(0 0% 0 0)", duration: 0.07, ease: "power1.inOut" }, 0.56);
+      tl.to(bomHead, { opacity: 1, duration: 0.03 }, 0.7);
+      bomRows.forEach((r, i) => tl.to(r, { opacity: 1, duration: 0.035 }, 0.72 + i * 0.05));
+      tl.to(revHead, { opacity: 1, duration: 0.03 }, 0.5);
+      // title-block cells fill one after another, the way a draughtsman fills
+      // them: drawing number, scale, material, date
+      tbCells.forEach((c, i) => tl.to(c, { opacity: 1, duration: 0.035 }, 0.8 + i * 0.045));
+      // and the sheet is stamped last, which is the only place a thump belongs
+      if (tbStamp)
+        tl.fromTo(
+          tbStamp,
+          { opacity: 0, scale: 1.5, rotate: -7 },
+          { opacity: 1, scale: 1, rotate: 0, duration: 0.05, ease: "power3.out", transformOrigin: "20% 50%" },
+          0.95,
+        );
+
+      // 7 — revision rows accrue (the progress spine, driven from the data)
       revRows.forEach((r, i) => tl.to(r, { opacity: 1, duration: 0.04 }, REVISIONS[i]?.at ?? 0.5));
 
       // one frame-state function drives everything (scroll AND the ?ngjp freeze,
@@ -277,9 +350,13 @@ export function LivingDrawing() {
           // the LENGTHENED pin — starting only once the camera has DOCKED, so
           // the ink never traces over a moving model.
           const bp = gsap.utils.clamp(0, 1, gsap.utils.mapRange(0.075, 0.26, 0, 1, p));
-          // trapezoid: draw in over the first 28%, HOLD the finished plate
-          // through the middle, un-draw over the last 28%
-          const bpU = gsap.utils.clamp(0, 1, Math.min(bp / 0.28, (1 - bp) / 0.28));
+          // There is no hold any more. It used to draw in over the first 28%,
+          // sit dead through the middle 44%, then un-draw — and that dead
+          // middle was ~85svh of scrolling with nothing moving on screen.
+          // Now it is a triangle: still arriving right up to the peak, already
+          // leaving straight after it. The draw-in gets the larger share
+          // because that is where the writing is.
+          const bpU = gsap.utils.clamp(0, 1, Math.min(bp / 0.56, (1 - bp) / 0.44));
           tl.progress(bpU);
           // the plate's interactive layer is live only while the drawing holds
           if (sheetRef.current) sheetRef.current.classList.toggle("plate-live", bpU > 0.55);

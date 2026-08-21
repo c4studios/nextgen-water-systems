@@ -359,8 +359,55 @@ function sampleRail(sel: "pos" | "tgt", i: number, t: number, out: THREE.Vector3
   );
 }
 
+/**
+ * One-off shader warm-up.
+ *
+ * Measured cause of the stutter the client kept hitting just past stage 3: the
+ * compiled shader-program count jumps 39 -> 55 at p≈0.697, which is where the
+ * house-out water run first becomes visible. Sixteen programs compiling inside
+ * one scroll frame is a hitch you feel every time, on every fresh load, because
+ * it is always the first pass through.
+ *
+ * three's compile() only walks VISIBLE objects, so the fix is to make the whole
+ * graph visible for exactly one frame, compile, and put the flags back. It runs
+ * a few frames after mount, while the photoreal still is still covering the
+ * canvas, so the cost lands where nobody is looking.
+ */
+function Warmup() {
+  const { gl, scene, camera } = useThree();
+  const frame = useRef(0);
+  const done = useRef(false);
+  useFrame(() => {
+    if (done.current) return;
+    // let materials get their maps attached before compiling them
+    if (++frame.current < 4) return;
+    done.current = true;
+    const saved: Array<[THREE.Object3D, boolean]> = [];
+    scene.traverse((o) => {
+      saved.push([o, o.visible]);
+      o.visible = true;
+    });
+    try {
+      gl.compile(scene, camera);
+    } catch {
+      /* a failed warm-up must never take the scene down with it */
+    }
+    for (const [o, v] of saved) o.visible = v;
+  });
+  return null;
+}
+
 function Rig({ progress, sheetRatio }: { progress: MutableRefObject<number>; sheetRatio?: MutableRefObject<number> }) {
-  const { camera } = useThree();
+  const { camera, gl, scene } = useThree();
+  // Diagnostic hook: ?ngdiag=1 hangs the renderer off window so frame cost,
+  // draw calls and — the one that matters for scroll stutter — the compiled
+  // shader-program count can be sampled per scroll position from outside.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!new URLSearchParams(window.location.search).has("ngdiag")) return;
+    (window as unknown as Record<string, unknown>).__ngGL = gl;
+    (window as unknown as Record<string, unknown>).__ngScene = scene;
+  }, [gl, scene]);
   const tgt = useRef(new THREE.Vector3(0, 0.12, 0));
   // persistent smoothed pointer offset — damps toward the raw pointer each frame
   // so the parallax floats instead of twitching (applied below the rail base)
@@ -1376,8 +1423,19 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
             scale={sp.size}
           />
         ))}
-        <pointLight ref={exitLight} position={[3.9, 0.95, 0.55]} color="#dff3fb" intensity={0} distance={2.4} decay={2} />
       </group>
+      {/* The exit light lives OUT here, permanently visible at zero intensity,
+          for the same reason boreLight does.
+
+          three counts lights during projectObject, which skips invisible
+          objects. This light used to sit inside the group above, so the moment
+          that group turned visible at p≈0.69 the scene went from one point
+          light to two, every material's program cache key changed with it, and
+          sixteen shaders recompiled inside a single scroll frame. That was the
+          stutter past stage 3 — measured, not guessed: programs 39 -> 55 at
+          p=0.697. Intensity is still driven by wOut, so nothing looks
+          different; the light simply stops joining and leaving the scene. */}
+      <pointLight ref={exitLight} position={[3.9, 0.95, 0.55]} color="#dff3fb" intensity={0} distance={2.4} decay={2} />
 
       {/* ── the open charcoal steel FRAME/CAGE — the FHWR-3SI-20 silhouette:
           the vessels hang from a top manifold plate INSIDE a rectangular tube
@@ -2107,6 +2165,7 @@ export default function ChromeStage({ progress, active, sheetRatio, onReady }: P
 
       <VesselAssembly progress={progress} />
       <Rig progress={progress} sheetRatio={sheetRatio} />
+      <Warmup />
       <FocusRig progress={progress} dof={dofRef} />
       <Ready onReady={onReady} />
       {typeof window !== "undefined" && new URLSearchParams(window.location.search).has("ngdbgray") && <DebugRay />}
