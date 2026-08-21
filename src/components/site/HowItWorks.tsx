@@ -124,7 +124,7 @@ export function HowItWorks() {
   };
 
   return (
-    <section className="hiw" ref={rootRef} aria-labelledby="hiw-h">
+    <section className="hiw ground ground--ruled sheet-edge" ref={rootRef} aria-labelledby="hiw-h">
       <div className="hiw-inner">
         <header className="hiw-head">
           <h2 className="hiw-h" id="hiw-h">
@@ -153,7 +153,7 @@ export function HowItWorks() {
                   <span className="hiw-n">{s.n}</span>
                   <span className="hiw-name">{s.name}</span>
                   <span className="hiw-in">{s.goesIn}</span>
-                  <i aria-hidden="true">{on ? "–" : "+"}</i>
+                  <i aria-hidden="true" />
                 </button>
                 {/* `hidden` made this snap: the panel was simply not there and
                     then it was. The height animates through a 0fr/1fr grid row

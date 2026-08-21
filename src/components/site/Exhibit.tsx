@@ -160,7 +160,7 @@ export function Exhibit() {
   const shown = (i: number) => i <= step;
 
   return (
-    <section className="ex" ref={rootRef} aria-labelledby="ex-h">
+    <section className="ex ground sheet-edge" ref={rootRef} aria-labelledby="ex-h">
       <div className="ex-inner">
         <header className="ex-head">
           <span className="ex-stamp">
@@ -185,7 +185,28 @@ export function Exhibit() {
             give it one that ends where the holding should end. */}
         <div className="ex-stage">
           <div className="ex-plate" ref={plateRef}>
+            {/* The plate was a bordered photograph sitting on black, which the
+                client read as a floating image. It is bound into the page now
+                the way a plate is bound into a drawing set: a title strip
+                across the head, registration marks at the corners, and rules
+                running off both edges out to the sheet margin so the plate is
+                clearly part of the document rather than dropped onto it. */}
+            <div className="ex-tb">
+              <span className="ex-tb-c">
+                <i>SHEET</i>A
+              </span>
+              <span className="ex-tb-c">
+                <i>SUBJECT</i>SCALE, DOMESTIC SUPPLY
+              </span>
+              <span className="ex-tb-c ex-tb-c--wide">
+                <i>SCALE</i>NTS
+              </span>
+              <span className="ex-tb-c">
+                <i>NOTES</i>3
+              </span>
+            </div>
             <figure className="ex-fig">
+              <span className="ex-reg" aria-hidden="true" />
               <img
                 src={asset("/photos/kettle-scale.jpg")}
                 alt="Looking down into an open stainless kettle. A crusted ring of white limescale marks the water line and the element below it is furred over, while the steel above the line is still clean."

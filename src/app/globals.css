@@ -74,32 +74,54 @@
   }
 
   /* ---- custom cursor (calm steel ring) ---- */
+  /* A bead of water on glass. The transform and border-radius are written by
+     the component from real pointer velocity, so nothing here animates them;
+     these are the resting state and the surface. */
   .cursor {
     position: fixed;
     top: 0;
     left: 0;
-    width: 30px;
-    height: 30px;
-    border: 1px solid var(--steel);
+    width: 26px;
+    height: 26px;
+    border: 1px solid rgba(214, 240, 251, 0.95);
     border-radius: 50%;
     pointer-events: none;
     z-index: 9999;
     transform: translate(-50%, -50%);
-    opacity: 0.7;
-    transition: width 0.3s var(--ease), height 0.3s var(--ease), opacity 0.3s,
-      border-color 0.3s, background 0.3s;
+    opacity: 0.95;
+    /* A bead of water on a dark ground is mostly BRIGHT: it gathers light at
+       the rim and throws a specular near the top. An earlier pass had it lit
+       so faintly it read as a dark bead, which on a water site is the wrong
+       object entirely. */
+    background:
+      radial-gradient(38% 34% at 33% 26%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0) 70%),
+      radial-gradient(66% 60% at 62% 74%, rgba(120, 208, 240, 0.34) 0%, rgba(120, 208, 240, 0) 72%),
+      radial-gradient(120% 120% at 50% 50%, rgba(41, 194, 238, 0.14) 0%, rgba(41, 194, 238, 0.02) 76%);
+    box-shadow:
+      inset 0 -3px 7px rgba(190, 232, 250, 0.4),
+      0 0 12px rgba(41, 194, 238, 0.18);
+    backdrop-filter: blur(0.6px);
+    -webkit-backdrop-filter: blur(0.6px);
+    transition: width 0.34s var(--ease), height 0.34s var(--ease), opacity 0.3s,
+      border-color 0.3s, background 0.3s, box-shadow 0.3s;
   }
   .cursor.grow {
-    width: 56px;
-    height: 56px;
+    width: 54px;
+    height: 54px;
     opacity: 1;
     border-color: var(--cyan);
-    background: rgba(41, 194, 238, 0.06);
+    background:
+      radial-gradient(58% 52% at 36% 30%, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0) 62%),
+      radial-gradient(120% 120% at 50% 50%, rgba(41, 194, 238, 0.16) 0%, rgba(41, 194, 238, 0.02) 72%);
   }
-  @media (hover: none) {
-    .cursor {
-      display: none;
-    }
+  /* off the window entirely rather than parked at the last known point */
+  .cursor.gone { opacity: 0; }
+
+  /* Touch has no pointer to follow, and a narrow desktop window is not a
+     phone: gate on the INPUT, not on the width. Both queries are here because
+     some hybrids answer one of them the wrong way. */
+  @media (hover: none), (pointer: coarse) {
+    .cursor { display: none; }
   }
 
   /* ---- nav ---- */
@@ -3685,92 +3707,11 @@
 }
 
 /* ===========================================================================
-   THE TASTE KEY — the one place the visitor is the subject.
-   Set as a drafted key (ruled leader, then the term), not a row of pills.
+   THE SITE CHECK — see the block further down; this header is kept only so the
+   reduced-motion rule below has somewhere to live.
    =========================================================================== */
-.tk {
-  position: relative;
-  z-index: 2;
-  background: var(--void);
-  padding: clamp(72px, 12vh, 150px) clamp(18px, 5vw, 34px);
-  /* .plate carries margin-top:-24svh so the machine hangs up into whatever
-     precedes it. That is now this section, so it has to reserve the room or
-     the machine is drawn straight over the last answer. */
-  padding-bottom: calc(clamp(72px, 12vh, 150px) + 27svh);
-}
-.tk-inner {
-  max-width: 940px;
-  margin: 0 auto;
-}
-.tk-h {
-  font-size: clamp(34px, 6.2vw, 66px);
-  letter-spacing: -0.032em;
-  line-height: 1.02;
-  text-wrap: balance;
-}
-.tk-key {
-  margin-top: clamp(30px, 5vh, 52px);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 30px;
-}
-.tk-term {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 42px;
-  padding: 0;
-  border: 0;
-  background: none;
-  cursor: pointer;
-  font-family: var(--font-mono), monospace;
-  font-size: 12.5px;
-  letter-spacing: 0.14em;
-  color: var(--muted);
-  transition: color 0.18s var(--ease);
-}
-/* the leader line IS the affordance: it runs to the term the way a drawing
-   legends its own symbols */
-.tk-term i {
-  display: block;
-  width: 34px;
-  height: 1px;
-  background: var(--line);
-  transition: background 0.18s var(--ease), width 0.18s var(--ease);
-}
-.tk-term:hover { color: var(--steel); }
-.tk-term:hover i { background: var(--steel); }
-.tk-term.is-on { color: var(--ice); }
-.tk-term.is-on i { background: var(--cyan); width: 48px; }
-
-.tk-answers { margin-top: clamp(26px, 4vh, 40px); }
-.tk-idle,
-.tk-answer {
-  font-size: 16.5px;
-  line-height: 1.72;
-  color: #d3dce2;
-  max-width: 66ch;
-  text-wrap: pretty;
-  animation: tk-in 0.26s var(--ease) both;
-}
-.tk-idle { color: var(--muted); }
-.tk-answer + .tk-answer { margin-top: 18px; }
-.tk-answer b {
-  display: block;
-  margin-bottom: 5px;
-  font-family: var(--font-mono), monospace;
-  font-size: 11.5px;
-  font-weight: 400;
-  letter-spacing: 0.14em;
-  color: var(--cyan);
-}
-@keyframes tk-in {
-  from { opacity: 0; transform: translateY(2px); }
-  to { opacity: 1; transform: none; }
-}
 @media (prefers-reduced-motion: reduce) {
   .tk-idle, .tk-answer { animation: none; }
-  .tk-term, .tk-term i { transition: none; }
 }
 
 /* ===========================================================================
@@ -3811,7 +3752,7 @@
   position: sticky;
   top: clamp(84px, 11vh, 132px);
 }
-.fp-runway { height: 62vh; }
+.fp-runway { height: 52vh; }
 @media (max-width: 900px) {
   /* a plan this tall cannot be held without cropping it */
   .fp-plate { position: static; }
@@ -4037,7 +3978,9 @@
   grid-template-columns: 3em minmax(0, 13em) minmax(0, 1fr) 1.5em;
   align-items: baseline;
   gap: 18px;
-  padding: 20px 2px;
+  /* the toggle was sitting 2px off the right edge of the bar, which read as
+     the glyph having fallen off the end of the row */
+  padding: 20px clamp(16px, 2.2vw, 26px) 20px 2px;
   border: 0;
   background: none;
   text-align: left;
@@ -4065,12 +4008,31 @@
   color: var(--muted);
 }
 .hiw-bar i {
+  /* drawn rather than typed: rotating a "+" glyph 180 degrees looks identical
+     to not rotating it, so the open state had no motion to show */
+  position: relative;
   justify-self: end;
-  font-style: normal;
-  font-family: var(--font-mono), monospace;
-  font-size: 17px;
-  color: var(--steel);
+  align-self: center;
+  width: 13px;
+  height: 13px;
 }
+.hiw-bar i::before,
+.hiw-bar i::after {
+  content: "";
+  position: absolute;
+  inset: 50% 0 auto;
+  height: 1.5px;
+  background: var(--cyan);
+  transform: translateY(-50%);
+}
+.hiw-bar i::after {
+  inset: 0 auto auto 50%;
+  width: 1.5px;
+  height: 100%;
+  transform: translateX(-50%);
+  transition: opacity 0.3s var(--ease), transform 0.42s cubic-bezier(0.33, 0.02, 0.2, 1);
+}
+.hiw-stage.is-open .hiw-bar i::after { opacity: 0; transform: translateX(-50%) scaleY(0.3); }
 .hiw-detail {
   /* 0fr -> 1fr is the only way to transition to an unknown CONTENT height. The
      padding lives on the inner element, because padding on a collapsed grid
@@ -4309,6 +4271,11 @@
   position: relative;
   z-index: 2;
   background: var(--void);
+  /* The plate's tie rules run 50vw off each edge, which pushed the document
+     wider than the viewport. `clip` rather than `hidden`: overflow:hidden
+     makes this a scroll container and a scroll container breaks the sticky
+     plate inside it. clip trims the overflow without becoming one. */
+  overflow-x: clip;
   /* The journey below carries margin-top: -24svh so the machine is already
      hanging into this section before its pin engages. That overlap has to be
      reserved here, or anything at the bottom of this section sits underneath
@@ -4443,6 +4410,8 @@
   position: absolute;
   right: 0;
   bottom: 0;
+  /* above the corner registration marks, which are drawn at z-index 3 */
+  z-index: 4;
   padding: 5px 9px;
   background: rgba(6, 10, 13, 0.82);
   border-left: 1px solid var(--line);
@@ -4709,7 +4678,7 @@ header.site-nav.is-light .nav-ring-btn {
   gap: 14px;
   align-items: baseline;
   width: 100%;
-  padding: 15px clamp(14px, 2.4vw, 22px);
+  padding: 15px clamp(18px, 3vw, 30px) 15px clamp(14px, 2.4vw, 22px);
   background: none;
   border: 0;
   text-align: left;
@@ -4760,7 +4729,7 @@ header.site-nav.is-light .nav-ring-btn {
   transition: height 0.46s cubic-bezier(0.33, 0.02, 0.2, 1);
 }
 .sched-detail-in {
-  padding: 0 clamp(14px, 2.4vw, 22px) 20px;
+  padding: 0 clamp(18px, 3vw, 30px) 20px clamp(14px, 2.4vw, 22px);
   max-width: 68ch;
 }
 .sched-detail-in p {
@@ -4842,3 +4811,348 @@ header.site-nav.is-light .nav-ring-btn {
 /* the sticky's containing block: it ends with the runway, so the plate lets go
    before the hand-off underneath it rather than painting over the top of it */
 .ex-stage { position: relative; }
+
+/* ===========================================================================
+   SHEET GROUND — texture and section rhythm.
+
+   The black was flat, so sections ran into each other and the page read as one
+   long dark scroll. This gives the ground a surface and gives every section a
+   drawn edge.
+
+   It is deliberately NOT a graph grid. A graph-paper backdrop is the single
+   most common AI-site tell and the codebase already carries a note about it.
+   What a real drawing sheet actually has is: paper grain, ruled margin
+   furniture, and registration ticks that continue from sheet to sheet. That is
+   what is here, at an amplitude you feel rather than read.
+   =========================================================================== */
+:root {
+  /* one vertical rhythm, used everywhere, so section spacing stops being
+     decided per section */
+  --sec-y: clamp(88px, 12vh, 148px);
+  --sec-y-tight: clamp(56px, 8vh, 96px);
+  --rule: rgba(203, 224, 236, 0.13);
+  --rule-soft: rgba(203, 224, 236, 0.055);
+}
+
+/* Paper grain. Soft-light rather than multiply: on a dark ground multiply just
+   eats the grain and you get nothing for the paint cost. */
+.ground {
+  position: relative;
+  background-color: var(--void);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.055'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-blend-mode: soft-light;
+}
+
+/* Faint horizontal ruling, at a large period so it reads as a laid surface
+   rather than as lines you are meant to count. Sits under the content and
+   fades out at the edges so no section looks boxed. */
+.ground--ruled::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent 0 63px,
+    var(--rule-soft) 63px 64px
+  );
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+}
+.ground > * { position: relative; z-index: 1; }
+
+/* ---- the divider: a section edge drawn as sheet furniture ---- */
+.sheet-edge { position: relative; }
+.sheet-edge::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 7px;
+  pointer-events: none;
+  z-index: 2;
+  background:
+    /* the rule itself, dying away before the page edge */
+    linear-gradient(90deg, transparent, var(--rule) 10%, var(--rule) 90%, transparent) top / 100% 1px no-repeat,
+    /* registration ticks hanging off it, ISO 5457 style: the furniture is what
+       makes a sheet read as one of a set rather than as a lone panel */
+    repeating-linear-gradient(90deg, transparent 0 calc(10% - 1px), var(--rule) calc(10% - 1px) 10%) top / 100% 7px no-repeat;
+}
+/* centring mark, mid-edge, same as a real sheet carries */
+.sheet-edge::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 13px;
+  background: var(--rule);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ---- the rhythm, applied ---- */
+.tk, .hiw, .fp, .tail, .ex { padding-top: var(--sec-y); }
+.tk, .hiw, .fp, .tail { padding-bottom: var(--sec-y); }
+
+@media (prefers-reduced-motion: no-preference) {
+  /* nothing motion-bound here; the ground is static by design */
+}
+
+/* ===========================================================================
+   THE SITE CHECK — was a drafted legend, is now a job sheet.
+   A legend labels; a checklist asks. The old version gave the visitor terms
+   with no affordance, put the instruction below the controls, and left the
+   right half of the screen empty.
+   =========================================================================== */
+.tk {
+  padding-left: clamp(18px, 5vw, 34px);
+  padding-right: clamp(18px, 5vw, 34px);
+}
+.tk-inner {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.86fr);
+  gap: clamp(28px, 5vw, 68px);
+  align-items: start;
+}
+
+.tk-stamp {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--line);
+  font-family: var(--font-mono), monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  margin-bottom: clamp(18px, 3vh, 28px);
+}
+.tk-stamp b { padding: 6px 10px; background: var(--cyan); color: #06131a; font-weight: 500; }
+.tk-stamp span { padding: 6px 10px; color: var(--muted); border-left: 1px solid var(--line); }
+
+.tk-h {
+  font-size: clamp(30px, 5vw, 54px);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  color: var(--ice);
+  margin: 0 0 16px;
+}
+.tk-lead {
+  font-size: clamp(15.5px, 1.4vw, 17.5px);
+  line-height: 1.62;
+  color: var(--steel);
+  max-width: 46ch;
+  text-wrap: pretty;
+  margin: 0 0 clamp(24px, 4vh, 36px);
+}
+
+/* ---- the checklist ---- */
+.tk-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 214px), 1fr));
+  gap: 2px;
+  border-top: 1px solid var(--line);
+}
+.tk-item {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  /* 52px tall: a checklist row you can hit without aiming */
+  padding: 15px 12px;
+  min-height: 52px;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s var(--ease);
+}
+.tk-item:hover, .tk-item:focus-visible { background: rgba(244, 249, 252, 0.04); }
+
+.tk-box {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 21px;
+  height: 21px;
+  border: 1px solid rgba(203, 224, 236, 0.34);
+  color: #06131a;
+  transition: background 0.18s var(--ease), border-color 0.18s var(--ease);
+}
+.tk-box svg {
+  width: 15px;
+  height: 15px;
+  /* the tick is DRAWN on, the way a check is made with a pen */
+  stroke-dasharray: 22;
+  stroke-dashoffset: 22;
+  transition: stroke-dashoffset 0.34s cubic-bezier(0.33, 0.02, 0.2, 1);
+}
+.tk-item.is-on .tk-box { background: var(--cyan); border-color: var(--cyan); }
+.tk-item.is-on .tk-box svg { stroke-dashoffset: 0; }
+
+.tk-label {
+  font-family: var(--font-mono), monospace;
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  color: var(--steel);
+  transition: color 0.18s var(--ease);
+}
+.tk-item.is-on .tk-label { color: var(--ice); }
+
+/* ---- the result sheet ---- */
+.tk-sheet {
+  border: 1px solid var(--line);
+  background: rgba(244, 249, 252, 0.018);
+  position: sticky;
+  top: clamp(96px, 13vh, 140px);
+}
+.tk-sheet-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(244, 249, 252, 0.03);
+  font-family: var(--font-mono), monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  color: var(--ice);
+}
+.tk-count { color: var(--cyan); }
+
+.tk-answers { padding: 16px; display: grid; gap: 15px; }
+.tk-idle {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.62;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+.tk-answer {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.62;
+  color: #d3dce2;
+  text-wrap: pretty;
+  /* each answer arrives as a written note rather than appearing */
+  animation: tk-in 0.42s cubic-bezier(0.33, 0.02, 0.2, 1) both;
+}
+.tk-answer b {
+  display: block;
+  margin-bottom: 5px;
+  font-family: var(--font-mono), monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  color: var(--cyan);
+  font-weight: 400;
+}
+@keyframes tk-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: none; }
+}
+
+.tk-carry {
+  margin: 0;
+  padding: 12px 16px;
+  border-top: 1px dashed rgba(203, 224, 236, 0.22);
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--steel);
+}
+.tk-carry span {
+  display: block;
+  margin-bottom: 4px;
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+}
+
+@media (max-width: 900px) {
+  .tk-inner { grid-template-columns: minmax(0, 1fr); }
+  .tk-sheet { position: static; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tk-box svg { transition: none; }
+  .tk-answer { animation: none; }
+}
+
+/* ---- EXHIBIT PLATE: bound into the sheet, not dropped on it ---- */
+.ex-plate {
+  /* rules running off both edges out to the sheet margin. This is what stops
+     the plate reading as a floating image: a plate in a drawing set is tied to
+     its sheet by the furniture around it. */
+  --ex-tie: rgba(203, 224, 236, 0.16);
+}
+.ex-plate::before,
+.ex-plate::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 50vw;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ex-tie));
+  pointer-events: none;
+  z-index: 0;
+}
+.ex-plate::before { right: 100%; margin-right: 22px; }
+.ex-plate::after {
+  left: 100%;
+  margin-left: 22px;
+  background: linear-gradient(90deg, var(--ex-tie), transparent);
+}
+
+.ex-tb {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr) 92px 62px;
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  background: rgba(244, 249, 252, 0.03);
+}
+.ex-tb-c {
+  padding: 7px 10px;
+  border-left: 1px solid var(--line);
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--ice);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ex-tb-c:first-child { border-left: 0; }
+.ex-tb-c i {
+  display: block;
+  font-style: normal;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+/* corner registration marks, drawn INSIDE the plate's own frame */
+.ex-reg {
+  position: absolute;
+  inset: 7px;
+  pointer-events: none;
+  z-index: 3;
+  background:
+    linear-gradient(var(--ex-tie), var(--ex-tie)) top left / 14px 1px no-repeat,
+    linear-gradient(var(--ex-tie), var(--ex-tie)) top left / 1px 14px no-repeat,
+    linear-gradient(var(--ex-tie), var(--ex-tie)) top right / 14px 1px no-repeat,
+    linear-gradient(var(--ex-tie), var(--ex-tie)) top right / 1px 14px no-repeat,
+    linear-gradient(var(--ex-tie), var(--ex-tie)) bottom left / 14px 1px no-repeat,
+    linear-gradient(var(--ex-tie), var(--ex-tie)) bottom left / 1px 14px no-repeat,
+    linear-gradient(var(--ex-tie), var(--ex-tie)) bottom right / 14px 1px no-repeat,
+    linear-gradient(var(--ex-tie), var(--ex-tie)) bottom right / 1px 14px no-repeat;
+}
+
+@media (max-width: 860px) {
+  .ex-plate::before, .ex-plate::after { display: none; }
+  .ex-tb { grid-template-columns: 52px minmax(0, 1fr) 62px; }
+  .ex-tb-c--wide { display: none; }
+}

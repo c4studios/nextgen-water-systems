@@ -118,7 +118,7 @@ function Schedule() {
 
 export function SiteSpine() {
   return (
-    <section id="plate-cta" className="tail" data-sheet="02" data-rev="D" data-name="BOOKING · APPROVED FOR ISSUE">
+    <section id="plate-cta" className="tail ground ground--ruled sheet-edge" data-sheet="02" data-rev="D" data-name="BOOKING · APPROVED FOR ISSUE">
       <div className="tail-inner">
         <span className="tail-eyebrow">REV D · BOOKING · APPROVED FOR ISSUE</span>
         <h2 className="tail-h">

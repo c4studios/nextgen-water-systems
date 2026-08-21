@@ -361,13 +361,20 @@ export function LivingDrawing() {
           // the LENGTHENED pin — starting only once the camera has DOCKED, so
           // the ink never traces over a moving model.
           const bp = gsap.utils.clamp(0, 1, gsap.utils.mapRange(0.075, 0.26, 0, 1, p));
-          // There is no hold any more. It used to draw in over the first 28%,
-          // sit dead through the middle 44%, then un-draw — and that dead
-          // middle was ~85svh of scrolling with nothing moving on screen.
-          // Now it is a triangle: still arriving right up to the peak, already
-          // leaving straight after it. The draw-in gets the larger share
-          // because that is where the writing is.
-          const bpU = gsap.utils.clamp(0, 1, Math.min(bp / 0.56, (1 - bp) / 0.44));
+          // A shallow trapezoid, not a triangle.
+          //
+          // This was a pure triangle: the sheet reached fully-drawn at exactly
+          // one scroll position and started un-drawing on the very next frame.
+          // Anything landing late on the timeline therefore existed for an
+          // instant, which is the "parts don't sit there long enough and kinda
+          // bounce around" report. The FOR INFORMATION stamp lands at 0.95 and
+          // was on screen for roughly 90px of scroll.
+          //
+          // It is not going back to the old long hold either, which was ~85svh
+          // of nothing moving. This holds for 16% of the act, about 280px:
+          // long enough to read the finished sheet, short enough that it never
+          // feels parked.
+          const bpU = gsap.utils.clamp(0, 1, Math.min(bp / 0.5, (1 - bp) / 0.34, 1));
           tl.progress(bpU);
           // the plate's interactive layer is live only while the drawing holds
           if (sheetRef.current) sheetRef.current.classList.toggle("plate-live", bpU > 0.55);
@@ -378,6 +385,14 @@ export function LivingDrawing() {
             const b2 = parseFloat(el.dataset.b || "1");
             const f = parseFloat(el.dataset.f || "0.03");
             const io = gsap.utils.clamp(0, 1, Math.min((p - a) / f, (b2 - p) / f));
+            // The heading forms out of water over a much wider window than the
+            // rest of the beat. At the shared fade width the whole liquid-to-
+            // type change happened inside about 280px of scroll, which is one
+            // flick of the wheel; the mechanism was over before it registered.
+            // Capped against the beat's own length so it still reaches full
+            // sharpness and holds there rather than being caught mid-melt.
+            const fW = Math.min(f * 2.8, (b2 - a) * 0.4);
+            const ioW = gsap.utils.clamp(0, 1, Math.min((p - a) / fW, (b2 - p) / fW));
             el.style.opacity = "1";
             el.style.transform = "";
             el.style.visibility = io <= 0.001 ? "hidden" : "visible";
@@ -389,8 +404,8 @@ export function LivingDrawing() {
             if (parts.length) {
               for (const part of parts) {
                 const d = Number(part.dataset.stagger || 0) * 0.16;
-                const kio = gsap.utils.clamp(0, 1, (io - d) / (1 - d));
                 const water = part.querySelector<HTMLElement>("[data-water]");
+                const kio = gsap.utils.clamp(0, 1, ((water ? ioW : io) - d) / (1 - d));
                 if (water) {
                   // the heading is liquid on the way in and out, sharp while
                   // the beat holds. Opacity stays 1 — the threshold filter is

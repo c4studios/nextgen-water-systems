@@ -21,25 +21,32 @@ import Link from "next/link";
  * and the trunk turns where a real run would turn.
  */
 
-/* ---- the house ---- */
+/* ---- the house ----
+ * Redrawn tighter. The previous set-out put the house at x200-1000 inside a
+ * 1120 box, so it sat right of centre with a dead column down the left, and
+ * several labels landed on top of walls: SHOWER sat exactly on the y=300
+ * divider, FRIDGE / ICE ran across the kitchen wall into the living room, and
+ * KITCHEN sat below its own room. Every label below is placed against the room
+ * it names AND checked against the trunk and the fixture leaders.
+ */
 const WALLS = [
-  "M200 120 H1000 V620 H200 Z", // outer
-  "M420 120 V430", // garage / rest
-  "M200 430 H420", // garage / laundry
-  "M420 300 H1000", // bedrooms / living
-  "M680 300 V620", // kitchen / living
-  "M820 120 V300", // bed / bath
+  "M150 90 H950 V590 H150 Z", // outer
+  "M390 90 V400", // garage / rest
+  "M150 400 H390", // garage / laundry
+  "M390 280 H950", // sleeping side / living side
+  "M650 280 V590", // kitchen / living
+  "M760 90 V280", // bedrooms / bath
 ];
 
-/** Room labels are placed to clear both the trunk and the fixture labels.
- *  Move a fixture and check these again. */
+/** Room labels sit inside the room they name, clear of every wall, the trunk
+ *  and the fixture leaders. Move a fixture and check these again. */
 const ROOMS = [
-  { x: 310, y: 250, label: "GARAGE" },
-  { x: 300, y: 590, label: "LAUNDRY" },
-  { x: 490, y: 600, label: "KITCHEN" },
-  { x: 900, y: 580, label: "LIVING" },
-  { x: 620, y: 215, label: "BEDROOMS" },
-  { x: 856, y: 150, label: "BATH" },
+  { x: 270, y: 150, label: "GARAGE" },
+  { x: 270, y: 555, label: "LAUNDRY" },
+  { x: 440, y: 315, label: "KITCHEN" },
+  { x: 880, y: 560, label: "LIVING" },
+  { x: 575, y: 185, label: "BEDROOMS" },
+  { x: 855, y: 125, label: "BATH" },
 ];
 
 /**
@@ -48,7 +55,7 @@ const ROOMS = [
  * getPointAtLength at runtime, not guessed, so moving the trunk cannot silently
  * desynchronise the lights.
  */
-const TRUNK = "M296 372 H452 V560 H700 V470 H860 V196";
+const TRUNK = "M330 326 H420 V520 H690 V430 H800 V165";
 
 type Fixture = {
   /** where the branch leaves the trunk */
@@ -61,13 +68,17 @@ type Fixture = {
   anchor?: "end";
 };
 
+/* Every branch point lies ON the trunk, and every label is anchored so its
+   text runs INTO the room the fitting belongs to rather than across a wall. */
 const FIXTURES: Fixture[] = [
-  { bx: 452, by: 500, fx: 322, fy: 500, label: "TROUGH", anchor: "end" },
-  { bx: 560, by: 560, fx: 560, fy: 468, label: "KITCHEN SINK" },
-  { bx: 612, by: 560, fx: 612, fy: 404, label: "FRIDGE / ICE" },
-  { bx: 660, by: 560, fx: 660, fy: 606, label: "DISHWASHER", anchor: "end" },
-  { bx: 860, by: 300, fx: 916, fy: 300, label: "SHOWER" },
-  { bx: 860, by: 214, fx: 916, fy: 214, label: "BASIN" },
+  { bx: 420, by: 470, fx: 300, fy: 470, label: "TROUGH", anchor: "end" },
+  { bx: 500, by: 520, fx: 500, fy: 430, label: "KITCHEN SINK" },
+  { bx: 580, by: 520, fx: 580, fy: 560, label: "DISHWASHER", anchor: "end" },
+  { bx: 620, by: 520, fx: 620, fy: 370, label: "FRIDGE / ICE", anchor: "end" },
+  // the riser sits at x800 and these run right of it: anchoring these "end"
+  // put the label text straight through the pipe that feeds them
+  { bx: 800, by: 250, fx: 880, fy: 250, label: "SHOWER" },
+  { bx: 800, by: 172, fx: 880, fy: 172, label: "BASIN" },
 ];
 
 export function FloorPlan() {
@@ -177,7 +188,7 @@ export function FloorPlan() {
   }, []);
 
   return (
-    <section className="fp" ref={rootRef} aria-labelledby="fp-h">
+    <section className="fp ground sheet-edge" ref={rootRef} aria-labelledby="fp-h">
       <div className="fp-inner">
         <header className="fp-head">
           <h2 className="fp-h" id="fp-h">
@@ -193,7 +204,7 @@ export function FloorPlan() {
 
         <div className="fp-plate" ref={plateRef}>
           <svg
-            viewBox="0 0 1120 700"
+            viewBox="-10 60 1010 570"
             className="fp-svg"
             role="img"
             aria-label="A house floor plan. The water main enters at the meter, passes through the filter on the garage wall, and runs on to the laundry trough, kitchen sink, dishwasher, fridge, shower, basin and ensuite."
@@ -212,20 +223,20 @@ export function FloorPlan() {
 
             {/* the meter, out at the boundary */}
             <g className="fp-meter">
-              <path d="M96 372 H200" />
-              <circle cx="96" cy="372" r="5" />
-              <text x="96" y="350" className="fp-tag">
+              <path d="M70 326 H250" />
+              <circle cx="70" cy="326" r="5" />
+              <text x="70" y="306" className="fp-tag" textAnchor="middle">
                 METER
               </text>
             </g>
 
             {/* the machine on the garage wall */}
             <g className="fp-machine">
-              <rect x="216" y="336" width="80" height="52" rx="3" />
+              <rect x="250" y="300" width="80" height="52" rx="3" />
               {[0, 1, 2].map((i) => (
-                <rect key={i} className="fp-vessel" x={226 + i * 22} y={346} width="14" height="32" rx="2" />
+                <rect key={i} className="fp-vessel" x={260 + i * 22} y={310} width="14" height="32" rx="2" />
               ))}
-              <text x="256" y="322" className="fp-tag" textAnchor="middle">
+              <text x="290" y="286" className="fp-tag" textAnchor="middle">
                 NGW-01
               </text>
             </g>
