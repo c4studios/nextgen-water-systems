@@ -23,7 +23,7 @@ export function Band({
   return (
     <section className="band">
       <figure className="band-figure">
-        <img src={asset(src)} alt={alt} loading="lazy" decoding="async" />
+        <img src={asset(src)} alt={alt} width={1600} height={1073} loading="lazy" decoding="async" />
         <figcaption className="band-cap">
           <b>{tag}</b>
           <span>{caption}</span>

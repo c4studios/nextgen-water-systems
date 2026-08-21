@@ -197,6 +197,8 @@ export function HowItWorks() {
         <figure className="hiw-figure">
           <img
             src={asset("/photos/cartridges.jpg")}
+            width={1600}
+            height={1073}
             alt="The three filter cartridges laid out in order on a benchtop: pleated sediment, carbon, and a scale-reduction cartridge with a blue collar"
             loading="lazy"
             decoding="async"

@@ -55,7 +55,7 @@ export function Sheet({
 
         {photo && (
           <figure className="doc-photo">
-            <img src={asset(photo)} alt={photoAlt || ""} loading="lazy" decoding="async" />
+            <img src={asset(photo)} alt={photoAlt || ""} width={1600} height={1073} loading="lazy" decoding="async" />
           </figure>
         )}
 

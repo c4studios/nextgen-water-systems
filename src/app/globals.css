@@ -5161,3 +5161,23 @@ header.site-nav.is-light .nav-ring-btn {
    moving between them stays on one surface rather than stepping onto flat
    black halfway through the set */
 .doc.ground { min-height: 100vh; }
+
+/* ---- the installer link ----
+   Aqua-Safe is named in half a dozen places and was linked in none of them.
+   PRODUCT.md is explicit that the installer is part of the product and the
+   site's job is to make that visible, so the name is now the link. Underlined
+   rather than coloured: these sit inside body copy and a cyan word mid-sentence
+   would read as a system accent rather than as a link. */
+.installer-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgba(41, 194, 238, 0.55);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  transition: color 0.2s var(--ease), text-decoration-color 0.2s var(--ease);
+}
+.installer-link:hover,
+.installer-link:focus-visible {
+  color: var(--ice);
+  text-decoration-color: var(--cyan);
+}

@@ -1,5 +1,6 @@
 import { asset } from "@/lib/asset";
 import { FrostedGlass } from "@/components/ui/FrostedGlass";
+import { INSTALLER } from "@/lib/jsonld";
 
 /**
  * Act 0 — the outcome.
@@ -37,7 +38,11 @@ export function Opening() {
             Book a free water test
           </a>
           <p className="opening-installer">
-            Installed by Aqua-Safe, licensed Perth plumbers.
+            Installed by{" "}
+            <a className="installer-link" href={INSTALLER.url} target="_blank" rel="noopener">
+              Aqua-Safe
+            </a>
+            , licensed Perth plumbers.
           </p>
         </div>
       </div>

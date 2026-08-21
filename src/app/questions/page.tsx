@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import { Sheet } from "@/components/site/Sheet";
 import { breadcrumbJsonLd } from "@/lib/jsonld";
+import { INSTALLER } from "@/lib/jsonld";
+import { pageOg } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Questions",
   description:
-    "Whole-home water filtration in Perth: what it changes, what it does not remove, whether it softens water, where it goes and what servicing involves. Straight answers.",
+    "Whole-home water filtration in Perth: what it changes, what it does not remove, whether it softens water, and who fits it.",
   alternates: { canonical: "/questions/" },
-  openGraph: { title: "Questions | Next Gen Water Systems" },
+  openGraph: pageOg("/questions/", "Questions | Next Gen Water Systems"),
 };
 
 /* Every answer here is either mechanism (checkable) or a fact about the
@@ -115,7 +117,10 @@ const QA: { q: string; a: React.ReactNode }[] = [
     q: "Who fits it, and is it warranted?",
     a: (
       <p>
-        Aqua-Safe Plumbing &amp; Maintenance, licensed Perth plumbers and gas fitters (PL10802 · GF22810), fully
+        <a className="installer-link" href={INSTALLER.url} target="_blank" rel="noopener">
+          Aqua-Safe Plumbing &amp; Maintenance
+        </a>
+        , licensed Perth plumbers and gas fitters (PL10802 · GF22810), fully
         insured. The installation carries a 12-month workmanship warranty.
       </p>
     ),

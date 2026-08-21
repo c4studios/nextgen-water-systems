@@ -2,13 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Sheet, Block } from "@/components/site/Sheet";
 import { breadcrumbJsonLd } from "@/lib/jsonld";
+import { INSTALLER } from "@/lib/jsonld";
+import { pageOg } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Installation",
   description:
-    "Whole-home filtration fitted at the mains by Aqua-Safe Plumbing & Maintenance, licensed Perth plumbers and gas fitters (PL10802, GF22810), with a 12-month workmanship warranty.",
+    "Whole-home filtration fitted at the mains by Aqua-Safe Plumbing, licensed Perth plumbers and gas fitters, with a 12-month workmanship warranty.",
   alternates: { canonical: "/installation/" },
-  openGraph: { title: "Installation | Next Gen Water Systems" },
+  openGraph: pageOg("/installation/", "Installation | Next Gen Water Systems"),
 };
 
 export default function InstallationPage() {
@@ -37,7 +39,13 @@ export default function InstallationPage() {
       >
         <Block title="Who does the work">
           <p>
-            Every Next Gen system is installed by <b>Aqua-Safe Plumbing &amp; Maintenance</b>, a family-owned
+            Every Next Gen system is installed by{" "}
+            <b>
+              <a className="installer-link" href={INSTALLER.url} target="_blank" rel="noopener">
+                Aqua-Safe Plumbing &amp; Maintenance
+              </a>
+            </b>
+            , a family-owned
             Perth business. Licensed plumbing PL10802, gas fitting GF22810, fully insured. The installation
             carries a 12-month workmanship warranty on top of whatever the manufacturer covers on the parts.
           </p>

@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Sheet, Block } from "@/components/site/Sheet";
 import { breadcrumbJsonLd } from "@/lib/jsonld";
+import { pageOg } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "The system",
   description:
-    "The NGW-01 is three stainless vessels plumbed in series at the mains: graded sediment, a copper-zinc and carbon bed, then limescale-reduction carbon. What each stage does, and what it deliberately does not.",
+    "Three stainless vessels plumbed in series at the mains: graded sediment, copper-zinc and carbon, then limescale-reduction carbon. What each stage does.",
   alternates: { canonical: "/system/" },
-  openGraph: { title: "The system | Next Gen Water Systems" },
+  openGraph: pageOg("/system/", "The system | Next Gen Water Systems"),
 };
 
 export default function SystemPage() {

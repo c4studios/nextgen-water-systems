@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ROUTES } from "@/content/site";
 import { CONTACT } from "@/content/plates";
 import C4FooterCredit from "@/components/c4-footer-credit/C4FooterCredit";
+import { INSTALLER } from "@/lib/jsonld";
 
 /**
  * The footer, on every page. Set out as the drawing set's index rather than as
@@ -47,8 +48,12 @@ export function SiteFooter() {
             {CONTACT.email}
           </a>
           <p className="sfoot-fine">
-            Installed Perth-wide by Aqua-Safe Plumbing &amp; Maintenance, licensed plumbers and gas fitters
-            (PL10802 · GF22810), with a 12-month workmanship warranty on the installation.
+            Installed Perth-wide by{" "}
+            <a className="installer-link" href={INSTALLER.url} target="_blank" rel="noopener">
+              Aqua-Safe Plumbing &amp; Maintenance
+            </a>
+            , licensed plumbers and gas fitters (PL10802 · GF22810), with a 12-month workmanship
+            warranty on the installation.
           </p>
         </div>
       </div>

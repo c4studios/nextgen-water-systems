@@ -2,13 +2,15 @@ import type { Metadata } from "next";
 import { Sheet, Block } from "@/components/site/Sheet";
 import { BookingForm } from "@/components/site/BookingForm";
 import { breadcrumbJsonLd } from "@/lib/jsonld";
+import { INSTALLER } from "@/lib/jsonld";
+import { pageOg } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Free in-home water test",
   description:
-    "Book a free in-home water test anywhere in the Perth metro. A technician tests your own supply at your own tap and tells you what is in it. No obligation afterwards.",
+    "Book a free in-home water test anywhere in the Perth metro. A technician tests your own supply at your own tap. No obligation.",
   alternates: { canonical: "/water-test/" },
-  openGraph: { title: "Book a free in-home water test | Next Gen Water Systems" },
+  openGraph: pageOg("/water-test/", "Book a free in-home water test | Next Gen Water Systems"),
 };
 
 export default function WaterTestPage() {
@@ -69,8 +71,11 @@ export default function WaterTestPage() {
             describing someone else&rsquo;s.
           </p>
           <p className="doc-note">
-            Tests are carried out across the Perth metro by Aqua-Safe Plumbing &amp; Maintenance, licensed
-            plumbers and gas fitters (PL10802 · GF22810).
+            Tests are carried out across the Perth metro by{" "}
+            <a className="installer-link" href={INSTALLER.url} target="_blank" rel="noopener">
+              Aqua-Safe Plumbing &amp; Maintenance
+            </a>
+            , licensed plumbers and gas fitters (PL10802 · GF22810).
           </p>
         </Block>
       </Sheet>
