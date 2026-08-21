@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { navRoutes } from "@/content/site";
@@ -14,11 +14,20 @@ import { navRoutes } from "@/content/site";
  */
 export function Nav() {
   const [open, setOpen] = useState(false);
+  // collapses to a floating pill once you are into the page
+  const [shrunk, setShrunk] = useState(false);
   const pathname = usePathname();
+
+  useEffect(() => {
+    const onScroll = () => setShrunk(window.scrollY > 60);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
   const here = (href: string) => pathname === href || pathname === href.replace(/\/$/, "");
 
   return (
-    <header className={`site-nav${open ? " is-open" : ""}`}>
+    <header className={`site-nav${open ? " is-open" : ""}${shrunk && !open ? " is-shrunk" : ""}`}>
       <div className="wrap">
         <Link className="brand" href="/" data-cursor onClick={() => setOpen(false)}>
           <svg className="mark" viewBox="0 0 40 40" fill="none" aria-hidden="true">
