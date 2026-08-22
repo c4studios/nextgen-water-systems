@@ -62,7 +62,9 @@ export function SiteFooter() {
 
       <div className="sfoot-bottom">
         <span>© 2026 Next Gen Water Systems · ABN 25 770 821 226 · Perth, Western Australia</span>
-        <C4FooterCredit />
+        <span className="sfoot-credit">
+          <C4FooterCredit />
+        </span>
       </div>
     </footer>
   );

@@ -266,6 +266,23 @@ export function FloorPlan() {
             this distance while the house itself stays put */}
         <div className="fp-runway" aria-hidden="true" />
 
+        {/* THE MOBILE VERSION OF THE LABELS.
+            At 390px the plan was forced to min-width 720px inside a scroll
+            container, so half the house sat off-screen and the water reached
+            fittings the reader could not see — which is the one thing the
+            section exists to show. The plan now fits the screen and drops its
+            own labels, because at that scale they render around 8px. The names
+            live here instead, and light up on the same `reached` index the
+            drawing uses, so the list IS the legend. Desktop never sees it. */}
+        <ol className="fp-list" aria-hidden="true">
+          {FIXTURES.map((f, i) => (
+            <li key={f.label} className={i <= reached ? "is-served" : undefined}>
+              <i />
+              {f.label}
+            </li>
+          ))}
+        </ol>
+
         <p className="fp-foot">
           <span className="fp-count">
             {Math.max(0, reached + 1)} of {FIXTURES.length}

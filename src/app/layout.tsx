@@ -46,6 +46,11 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   themeColor: "#0a0a0b",
   colorScheme: "dark",
+  // The stylesheet reads env(safe-area-inset-*) in several places, and those
+  // resolve to zero unless the viewport opts into the full screen. Without this
+  // that CSS was inert. Note it does NOT disable user scaling: pinch-zoom stays
+  // available, which is a WCAG requirement people break with this meta tag.
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

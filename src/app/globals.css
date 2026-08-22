@@ -3862,16 +3862,56 @@
   text-decoration-thickness: 1px;
 }
 
+.fp-list { display: none; }
+
 @media (max-width: 900px) {
   .fp-head { grid-template-columns: 1fr; gap: 18px; }
-  .fp-plate {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+  /* The plan FITS. It used to be pinned to min-width 720px inside a horizontal
+     scroller, so on a 390px screen you saw about half the house with no
+     affordance telling you the rest was off to the right, while the water ran
+     through fittings you could not see. */
+  .fp-plate { overflow-x: visible; }
+  .fp-svg { min-width: 0; width: 100%; }
+  /* At this scale the SVG's own labels render around 8px, so they come off and
+     the list below carries the names at a readable size. */
+  .fp-room, .fp-fixlabel, .fp-tag { display: none; }
+
+  .fp-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 2px 14px;
+    margin: 20px 0 0;
+    padding: 0;
+    list-style: none;
   }
-  .fp-svg { min-width: 720px; }
+  .fp-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 34px;
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    transition: color 0.3s var(--ease);
+  }
+  .fp-list li i {
+    flex: none;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    border: 1px solid rgba(203, 224, 236, 0.34);
+    transition: background 0.3s var(--ease), border-color 0.3s var(--ease),
+      box-shadow 0.3s var(--ease);
+  }
+  .fp-list li.is-served { color: var(--ice); }
+  .fp-list li.is-served i {
+    background: var(--cyan);
+    border-color: var(--cyan);
+    box-shadow: 0 0 9px rgba(41, 194, 238, 0.65);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .fp-branch, .fp-fitting, .fp-fixlabel { transition: none; }
+  .fp-branch, .fp-fitting, .fp-fixlabel, .fp-list li, .fp-list li i { transition: none; }
   .fp-water { filter: none; }
 }
 
@@ -5267,4 +5307,88 @@ header.site-nav.is-light .nav-ring-btn {
 @media (max-width: 640px) {
   .nf-index a { grid-template-columns: 2.6em minmax(0, 1fr); }
   .nf-index a i { grid-column: 2; }
+}
+
+/* ===========================================================================
+   MOBILE HARDENING
+   Everything here was measured on real device widths (320, 360, 375, 390, 430),
+   not assumed.
+   =========================================================================== */
+
+/* 1. iOS SAFARI ZOOMS THE WHOLE PAGE when you focus an input under 16px, and
+      it does not zoom back out. The booking form's fields were 14px, so tapping
+      the first field on the site's ONLY conversion action threw the layout and
+      left the visitor pinched in. 16px is the threshold, exactly. */
+@media (max-width: 900px) {
+  .tform input,
+  .tform textarea,
+  .tform select {
+    font-size: 16px;
+  }
+}
+
+/* 2. A readable floor for small type on phones.
+      The drafting labels are deliberately small and that is the brand's voice,
+      but 10-10.5px on a handset is past legible and several of these are
+      FUNCTIONAL rather than decorative: form field labels, breadcrumbs, the
+      footer's contact heading. Raised where they carry meaning; the purely
+      decorative sheet furniture keeps its size. */
+@media (max-width: 900px) {
+  /* the label TEXT is the inner span, which is what carried the 10px */
+  .tform label span,
+  .tform label,
+  .tform-grid label,
+  .doc-trail,
+  .doc-trail a,
+  .doc-trail span,
+  .sfoot-cap,
+  .nav-hint-touch,
+  .nav-hint-desk {
+    font-size: 12px;
+  }
+  .tk-label,
+  .ex-n,
+  .sched-t,
+  .sched-stamp,
+  .tk-sheet-head,
+  .ex-stamp,
+  .tk-stamp,
+  /* The credit is a vendored component that sets font-size:11px and
+     opacity:0.5 as INLINE styles, which no stylesheet rule can beat without
+     !important. This is the case !important exists for: overriding inline
+     styles from a supplied component without forking it. 11px at half opacity
+     on a dark ground is under the legibility floor on a handset; it stays
+     modest, it just stops being a smudge. */
+  /* the plate caption is an honesty disclaimer, not decoration: it says the
+     photograph is an illustration and not a customer's kettle, so it has to be
+     readable. The title strip beside it goes up with it. */
+  .ex-cap,
+  .ex-tb-c { font-size: 12px; }
+  .ex-tb-c i { font-size: 10px; }
+
+  .sfoot-credit *,
+  .sfoot-credit span {
+    font-size: 12px !important;
+    opacity: 0.72 !important;
+  }
+}
+
+/* 3. THE DRAWING CHROME is fixed to the bottom-right corner on every screen.
+      On a 390x844 handset that badge sits permanently over the content in the
+      one corner a right-handed thumb rests, and it shrinks the usable area of
+      every section for no informational gain: it repeats the sheet number
+      already printed in each section's own furniture. It stays on tablets and
+      desktop, where there is room for it. */
+@media (max-width: 760px) {
+  .chrome { display: none; }
+}
+
+/* 4. Safe areas. The stylesheet already reads env(safe-area-inset-*), but those
+      only ever resolve to a real value when the viewport opts in with
+      viewport-fit=cover — without it they are silently zero and the CSS is
+      inert. Now that the meta opts in, the bottom-anchored furniture clears the
+      home indicator on a notched phone. */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .sfoot { padding-bottom: max(var(--sec-y-tight), env(safe-area-inset-bottom)); }
+  .nav-hint { bottom: max(22px, calc(env(safe-area-inset-bottom) + 12px)); }
 }
