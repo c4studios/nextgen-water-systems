@@ -7,7 +7,19 @@
  * page never ships with a dead button. ⚠️ needs the client's account; we
  * can't create one on their behalf.
  */
-export const FORM_ENDPOINT: string | null = null;
+/**
+ * The booking form's endpoint.
+ *
+ * "/api/booking/" is this site's own serverless route, which only exists on the
+ * Vercel build — the GitHub Pages export cannot host it. So the preview build
+ * keeps the mailto fallback and the real domain posts properly. NEXT_PUBLIC_BASE_PATH
+ * is empty on Vercel and set on Pages, which is exactly the signal needed.
+ *
+ * ⚠️ The route returns 503 until RESEND_API_KEY is set in Vercel. The form
+ * falls back to the mailto compose on any non-2xx, so it is never a dead button.
+ */
+export const FORM_ENDPOINT: string | null =
+  (process.env.NEXT_PUBLIC_BASE_PATH ?? "") === "" ? "/api/booking/" : null;
 
 /**
  * What each stage physically DOES. Deliberately not performance figures.

@@ -36,13 +36,19 @@ export function BookingForm() {
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(e.currentTarget).entries()) as Record<string, string>;
-    if (!FORM_ENDPOINT) {
+    // the site check rides along, so the technician knows what he is looking
+    // for before he is on site
+    if (taste) data.taste = taste;
+    const mailto = () => {
       const said = taste ? `\nWhat I told you about my water: ${taste}` : "";
       const body = `Hi Next Gen,\n\nI'd like to book a free in-home water test.\n\nName: ${data.name}\nSuburb: ${data.suburb}\nBest contact number: ${data.phone}\nPreferred day: ${data.day || "any"}${said}\n\nThanks.`;
       window.location.href = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
         "Free water test: booking request",
       )}&body=${encodeURIComponent(body)}`;
       setState("logged");
+    };
+    if (!FORM_ENDPOINT) {
+      mailto();
       return;
     }
     try {
@@ -52,9 +58,16 @@ export function BookingForm() {
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify(data),
       });
-      setState(res.ok ? "logged" : "error");
+      if (res.ok) {
+        setState("logged");
+        return;
+      }
+      // The endpoint exists but could not send — most likely RESEND_API_KEY is
+      // not set yet. Hand the visitor to their mail app rather than showing
+      // them an error on the one action the site is for.
+      mailto();
     } catch {
-      setState("error");
+      mailto();
     }
   };
 

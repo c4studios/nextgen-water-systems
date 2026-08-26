@@ -26,6 +26,14 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - uses: actions/configure-pages@v5
+      # The booking endpoint is a serverless route and cannot exist in a static
+      # export, so it is removed for the Pages build only. Pages is the client's
+      # preview link and has to keep deploying until the real domain is live;
+      # on Vercel the route is present and the form posts to it, while the Pages
+      # build falls back to the mailto compose. Deleting it here rather than
+      # letting the build fail is what keeps the two targets honest.
+      - name: Drop the serverless route (static export cannot host it)
+        run: rm -rf src/app/api
       - run: pnpm build
       - run: touch out/.nojekyll
       - uses: actions/upload-pages-artifact@v3
