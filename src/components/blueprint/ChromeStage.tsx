@@ -1,8 +1,10 @@
 "use client";
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Environment, ContactShadows, Html, Lightformer, RoundedBox } from "@react-three/drei";
-import { EffectComposer, Bloom, Vignette, ChromaticAberration, DepthOfField } from "@react-three/postprocessing";
+import { Environment, ContactShadows, Html, Lightformer, RoundedBox, Decal, MeshTransmissionMaterial } from "@react-three/drei";
+import { EffectComposer, Bloom, Vignette, ChromaticAberration, DepthOfField, N8AO } from "@react-three/postprocessing";
+import { makeBrushedSteel, makeCastGrain, makeOrangePeel, makeSmudge, makeDroplets, makeScratch } from "./surfaces";
+import { detectTier, QUALITY } from "./quality";
 import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import * as THREE from "three";
 import { BACKDROP_STOPS, BACKDROP_CENTER, BACKDROP_RADII, BACKDROP_FOG } from "./backdrop";
@@ -45,6 +47,10 @@ const HIDE: string[] =
     ? (new URLSearchParams(window.location.search).get("nghide") || "").split(",").filter(Boolean)
     : [];
 const hidden = (k: string) => HIDE.includes(k);
+
+// One decision that every expensive thing below consults. See quality.ts.
+const TIER = detectTier();
+const Q = QUALITY[TIER];
 
 const ss = (x: number, a: number, b: number) => THREE.MathUtils.smoothstep(x, a, b);
 const lerp = THREE.MathUtils.lerp;
@@ -580,6 +586,23 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
     return tex;
   }, []);
 
+  /* ── RELIEF. Every surface below had colour and roughness but no normals,
+     so nothing on the machine had a surface: brushing was a shading trick and
+     the cast heads were flat paint. These are height fields drawn on canvas
+     and Sobel-filtered into tangent-space normals (surfaces.ts): the grain
+     you can see catch the light, the pitting on the heads, the orange-peel
+     skin of the powder coat. Plus the imperfections: a fingerprint, one
+     scratch, and condensation on the cold mains pipe. Realism is mostly
+     what is slightly wrong. */
+  const steelMaps = useMemo(() => makeBrushedSteel(), []);
+  const castNormal = useMemo(() => makeCastGrain(), []);
+  const peelNormal = useMemo(() => makeOrangePeel(), []);
+  const smudge = useMemo(() => (Q.decals ? makeSmudge() : null), []);
+  const drops = useMemo(() => (Q.decals && Q.droplets > 0 ? makeDroplets(Q.droplets) : null), []);
+  const scratch = useMemo(() => (Q.decals ? makeScratch() : null), []);
+  const reliefScale = useMemo(() => new THREE.Vector2(Q.relief, Q.relief), []);
+  const reliefSoft = useMemo(() => new THREE.Vector2(Q.relief * 0.55, Q.relief * 0.55), []);
+
   // granule bed for the KDF cartridge — black GAC + copper body + glinting
   // brass KDF flecks (the §A-KDF "bed of loose granules" read)
   const granuleMap = useMemo(() => {
@@ -1096,8 +1119,12 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
     t.wrapS = t.wrapT = THREE.RepeatWrapping;
     t.repeat.set(3, 3);
     frameMat.roughnessMap = t;
+    if (peelNormal) {
+      frameMat.normalMap = peelNormal;
+      frameMat.normalScale.copy(reliefSoft);
+    }
     frameMat.needsUpdate = true;
-  }, [frameMat, roughMap]);
+  }, [frameMat, roughMap, peelNormal, reliefSoft]);
   const tabGeo = useMemo(() => tabGeometry(0.52, 0.34, 0.14, 0.055), []);
   const gussetGeo = useMemo(() => gussetGeometry(0.22, 0.05), []);
   const supplyMat = useMemo(() => new THREE.MeshStandardMaterial({ ...MACHINED, transparent: true }), []);
@@ -1551,6 +1578,29 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
               existed the stream had nothing to be in. */}
           <mesh material={supplyMat} position={[-4.35, 0.9, 0]} rotation={[0, 0, Math.PI / 2]}>
             <cylinderGeometry args={[0.11, 0.11, 2.3, 24, 1, true]} />
+            {/* condensation. A cold mains pipe in a warm garage sweats, and the
+                beads sit on the upper surface where they have not yet run.
+                Local +X is world up here (the pipe is rolled 90 degrees onto
+                its side), so the decal sits at +X and projects inward. */}
+            {Q.decals && drops && (
+              <Decal position={[0.11, 0.2, 0]} rotation={[0, Math.PI / 2, 0]} scale={[0.36, 1.2, 0.3]}>
+                <meshPhysicalMaterial
+                  color="#ffffff"
+                  metalness={0}
+                  roughness={0.03}
+                  clearcoat={1}
+                  clearcoatRoughness={0.02}
+                  normalMap={drops.normalMap}
+                  normalScale={reliefScale}
+                  alphaMap={drops.alphaMap}
+                  transparent
+                  opacity={0.85}
+                  depthWrite={false}
+                  polygonOffset
+                  polygonOffsetFactor={-4}
+                />
+              </Decal>
+            )}
           </mesh>
           {/* house-out run, mirrored — goes translucent while clean water is
               shown leaving through it (outMat, useFrame) */}
@@ -1595,8 +1645,32 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
             >
               <mesh position={[0, 1.0, 0]}>
                 <cylinderGeometry args={[0.74, 0.74, 0.52, 48]} />
-                {/* matte charcoal cap (the real heads are dark, not chrome) */}
-                <meshStandardMaterial {...HEAD} roughnessMap={spinMap ?? undefined} />
+                {/* matte charcoal cap (the real heads are dark, not chrome).
+                    Die-cast then blasted: the pitted grain is what stops it
+                    reading as a painted cylinder. */}
+                <meshStandardMaterial
+                  {...HEAD}
+                  roughnessMap={spinMap ?? undefined}
+                  normalMap={castNormal ?? undefined}
+                  normalScale={reliefScale}
+                />
+                {/* one scratch, where a spanner slipped off the lugs */}
+                {Q.decals && scratch && i === 2 && (
+                  <Decal position={[0.2, 0.08, 0.7]} rotation={[0, 0.28, -0.35]} scale={[0.5, 0.13, 0.3]}>
+                    <meshStandardMaterial
+                      color="#8c9299"
+                      metalness={0.9}
+                      roughness={0.35}
+                      normalMap={scratch.normalMap}
+                      normalScale={reliefScale}
+                      alphaMap={scratch.alphaMap}
+                      transparent
+                      depthWrite={false}
+                      polygonOffset
+                      polygonOffsetFactor={-4}
+                    />
+                  </Decal>
+                )}
               </mesh>
               {/* pressure-release button */}
               <mesh position={[0, 1.32, 0]}>
@@ -1651,6 +1725,38 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
                     <circleGeometry args={[0.112, 32]} />
                     <meshStandardMaterial map={gaugeMaps[i]} roughness={0.35} metalness={0} />
                   </mesh>
+                  {/* the lens. A gauge has glass over the dial, and the dial
+                      was sitting in open air. Refracting glass on desktop;
+                      a clear physical disc on phones, where a transmission
+                      buffer per lens is not worth what it costs. */}
+                  <mesh position={[0, 0, 0.212]} rotation={[Math.PI / 2, 0, 0]}>
+                    <cylinderGeometry args={[0.116, 0.116, 0.02, 32]} />
+                    {Q.glass ? (
+                      <MeshTransmissionMaterial
+                        thickness={0.05}
+                        ior={1.52}
+                        roughness={0.012}
+                        chromaticAberration={0.015}
+                        anisotropicBlur={0}
+                        samples={6}
+                        resolution={512}
+                        clearcoat={1}
+                        transmission={1}
+                        color="#ffffff"
+                      />
+                    ) : (
+                      <meshPhysicalMaterial
+                        color="#ffffff"
+                        metalness={0}
+                        roughness={0.05}
+                        transmission={0.92}
+                        thickness={0.05}
+                        ior={1.5}
+                        clearcoat={1}
+                        transparent
+                      />
+                    )}
+                  </mesh>
                 </group>
               )}
             </group>
@@ -1672,13 +1778,43 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
                     sumpMats.current[i] = el;
                   }}
                   {...STEEL}
-                  roughnessMap={roughMap ?? undefined}
-                  bumpMap={bumpMap ?? undefined}
-                  bumpScale={0.012}
+                  roughnessMap={steelMaps?.roughnessMap ?? roughMap ?? undefined}
+                  normalMap={steelMaps?.normalMap ?? undefined}
+                  normalScale={reliefScale}
                   transparent
                   opacity={1}
                 />
+                {/* the fingerprint: an oil film raises roughness, so the highlight
+                    goes dull exactly there. Same grey map drives where (alpha)
+                    and how dull (roughness). On the middle vessel only, front
+                    right, about where a hand steadies the bowl to unscrew it. */}
+                {Q.decals && smudge && i === 1 && (
+                  <Decal position={[0.566, -0.55, 0.253]} rotation={[0, 1.15, 0.2]} scale={[0.5, 0.64, 0.6]}>
+                    <meshStandardMaterial
+                      color="#e4e8ea"
+                      metalness={0.82}
+                      roughness={1}
+                      roughnessMap={smudge}
+                      alphaMap={smudge}
+                      transparent
+                      depthWrite={false}
+                      polygonOffset
+                      polygonOffsetFactor={-4}
+                    />
+                  </Decal>
+                )}
               </mesh>
+              {/* the thread. The bowl screws into the head, and the join was a
+                  flat step. Five ridges climbing toward the head give it the
+                  register of something that unscrews. Skipped on the low tier
+                  where five extra tori per vessel are not worth their draw. */}
+              {Q.hardware &&
+                [0, 1, 2, 3, 4, 5].map((k) => (
+                  <mesh key={`thr${k}`} position={[0, 0.575 + k * 0.03, 0]} rotation={[Math.PI / 2, 0, 0]}>
+                    <torusGeometry args={[0.596 + k * 0.0045, 0.013, 8, 56]} />
+                    <meshStandardMaterial {...MACHINED} roughness={0.5} transparent />
+                  </mesh>
+                ))}
               {/* shallow domed base (flattened to match the GA's rounded foot) */}
               <mesh position={[0, -1.55, 0]} scale={[1, 0.32, 1]}>
                 <sphereGeometry args={[0.62, 40, 18, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2]} />
@@ -2140,7 +2276,7 @@ export default function ChromeStage({ progress, active, sheetRatio, onReady }: P
   return (
     <Canvas
       frameloop={active ? "always" : "never"}
-      dpr={[1, 2]}
+      dpr={Q.dpr}
       camera={{ position: [0, 0.12, 8.8], fov: 38 }}
       // OPAQUE canvas: blending ghosted layers against an alpha framebuffer and
       // letting the BROWSER composite produces a milky wash. The full-bleed
@@ -2197,16 +2333,42 @@ export default function ChromeStage({ progress, active, sheetRatio, onReady }: P
 
       {!hidden("post") && (
         <EffectComposer>
-          {/* Phase 3 lens: focus rides the discussed part (FocusRig), off at
-              the trace dock */}
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          <DepthOfField ref={dofRef as any} target={[0, -0.1, 0]} focalLength={0.004} bokehScale={1.3} />
-          {/* bloom OFF the metal speculars (the #1 CG tell) — only genuinely
-              emissive things (rings, redox sparks) may glow */}
-          <Bloom intensity={0.34} luminanceThreshold={0.92} luminanceSmoothing={0.3} mipmapBlur />
-          {/* lens fringe kept to the frame edges — dead-centre chrome stays clinically sharp */}
-          <ChromaticAberration offset={CA_OFFSET} radialModulation modulationOffset={0.3} />
-          <Vignette eskil={false} offset={0.26} darkness={0.55} />
+          {/* EffectComposer types its children as Elements and rejects the
+              false/undefined that conditionals produce, so the chain is
+              assembled as a filtered array. Order matters: AO first, so the
+              lens and bloom see an already-grounded image. */}
+          {[
+            // Ambient occlusion. Every seam on the machine — under the bracket,
+            // inside the thread, where the head meets the bowl — was lit as if
+            // nothing sat next to it. This is what grounds the parts against
+            // each other. Half-resolution on phones; off on the low tier.
+            Q.ao && !hidden("ao") ? (
+              <N8AO
+                key="ao"
+                aoRadius={0.42}
+                distanceFalloff={0.7}
+                intensity={2.1}
+                aoSamples={Q.aoHalfRes ? 8 : 16}
+                denoiseSamples={Q.aoHalfRes ? 4 : 8}
+                denoiseRadius={8}
+                halfRes={Q.aoHalfRes}
+                color="#06090c"
+              />
+            ) : null,
+            // Phase 3 lens: focus rides the discussed part (FocusRig), off at
+            // the trace dock. Desktop only: the film lens is the first thing to
+            // go on a phone, and the least missed.
+            Q.dof ? (
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              <DepthOfField key="dof" ref={dofRef as any} target={[0, -0.1, 0]} focalLength={0.004} bokehScale={1.3} />
+            ) : null,
+            // bloom OFF the metal speculars (the #1 CG tell) — only genuinely
+            // emissive things (rings, redox sparks) may glow
+            <Bloom key="bloom" intensity={0.34} luminanceThreshold={0.92} luminanceSmoothing={0.3} mipmapBlur />,
+            // lens fringe kept to the frame edges — dead-centre chrome stays clinically sharp
+            Q.lens ? <ChromaticAberration key="ca" offset={CA_OFFSET} radialModulation modulationOffset={0.3} /> : null,
+            <Vignette key="vig" eskil={false} offset={0.26} darkness={0.55} />,
+          ].filter((e): e is JSX.Element => e !== null)}
         </EffectComposer>
       )}
     </Canvas>

@@ -747,6 +747,13 @@
     /* Slice 1: the journey carries the WHOLE story now — every beat needs
        real dwell, so the pin is 1050svh (was 600) */
     height: 1050svh;
+    /* Phones flick; they do not scrub. Ten and a half screens of pinned
+       scrolling on a handset is where people give up, so the journey is
+       shorter there. Every beat is a fraction of the pin, so this compresses
+       them all equally rather than cutting any. */
+    @media (max-width: 900px) {
+      height: 880svh;
+    }
     /* subtle studio pool-of-light so the chrome sits in depth, not flat black */
     background: radial-gradient(50% 42% at 50% 40%, #1a1b1d 0%, #0e0e10 58%, #0a0a0b 100%);
   }
@@ -1079,6 +1086,12 @@
   @media (max-width: 760px) {
     /* phones: the vessel owns the centre — every beat speaks from the base */
     .pbeat {
+      /* WIDTH, not just max-width. This box is absolutely positioned at
+         left:50% with a translate, and with no explicit width an abspos box
+         shrinks to fit the space to the RIGHT of its left edge — half the
+         screen. On a 390px phone every beat was being squeezed into ~195px
+         and the body wrapped at four words a line inside it. */
+      width: min(92vw, 420px);
       max-width: min(92vw, 420px);
       text-align: center;
       text-shadow: 0 1px 14px rgba(10, 10, 11, 0.9), 0 0 30px rgba(10, 10, 11, 0.7);
@@ -5390,5 +5403,7 @@ header.site-nav.is-light .nav-ring-btn {
       home indicator on a notched phone. */
 @supports (padding: env(safe-area-inset-bottom)) {
   .sfoot { padding-bottom: max(var(--sec-y-tight), env(safe-area-inset-bottom)); }
-  .nav-hint { bottom: max(22px, calc(env(safe-area-inset-bottom) + 12px)); }
+  /* (.nav-hint is anchored at top: 88px under the orb. A bottom inset was
+     added here by mistake and, with top set, stretched the pill to the full
+     viewport height. It has no bottom edge to keep clear of.) */
 }
