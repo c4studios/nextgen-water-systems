@@ -3,7 +3,7 @@
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Environment, ContactShadows, Html, Lightformer, RoundedBox, Decal, MeshTransmissionMaterial } from "@react-three/drei";
 import { EffectComposer, Bloom, Vignette, ChromaticAberration, DepthOfField, N8AO } from "@react-three/postprocessing";
-import { makeBrushedSteel, makeCastGrain, makeOrangePeel, makeSmudge, makeDroplets, makeScratch } from "./surfaces";
+import { makeBrushedSteel, makeCastGrain, makeOrangePeel, makeSmudge, makeDroplets, makeScratch, makeGranules } from "./surfaces";
 import { detectTier, QUALITY } from "./quality";
 import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import * as THREE from "three";
@@ -603,29 +603,29 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
   const reliefScale = useMemo(() => new THREE.Vector2(Q.relief, Q.relief), []);
   const reliefSoft = useMemo(() => new THREE.Vector2(Q.relief * 0.55, Q.relief * 0.55), []);
 
-  // granule bed for the KDF cartridge — black GAC + copper body + glinting
-  // brass KDF flecks (the §A-KDF "bed of loose granules" read)
-  const granuleMap = useMemo(() => {
-    if (typeof document === "undefined") return null;
-    const s = 256;
-    const cv = document.createElement("canvas");
-    cv.width = cv.height = s;
-    const g = cv.getContext("2d");
-    if (!g) return null;
-    g.fillStyle = "#7c4c28";
-    g.fillRect(0, 0, s, s);
-    for (let k = 0; k < 2400; k++) {
-      const r = Math.random();
-      g.fillStyle = r < 0.48 ? "#14181d" : r < 0.76 ? "#a97142" : "#e2a55e";
-      const sz = 1 + Math.random() * 2.4;
-      g.fillRect(Math.random() * s, Math.random() * s, sz, sz);
-    }
-    const tex = new THREE.CanvasTexture(cv);
-    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set(3, 3);
-    tex.anisotropy = 4;
-    return tex;
-  }, []);
+  // The KDF cartridge in section: an outer bed of copper-zinc granules and,
+  // radially inside it, coconut carbon — the order the water meets them
+  // (annulus → media wall → core). Each bed is drawn as grains with relief;
+  // the old version was a copper tint with pixel speckle and read as cork.
+  const kdfMaps = useMemo(() => makeGranules("kdf"), []);
+  const gacMaps = useMemo(() => makeGranules("gac"), []);
+  // One grain size everywhere a bed shows. The wall is ~2.5 units round and
+  // 2.05 tall; a section band is a fraction of that wide, so each face gets
+  // its own repeat rather than stretching one tile across a 0.13-unit quad.
+  const tileBed = (m: { map: THREE.CanvasTexture; normalMap: THREE.CanvasTexture } | null, rx: number, ry: number) => {
+    if (!m) return null;
+    const map = m.map.clone(), normalMap = m.normalMap.clone();
+    map.repeat.set(rx, ry);
+    normalMap.repeat.set(rx, ry);
+    map.needsUpdate = normalMap.needsUpdate = true;
+    return { map, normalMap };
+  };
+  const kdfWall = useMemo(() => tileBed(kdfMaps, 3, 2.4), [kdfMaps]);
+  const gacWall = useMemo(() => tileBed(gacMaps, 2, 2.4), [gacMaps]);
+  const kdfFace = useMemo(() => tileBed(kdfMaps, 0.16, 2.4), [kdfMaps]);
+  const gacFace = useMemo(() => tileBed(gacMaps, 0.2, 2.4), [gacMaps]);
+  const bedRelief = useMemo(() => new THREE.Vector2(0.75 * Q.relief, 0.75 * Q.relief), []);
+  const noRelief = useMemo(() => new THREE.Vector2(1, 1), []);
 
   /* ── Phase 3 — the cartridges become MANUFACTURED PARTS, not primitives ── */
 
@@ -1300,7 +1300,8 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
         const m = sparkRefs.current[k];
         if (!m) return;
         const pulse = Math.max(0, Math.sin(tt * s.freq + s.phase));
-        m.scale.setScalar(0.01 + Math.pow(pulse, 8) * 0.055);
+        // a flash, not a ball: half the old peak, so it reads as an event on the bed
+        m.scale.setScalar(0.008 + Math.pow(pulse, 8) * 0.026);
       });
     }
 
@@ -1909,9 +1910,15 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
                         { r: 0.31, color: "#e6e1d5", useMap: false },
                         { r: 0.22, color: "#d9d3c4", useMap: false },
                       ]
-                    : [{ r: 0.4, color: "#ffffff", useMap: true }];
-                const secMap = i === 0 ? sectionMap : i === 1 ? granuleMap : carbonMap;
-                const face = (theta: number, rIn: number, rOut: number, key: string) => (
+                    : i === 1
+                      ? [
+                          { r: 0.4, color: "#ffffff", useMap: true }, // KDF bed, outside
+                          { r: 0.27, color: "#ffffff", useMap: true }, // coconut carbon behind it
+                        ]
+                      : [{ r: 0.4, color: "#ffffff", useMap: true }];
+                const secMap = i === 0 ? sectionMap : i === 1 ? null : carbonMap;
+                type Bed = { map: THREE.CanvasTexture; normalMap: THREE.CanvasTexture } | null;
+                const face = (theta: number, rIn: number, rOut: number, key: string, bed?: Bed, metal = i === 1 ? 0.35 : 0, rough = 0.95) => (
                   <mesh
                     key={key}
                     position={[Math.sin(theta) * (rIn + rOut) / 2, Y, Math.cos(theta) * (rIn + rOut) / 2]}
@@ -1920,10 +1927,12 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
                     <planeGeometry args={[rOut - rIn, H]} />
                     <meshStandardMaterial
                       ref={regCart(i)}
-                      map={secMap ?? undefined}
-                      color={secMap ? "#ffffff" : v.cart}
-                      roughness={0.95}
-                      metalness={i === 1 ? 0.35 : 0}
+                      map={(bed ? bed.map : secMap) ?? undefined}
+                      normalMap={bed?.normalMap ?? undefined}
+                      normalScale={bed ? bedRelief : noRelief}
+                      color={bed || secMap ? "#ffffff" : v.cart}
+                      roughness={rough}
+                      metalness={metal}
                       side={THREE.DoubleSide}
                       transparent
                       opacity={0}
@@ -1938,12 +1947,14 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
                         <cylinderGeometry args={[L.r, L.r, H, 48, 1, true, TH0, THL]} />
                         <meshStandardMaterial
                           ref={li === 0 ? (el) => { cartMats.current[i] = el; regCart(i)(el); } : regCart(i)}
-                          color={L.useMap && (i === 0 ? pleatMaps : i === 1 ? granuleMap : carbonMap) ? "#ffffff" : L.color}
-                          map={L.useMap ? (i === 0 ? pleatMaps?.map ?? undefined : i === 1 ? granuleMap ?? undefined : carbonMap ?? undefined) : undefined}
+                          color={L.useMap && (i === 0 ? pleatMaps : i === 1 ? kdfWall : carbonMap) ? "#ffffff" : L.color}
+                          map={L.useMap ? (i === 0 ? pleatMaps?.map ?? undefined : i === 1 ? (li === 0 ? kdfWall : gacWall)?.map ?? undefined : carbonMap ?? undefined) : undefined}
+                          normalMap={i === 1 ? (li === 0 ? kdfWall : gacWall)?.normalMap ?? undefined : undefined}
+                          normalScale={i === 1 ? bedRelief : noRelief}
                           bumpMap={L.useMap && i === 0 ? pleatMaps?.bump ?? undefined : undefined}
                           bumpScale={L.useMap && i === 0 ? 0.035 : 0}
-                          metalness={i === 1 ? v.cartMetal : 0.02}
-                          roughness={i === 0 ? 0.92 : i === 1 ? v.cartRough : 0.82}
+                          metalness={i === 1 ? (li === 0 ? 0.7 : 0.05) : 0.02}
+                          roughness={i === 0 ? 0.92 : i === 1 ? (li === 0 ? 0.42 : 0.38) : 0.82}
                           side={THREE.DoubleSide}
                           transparent
                           depthWrite={false}
@@ -1954,8 +1965,11 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
                     {/* section faces on both cut planes — one quad per layer.
                         The stage-1 section map spans core→outer in u, so a
                         single full-radius quad carries all three bands. */}
-                    {i === 0
-                      ? [TH0, -TH0].map((th, k) => face(th, 0.1, 0.4, `sec${k}`))
+                    {i === 1
+                      ? [TH0, -TH0].flatMap((th, k) => [
+                          face(th, 0.27, 0.4, `kdf${k}`, kdfFace, 0.7, 0.42),
+                          face(th, 0.1, 0.27, `gac${k}`, gacFace, 0.05, 0.38),
+                        ])
                       : [TH0, -TH0].map((th, k) => face(th, 0.1, 0.4, `sec${k}`))}
                     {/* perforated core tube — the rigid part the water rises
                         inside; wedge-cut with the media so the column shows */}

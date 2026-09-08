@@ -23,6 +23,23 @@ import {
 // the live chrome asset — client-only (three touches window at module load)
 const ChromeStage = dynamic(() => import("./ChromeStage"), { ssr: false });
 
+/* WHERE AM I. A first-time visitor has no way of knowing a pinned scroll
+   sequence is a product tour with stops in it, so the tour says where it is.
+   One line per beat; the three stages are numbered because they are a
+   sequence and the number carries information. */
+const STAGE_LABEL: Record<string, [string, string]> = {
+  problem: ["THE PROBLEM", "What your water arrives with"],
+  s1: ["STAGE 1 OF 3", "Sediment"],
+  s2: ["STAGE 2 OF 3", "Taste and smell"],
+  s3: ["STAGE 3 OF 3", "Scale"],
+  proof: ["THE SCHEDULE", "What each stage does"],
+  cred: ["THE INSTALLER", "Who fits it"],
+  service: ["SERVICING", "A small job"],
+  install: ["INSTALLATION", "An afternoon"],
+  handoff: ["NEXT", "Book a free water test"],
+};
+const stageAt = (p: number) => STORY_BEATS.find((b) => p >= b.a && p <= b.b)?.id ?? "";
+
 function hasWebGL(): boolean {
   try {
     const c = document.createElement("canvas");
@@ -77,6 +94,11 @@ export function LivingDrawing() {
   const [webgl, setWebgl] = useState(false);
   const [glReady, setGlReady] = useState(false);
   const glReadyRef = useRef(false);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const stageN = useRef<HTMLSpanElement>(null);
+  const stageT = useRef<HTMLSpanElement>(null);
+  const stageRail = useRef<HTMLElement>(null);
+  const lastStage = useRef("");
   // start rendering immediately — the journey is the first thing on screen, so
   // don't wait on the IntersectionObserver (which also fires unreliably under
   // headless virtual-time). The observer below still PAUSES it once off-screen.
@@ -106,6 +128,36 @@ export function LivingDrawing() {
   }, []);
 
   const handleReady = useCallback(() => setGlReady(true), []);
+
+  /* DESIGNED NOT TO BREAK. A WebGL context can be lost at any time: a tab
+     backgrounded on a phone, a GPU reset, too many contexts open. Without
+     handling, the canvas goes black and stays black under a visitor who has
+     no idea why. preventDefault on the lost event asks the browser to try to
+     restore it; if nothing comes back within four seconds the scene hands
+     over to the path built for devices with no WebGL at all: the poster
+     still, the SVG plate, and the static story. The visitor loses the 3D,
+     not the product. */
+  useEffect(() => {
+    if (!webgl || !glReady) return;
+    const canvas = canvasWrapRef.current?.querySelector("canvas");
+    if (!canvas) return;
+    let dead: number | undefined;
+    const onLost = (e: Event) => {
+      e.preventDefault();
+      dead = window.setTimeout(() => setWebgl(false), 4000);
+    };
+    const onRestored = () => {
+      if (dead) window.clearTimeout(dead);
+      dead = undefined;
+    };
+    canvas.addEventListener("webglcontextlost", onLost);
+    canvas.addEventListener("webglcontextrestored", onRestored);
+    return () => {
+      if (dead) window.clearTimeout(dead);
+      canvas.removeEventListener("webglcontextlost", onLost);
+      canvas.removeEventListener("webglcontextrestored", onRestored);
+    };
+  }, [webgl, glReady]);
 
   // keep the registration ratio current across resizes/orientation changes
   useEffect(() => {
@@ -375,6 +427,23 @@ export function LivingDrawing() {
           // long enough to read the finished sheet, short enough that it never
           // feels parked.
           const bpU = gsap.utils.clamp(0, 1, Math.min(bp / 0.5, (1 - bp) / 0.34, 1));
+
+          // the stage marker: visible from the problem beat to the hand-off,
+          // text only rewritten when the beat actually changes
+          if (stageRef.current) {
+            const on = p >= 0.262 && p < 0.985;
+            stageRef.current.style.opacity = on ? "1" : "0";
+            const id = stageAt(p);
+            if (on && id !== lastStage.current && STAGE_LABEL[id]) {
+              lastStage.current = id;
+              if (stageN.current) stageN.current.textContent = STAGE_LABEL[id][0];
+              if (stageT.current) stageT.current.textContent = STAGE_LABEL[id][1];
+            }
+            if (stageRail.current) {
+              const f = gsap.utils.clamp(0, 1, (p - 0.262) / (0.985 - 0.262));
+              stageRail.current.style.transform = "scaleX(" + f.toFixed(4) + ")";
+            }
+          }
           tl.progress(bpU);
           // the plate's interactive layer is live only while the drawing holds
           if (sheetRef.current) sheetRef.current.classList.toggle("plate-live", bpU > 0.55);
@@ -572,6 +641,13 @@ export function LivingDrawing() {
             (front elevation, camera [0,0.12,8.8], assembly at 0.781 scale
             offset -0.4/+0.56), so the dissolve into the live asset is
             seamless and the ink trace that follows registers to both. */}
+        <div className="jstage" ref={stageRef} aria-live="polite" aria-atomic="true">
+          <span className="jstage-rail" aria-hidden="true">
+            <i ref={stageRail} />
+          </span>
+          <span className="jstage-n" ref={stageN} />
+          <span className="jstage-t" ref={stageT} />
+        </div>
         <div className="rest-still" ref={restStillRef} aria-hidden="true">
           <img src={asset("/photos/machine-rest.jpg")} alt="" draggable={false} />
         </div>

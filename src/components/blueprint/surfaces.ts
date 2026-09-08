@@ -387,3 +387,77 @@ export function makeScratch(): { normalMap: THREE.CanvasTexture; alphaMap: THREE
   alphaMap.colorSpace = THREE.NoColorSpace;
   return { normalMap, alphaMap };
 }
+
+/**
+ * GRANULAR MEDIA in section — KDF 55 (copper-zinc, brass-gold) or coconut-
+ * shell GAC (glossy black shards). The old bed was a copper tint with pixel
+ * speckle and read as cork. Here every grain is its own jittered polygon with
+ * a highlight and a shadow side, drawn over a dark gap colour so the bed has
+ * air in it, and a height dome per grain drives a normal map so the grains
+ * catch the key light individually. Tiles in both axes (grains near an edge
+ * are drawn again across it).
+ */
+export function makeGranules(kind: "kdf" | "gac"): { map: THREE.CanvasTexture; normalMap: THREE.CanvasTexture } | null {
+  if (!IS_CLIENT) return null;
+  const s = 512;
+  const col = canvas(s, s), hc = canvas(s, s);
+  const gc = col.getContext("2d", { willReadFrequently: true })!;
+  const gh = hc.getContext("2d", { willReadFrequently: true })!;
+  const pal =
+    kind === "kdf"
+      ? { gap: "#1a1208", hi: "#f6dc94", mid: "#c99a45", lo: "#5e3f16", spark: "rgba(255,246,214,0.55)" }
+      : { gap: "#040506", hi: "#6a7178", mid: "#1c2024", lo: "#07090b", spark: "rgba(210,220,228,0.35)" };
+  gc.fillStyle = pal.gap;
+  gc.fillRect(0, 0, s, s);
+  gh.fillStyle = "#000000";
+  gh.fillRect(0, 0, s, s);
+  const WRAP: [number, number][] = [[0, 0], [s, 0], [-s, 0], [0, s], [0, -s], [s, s], [-s, -s], [s, -s], [-s, s]];
+  const grain = (x: number, y: number, r: number, rot: number) => {
+    const n = 7;
+    const pts: [number, number][] = [];
+    for (let k = 0; k < n; k++) {
+      const a = rot + (k / n) * Math.PI * 2;
+      const rr = r * (0.72 + Math.random() * 0.36);
+      pts.push([Math.cos(a) * rr, Math.sin(a) * rr]);
+    }
+    for (const [dx, dy] of WRAP) {
+      const cx = x + dx, cy = y + dy;
+      if (cx < -r || cx > s + r || cy < -r || cy > s + r) continue;
+      const path = new Path2D();
+      pts.forEach(([px, py], k) => (k ? path.lineTo(cx + px, cy + py) : path.moveTo(cx + px, cy + py)));
+      path.closePath();
+      // colour: lit from the upper left, falling to the shadow side
+      const g1 = gc.createRadialGradient(cx - r * 0.35, cy - r * 0.35, r * 0.1, cx, cy, r * 1.05);
+      g1.addColorStop(0, pal.hi);
+      g1.addColorStop(0.45, pal.mid);
+      g1.addColorStop(1, pal.lo);
+      gc.fillStyle = g1;
+      gc.fill(path);
+      // height: a dome, so the normal map rounds each grain
+      const g2 = gh.createRadialGradient(cx, cy, 0, cx, cy, r);
+      g2.addColorStop(0, "#ffffff");
+      g2.addColorStop(0.7, "#9a9a9a");
+      g2.addColorStop(1, "#000000");
+      gh.fillStyle = g2;
+      gh.fill(path);
+    }
+  };
+  const N = kind === "kdf" ? 1500 : 1100;
+  for (let k = 0; k < N; k++) {
+    const r = kind === "kdf" ? 5 + Math.random() * 6 : 6 + Math.random() * 8;
+    grain(Math.random() * s, Math.random() * s, r, Math.random() * Math.PI * 2);
+  }
+  // specular pinpoints: the one cue that says metal, or glassy carbon, at a glance
+  for (let k = 0; k < 500; k++) {
+    gc.fillStyle = pal.spark;
+    gc.fillRect(Math.random() * s, Math.random() * s, 1.2, 1.2);
+  }
+  const map = new THREE.CanvasTexture(col);
+  map.colorSpace = THREE.SRGBColorSpace;
+  const normalMap = heightToNormal(hc, kind === "kdf" ? 2.2 : 2.6);
+  for (const t of [map, normalMap]) {
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    t.anisotropy = 8;
+  }
+  return { map, normalMap };
+}
