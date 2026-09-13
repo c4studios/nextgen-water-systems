@@ -14,7 +14,11 @@ export type Revision = { rev: string; sheet: string; desc: string; id: string };
 /** Slice 1: the story lives INSIDE the journey now — the only destination
  *  below it is the booking tail. */
 export const SITE_REVISIONS: Revision[] = [
-  { rev: "D", sheet: "02", desc: "BOOKING · APPROVED FOR ISSUE", id: "plate-cta" },
+  { rev: "A", sheet: "01", desc: "YOUR WATER · EXHIBIT A", id: "your-water" },
+  { rev: "B", sheet: "02", desc: "THE FIX · IN SECTION", id: "drawing" },
+  { rev: "C", sheet: "03", desc: "WHERE IT GOES · PLAN", id: "plan" },
+  { rev: "D", sheet: "04", desc: "WHO FITS IT · NOTE 1", id: "installer" },
+  { rev: "E", sheet: "05", desc: "BOOKING · APPROVED FOR ISSUE", id: "plate-cta" },
 ];
 
 export const CONTACT = {

@@ -1,0 +1,204 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-14T03:50:48+08:00",
+  "title": "Design System: Next Gen Water Systems",
+  "extensions": {
+    "colorMeta": {
+      "void": { "role": "neutral", "displayName": "Void", "canonical": "oklch(15% 0.002 270)", "tonalRamp": ["oklch(15% 0.002 270)", "oklch(26% 0.002 270)", "oklch(38% 0.002 270)", "oklch(49% 0.002 270)", "oklch(61% 0.002 270)", "oklch(72% 0.002 270)", "oklch(84% 0.002 270)", "oklch(95% 0.002 270)"] },
+      "pool": { "role": "neutral", "displayName": "Pool of light", "canonical": "oklch(22% 0.004 260)", "tonalRamp": ["oklch(15% 0.004 260)", "oklch(26% 0.004 260)", "oklch(38% 0.004 260)", "oklch(49% 0.004 260)", "oklch(61% 0.004 260)", "oklch(72% 0.004 260)", "oklch(84% 0.004 260)", "oklch(95% 0.004 260)"] },
+      "pool-mid": { "role": "neutral", "displayName": "Pool, mid stop", "canonical": "oklch(17% 0.003 270)", "tonalRamp": ["oklch(15% 0.003 270)", "oklch(26% 0.003 270)", "oklch(38% 0.003 270)", "oklch(49% 0.003 270)", "oklch(61% 0.003 270)", "oklch(72% 0.003 270)", "oklch(84% 0.003 270)", "oklch(95% 0.003 270)"] },
+      "surface": { "role": "neutral", "displayName": "Surface", "canonical": "oklch(20% 0.002 240)", "tonalRamp": ["oklch(15% 0.002 240)", "oklch(26% 0.002 240)", "oklch(38% 0.002 240)", "oklch(49% 0.002 240)", "oklch(61% 0.002 240)", "oklch(72% 0.002 240)", "oklch(84% 0.002 240)", "oklch(95% 0.002 240)"] },
+      "ice": { "role": "neutral", "displayName": "Ice", "canonical": "oklch(98% 0.006 225)", "tonalRamp": ["oklch(15% 0.006 225)", "oklch(26% 0.006 225)", "oklch(38% 0.006 225)", "oklch(49% 0.006 225)", "oklch(61% 0.006 225)", "oklch(72% 0.006 225)", "oklch(84% 0.006 225)", "oklch(95% 0.006 225)"] },
+      "prose": { "role": "neutral", "displayName": "Prose", "canonical": "oklch(89% 0.012 230)", "tonalRamp": ["oklch(15% 0.012 230)", "oklch(26% 0.012 230)", "oklch(38% 0.012 230)", "oklch(49% 0.012 230)", "oklch(61% 0.012 230)", "oklch(72% 0.012 230)", "oklch(84% 0.012 230)", "oklch(95% 0.012 230)"] },
+      "steel": { "role": "neutral", "displayName": "Steel", "canonical": "oklch(78% 0.006 240)", "tonalRamp": ["oklch(15% 0.006 240)", "oklch(26% 0.006 240)", "oklch(38% 0.006 240)", "oklch(49% 0.006 240)", "oklch(61% 0.006 240)", "oklch(72% 0.006 240)", "oklch(84% 0.006 240)", "oklch(95% 0.006 240)"] },
+      "muted": { "role": "neutral", "displayName": "Muted", "canonical": "oklch(60% 0.012 245)", "tonalRamp": ["oklch(15% 0.012 245)", "oklch(26% 0.012 245)", "oklch(38% 0.012 245)", "oklch(49% 0.012 245)", "oklch(61% 0.012 245)", "oklch(72% 0.012 245)", "oklch(84% 0.012 245)", "oklch(95% 0.012 245)"] },
+      "line": { "role": "neutral", "displayName": "Line (hairline, 10% ice)", "canonical": "rgba(244, 249, 252, 0.1)", "tonalRamp": ["rgba(244, 249, 252, 0.04)", "rgba(244, 249, 252, 0.07)", "rgba(244, 249, 252, 0.1)", "rgba(244, 249, 252, 0.14)", "rgba(244, 249, 252, 0.22)", "rgba(244, 249, 252, 0.3)", "rgba(244, 249, 252, 0.5)", "rgba(244, 249, 252, 1)"] },
+      "rule": { "role": "neutral", "displayName": "Rule (sheet furniture)", "canonical": "rgba(203, 224, 236, 0.13)", "tonalRamp": ["rgba(203, 224, 236, 0.055)", "rgba(203, 224, 236, 0.1)", "rgba(203, 224, 236, 0.13)", "rgba(203, 224, 236, 0.16)", "rgba(203, 224, 236, 0.22)", "rgba(203, 224, 236, 0.35)", "rgba(203, 224, 236, 0.55)", "rgba(203, 224, 236, 1)"] },
+      "rule-soft": { "role": "neutral", "displayName": "Rule, soft (the 64px ruling)", "canonical": "rgba(203, 224, 236, 0.055)", "tonalRamp": ["rgba(203, 224, 236, 0.03)", "rgba(203, 224, 236, 0.055)", "rgba(203, 224, 236, 0.08)", "rgba(203, 224, 236, 0.11)", "rgba(203, 224, 236, 0.16)", "rgba(203, 224, 236, 0.25)", "rgba(203, 224, 236, 0.45)", "rgba(203, 224, 236, 1)"] },
+      "cyan": { "role": "primary", "displayName": "Cyan (water and light)", "canonical": "oklch(76% 0.13 225)", "tonalRamp": ["oklch(15% 0.05 225)", "oklch(26% 0.08 225)", "oklch(38% 0.11 225)", "oklch(49% 0.13 225)", "oklch(61% 0.13 225)", "oklch(72% 0.13 225)", "oklch(84% 0.1 225)", "oklch(95% 0.04 225)"] },
+      "deep": { "role": "secondary", "displayName": "Deep (cyan's voice on glass)", "canonical": "oklch(53% 0.13 245)", "tonalRamp": ["oklch(15% 0.05 245)", "oklch(26% 0.08 245)", "oklch(38% 0.11 245)", "oklch(49% 0.13 245)", "oklch(61% 0.13 245)", "oklch(72% 0.12 245)", "oklch(84% 0.08 245)", "oklch(95% 0.03 245)"] },
+      "glass": { "role": "neutral", "displayName": "Glass (the frosted nav band)", "canonical": "rgba(250, 252, 254, 0.86)", "tonalRamp": ["oklch(15% 0.004 240)", "oklch(26% 0.004 240)", "oklch(38% 0.004 240)", "oklch(49% 0.004 240)", "oklch(61% 0.004 240)", "oklch(72% 0.004 240)", "oklch(84% 0.004 240)", "oklch(95% 0.004 240)"] },
+      "glass-ink": { "role": "neutral", "displayName": "Glass ink", "canonical": "oklch(18% 0.01 230)", "tonalRamp": ["oklch(15% 0.01 230)", "oklch(26% 0.01 230)", "oklch(38% 0.01 230)", "oklch(49% 0.01 230)", "oklch(61% 0.01 230)", "oklch(72% 0.01 230)", "oklch(84% 0.01 230)", "oklch(95% 0.01 230)"] },
+      "glass-link": { "role": "neutral", "displayName": "Glass link", "canonical": "oklch(44% 0.02 235)", "tonalRamp": ["oklch(15% 0.02 235)", "oklch(26% 0.02 235)", "oklch(38% 0.02 235)", "oklch(49% 0.02 235)", "oklch(61% 0.02 235)", "oklch(72% 0.02 235)", "oklch(84% 0.02 235)", "oklch(95% 0.02 235)"] },
+      "metal": { "role": "neutral", "displayName": "Metal (the liquid pill at rest)", "canonical": "oklch(93% 0.02 225)", "tonalRamp": ["oklch(15% 0.02 225)", "oklch(26% 0.02 225)", "oklch(38% 0.02 225)", "oklch(49% 0.02 225)", "oklch(61% 0.02 225)", "oklch(72% 0.02 225)", "oklch(84% 0.02 225)", "oklch(95% 0.02 225)"] },
+      "metal-ink": { "role": "neutral", "displayName": "Metal ink", "canonical": "oklch(24% 0.045 230)", "tonalRamp": ["oklch(15% 0.045 230)", "oklch(26% 0.045 230)", "oklch(38% 0.045 230)", "oklch(49% 0.045 230)", "oklch(61% 0.045 230)", "oklch(72% 0.04 230)", "oklch(84% 0.03 230)", "oklch(95% 0.015 230)"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "The cover's outcome line only. Satoshi Medium, not Bold, because the line under it is the machine." },
+      "headline": { "displayName": "Headline", "purpose": "The title of each sheet: two lines, broken by hand. The booking sheet runs larger, the interior sheets slightly larger." },
+      "title": { "displayName": "Title", "purpose": "A stage name, a note's heading, a question, a footer index entry. Satoshi, never Hanken bold." },
+      "lead": { "displayName": "Lead", "purpose": "The paragraph under a headline, in steel at 44-54ch." },
+      "body": { "displayName": "Body", "purpose": "Sentences inside a sheet, in prose colour at 58-66ch with text-wrap: pretty." },
+      "label": { "displayName": "Label (Routed Gothic)", "purpose": "The drawing's own lettering, uppercase and tracked: sheet strips, view titles, chips, the inspector strip, field names, stamps." },
+      "readout": { "displayName": "Readout (Geist Mono)", "purpose": "The page's index and instruments: sheet numerals, stage numbers, plan labels, rails, the stage marker, typed values. Tabular figures." },
+      "dimension": { "displayName": "Dimension (Routed Gothic Narrow)", "purpose": "Dimension values, balloon numerals and hover tips inside the SVG plate, like a 3.5mm template." },
+      "note": { "displayName": "Note (Routed Gothic Half Italic)", "purpose": "The draughtsman's note, the one lowercase line on the plate." }
+    },
+    "shadows": [
+      { "name": "paper", "value": "0 30px 70px rgba(0, 0, 0, 0.6)", "purpose": "Under the plate's sheet, only while the paper exists; it rises and leaves with the vellum." },
+      { "name": "glass-detached", "value": "0 18px 46px -20px rgba(0, 0, 0, 0.8)", "purpose": "Under the nav once it has come off the top edge; scaled by the detach scalar so the attached bar carries none of it." },
+      { "name": "glass-seat", "value": "0 1px 0 0 rgba(12, 18, 24, 0.1)", "purpose": "The attached bar's one-pixel seat on the page." },
+      { "name": "glass-edge", "value": "inset 0 0 0 1px rgba(12, 18, 24, 0.08)", "purpose": "One hairline inside the glass's own edge. No bevel." },
+      { "name": "beat-halo", "value": "radial-gradient(closest-side, rgba(4, 8, 12, 0.85), rgba(4, 8, 12, 0.45) 55%, rgba(4, 8, 12, 0) 100%)", "purpose": "A legibility halo behind every journey beat, paired with text-shadow 0 1px 12px rgba(10, 10, 11, 0.85). Not an elevation." },
+      { "name": "water-glow", "value": "drop-shadow(0 0 6px rgba(41, 194, 238, 0.55))", "purpose": "On the filled cold-water run. Light, not lift." },
+      { "name": "served-marker-glow", "value": "0 0 9px rgba(41, 194, 238, 0.65)", "purpose": "On a served fitting's marker in the phone list." },
+      { "name": "cursor-bead", "value": "inset 0 -3px 7px rgba(190, 232, 250, 0.4), 0 0 12px rgba(41, 194, 238, 0.18)", "purpose": "The water-bead cursor's rim light." }
+    ],
+    "motion": [
+      { "name": "ease-fluid", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "The site's default (--ease) for colour, opacity, translate and border transitions, 0.2-0.5s." },
+      { "name": "ease-drop", "value": "cubic-bezier(0.22, 1.04, 0.36, 1)", "purpose": "Things that fall under their own weight: the phone menu sheet, the schedule's plus rotating." },
+      { "name": "ease-panel", "value": "cubic-bezier(0.33, 0.02, 0.2, 1)", "purpose": "Measured-height panels opening (0.46s) and the checkbox tick drawing on (0.34s)." },
+      { "name": "ease-pop", "value": "cubic-bezier(0.34, 1.52, 0.44, 1)", "purpose": "The radial menu ring popping in over 0.44s." },
+      { "name": "ease-menu-icon", "value": "cubic-bezier(0.34, 1.4, 0.44, 1)", "purpose": "The menu toggle unfurling, 520ms." },
+      { "name": "ease-specular", "value": "cubic-bezier(0.3, 0.7, 0.2, 1)", "purpose": "The liquid pill's specular sweep crossing once, 0.86s." },
+      { "name": "nav-spring", "value": "stiffness 120, damping 18, dt clamped to 50ms", "purpose": "The journey scalar that collapses the nav to an orb; integrated against real time so it overshoots and settles the same on 30fps and 120Hz." },
+      { "name": "scroll-scrub", "value": "ScrollTrigger scrub 0.6 over a 1050svh pin (620svh on phones)", "purpose": "The journey's timeline. The scroll is the clock; the phone cut is a piecewise map onto the same desktop time." },
+      { "name": "liquid-metal-cycle", "value": "feTurbulence baseFrequency 0.011 0.05 to 0.017 0.038, 14s, indefinite", "purpose": "The pill's material drifting; off under reduced motion." },
+      { "name": "reduced-motion", "value": "prefers-reduced-motion: reduce", "purpose": "Transitions off, the static story shown, the pin collapsed to 118svh with the finished plate, the plan pre-filled, no cursor, no filters, no specular." }
+    ],
+    "breakpoints": [
+      { "name": "chips-compact", "value": "640px" },
+      { "name": "chrome-hidden", "value": "760px" },
+      { "name": "footer-stack", "value": "820px" },
+      { "name": "nav-sheet", "value": "860px" },
+      { "name": "mobile-cut", "value": "900px" },
+      { "name": "callouts-flow", "value": "1080px" },
+      { "name": "chrome-collapse", "value": "1500px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Liquid Pill (primary action)",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one hero surface: brushed, displaced, with a specular that crosses on hover. Used only on the actions that close the sale.",
+      "html": "<svg aria-hidden='true' width='0' height='0' style='position:absolute'><filter id='ds-lm-liquid' x='-30%' y='-30%' width='160%' height='160%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='0.011 0.05' numOctaves='3' seed='17' result='n'><animate attributeName='baseFrequency' dur='14s' values='0.011 0.05; 0.017 0.038; 0.011 0.05' repeatCount='indefinite'/></feTurbulence><feGaussianBlur in='n' stdDeviation='0.9' result='ns'/><feDisplacementMap in='SourceGraphic' in2='ns' scale='26' xChannelSelector='R' yChannelSelector='G'/></filter></svg><a class='ds-btn-primary' href='#'><span>Book a free water test</span></a>",
+      "css": ".ds-btn-primary { position: relative; isolation: isolate; overflow: hidden; display: inline-block; padding: 16px 26px; border-radius: 999px; border: 1px solid rgba(60, 120, 150, 0.42); background: var(--metal, #d8ecf6); color: var(--metal-ink, #04222f); font-family: 'Routed Gothic', 'Geist Mono', ui-monospace, monospace; font-size: 13.5px; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; cursor: pointer; } .ds-btn-primary > span { position: relative; z-index: 1; } .ds-btn-primary::before { content: ''; position: absolute; inset: -30%; z-index: -2; background: repeating-linear-gradient(100deg, #ffffff 0px, #cfe6f2 5px, #f2fafd 9px, #b7d8e9 15px, #ffffff 21px), repeating-linear-gradient(97deg, rgba(120, 165, 190, 0.14) 0px, rgba(255, 255, 255, 0) 13px, rgba(120, 165, 190, 0.18) 31px), linear-gradient(165deg, #f4fbfe 0%, #cbe5f2 46%, #eaf6fc 78%, #bfdcec 100%); filter: url(#ds-lm-liquid); } .ds-btn-primary::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(100deg, transparent 34%, rgba(255, 255, 255, 0.72) 48%, rgba(255, 255, 255, 0.2) 56%, transparent 66%); transform: translateX(-118%); transition: transform 0.86s cubic-bezier(0.3, 0.7, 0.2, 1); pointer-events: none; } .ds-btn-primary:hover::after, .ds-btn-primary:focus-visible::after { transform: translateX(118%); } .ds-btn-primary:hover, .ds-btn-primary:focus-visible { border-color: rgba(30, 90, 120, 0.7); } .ds-btn-primary:focus-visible { outline: 2px solid var(--cyan, #29c2ee); outline-offset: 3px; } .ds-btn-primary:active { transform: translateY(1px); } @supports not (filter: url(#x)) { .ds-btn-primary::before { filter: none; } } @media (prefers-reduced-motion: reduce) { .ds-btn-primary::before { filter: none; } .ds-btn-primary::after { display: none; } .ds-btn-primary:active { transform: none; } }"
+    },
+    {
+      "name": "Ghost Pill",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "The hairline secondary action: transparent, a 22-28% ice border, filling to 8% on hover.",
+      "html": "<button class='ds-btn-ghost' type='button'>Watch this stage in the drawing</button>",
+      "css": ".ds-btn-ghost { display: inline-flex; align-items: center; min-height: 38px; padding: 0 16px; border: 1px solid rgba(244, 249, 252, 0.22); border-radius: 999px; background: none; color: var(--steel, #b5b9bd); font-family: 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif; font-size: 14px; cursor: pointer; transition: background 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.22s cubic-bezier(0.16, 1, 0.3, 1), color 0.22s cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-ghost:hover, .ds-btn-ghost:focus-visible { background: rgba(244, 249, 252, 0.08); border-color: rgba(244, 249, 252, 0.34); color: var(--ice, #f4f9fc); } .ds-btn-ghost:focus-visible { outline: 2px solid var(--cyan, #29c2ee); outline-offset: 3px; }"
+    },
+    {
+      "name": "Ice Pill (interior sheets)",
+      "kind": "button",
+      "refersTo": "button-ice",
+      "description": "Solid ice on void, the closing action on the interior sheets.",
+      "html": "<a class='ds-btn-ice' href='#'>Book your free water test</a>",
+      "css": ".ds-btn-ice { display: inline-flex; align-items: center; min-height: 48px; padding: 0 24px; border-radius: 999px; background: var(--ice, #f4f9fc); color: var(--void, #0a0a0b); font-family: 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif; font-weight: 600; font-size: 16px; text-decoration: none; transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), background 0.22s cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-ice:hover { background: #fff; transform: translateY(-1px); } .ds-btn-ice:focus-visible { outline: 2px solid var(--cyan, #29c2ee); outline-offset: 3px; }"
+    },
+    {
+      "name": "Taste Chip",
+      "kind": "chip",
+      "refersTo": "chip-taste",
+      "description": "A drafted checkbox: the cover's taste check. On: ice text and a cyan-filled box. Live: a 10% cyan wash while the machine answers it.",
+      "html": "<div class='ds-chips'><button class='ds-chip' type='button' aria-pressed='false'><i aria-hidden='true'></i>CHLORINE</button><button class='ds-chip is-on' type='button' aria-pressed='true'><i aria-hidden='true'></i>METALLIC</button><button class='ds-chip is-on is-live' type='button' aria-pressed='true'><i aria-hidden='true'></i>TASTES OF NOTHING</button></div>",
+      "css": ".ds-chips { display: flex; flex-wrap: wrap; gap: 8px; } .ds-chip { display: inline-flex; align-items: center; gap: 9px; padding: 9px 13px 9px 11px; border: 1px solid rgba(244, 249, 252, 0.1); border-radius: 2px; background: rgba(21, 22, 23, 0.55); font-family: 'Routed Gothic', 'Geist Mono', ui-monospace, monospace; font-size: 12px; letter-spacing: 0.12em; color: var(--steel, #b5b9bd); cursor: pointer; transition: border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s cubic-bezier(0.16, 1, 0.3, 1); } .ds-chip i { position: relative; width: 12px; height: 12px; border: 1px solid rgba(244, 249, 252, 0.35); border-radius: 1px; transition: border-color 0.3s; } .ds-chip i::after { content: ''; position: absolute; inset: 2px; background: var(--cyan, #29c2ee); transform: scale(0); transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1); } .ds-chip:hover { border-color: rgba(244, 249, 252, 0.3); color: var(--ice, #f4f9fc); } .ds-chip.is-on { color: var(--ice, #f4f9fc); border-color: rgba(41, 194, 238, 0.55); } .ds-chip.is-on i { border-color: var(--cyan, #29c2ee); } .ds-chip.is-on i::after { transform: scale(1); } .ds-chip.is-live { background: rgba(41, 194, 238, 0.1); } .ds-chip:focus-visible { outline: 2px solid var(--cyan, #29c2ee); outline-offset: 3px; }"
+    },
+    {
+      "name": "Drafted Input",
+      "kind": "input",
+      "refersTo": "input-drafted",
+      "description": "A field on the dark sheet: a Routed Gothic name above, a Geist Mono value inside, a cyan border on focus.",
+      "html": "<label class='ds-field'><span>SUBURB</span><input type='text' placeholder='e.g. Joondalup'></label>",
+      "css": ".ds-field { display: block; max-width: 280px; } .ds-field > span { display: block; font-family: 'Routed Gothic', 'Geist Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.2em; color: #7fa4bb; margin-bottom: 7px; } .ds-field input { width: 100%; background: rgba(10, 18, 27, 0.7); border: 1px solid rgba(127, 216, 245, 0.28); border-radius: 0; color: var(--ice, #f4f9fc); font-family: 'Geist Mono', ui-monospace, monospace; font-size: 14px; padding: 12px 13px; transition: border-color 0.2s, background 0.2s; } .ds-field input::placeholder { color: #5b7181; } .ds-field input:focus-visible { outline: none; border-color: var(--cyan, #29c2ee); background: rgba(41, 194, 238, 0.06); } @media (max-width: 900px) { .ds-field input { font-size: 16px; } }"
+    },
+    {
+      "name": "Sheet Strip",
+      "kind": "custom",
+      "refersTo": "sheet-strip",
+      "description": "Where you are in the set. Opens every sheet: number in cyan, title in steel, an optional note, the count pushed right, over a hairline.",
+      "html": "<div class='ds-shs' aria-hidden='true'><span class='ds-shs-n'>SHEET 03</span><span class='ds-shs-t'>Where it goes</span><span class='ds-shs-note'>Hydraulic services plan</span><span class='ds-shs-of'>03 / 05</span></div>",
+      "css": ".ds-shs { display: flex; align-items: baseline; gap: 18px; padding-bottom: 12px; border-bottom: 1px solid rgba(244, 249, 252, 0.1); font-family: 'Routed Gothic', 'Geist Mono', ui-monospace, monospace; font-size: 11.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted, #7d838a); } .ds-shs-n { color: var(--cyan, #29c2ee); } .ds-shs-t { color: var(--steel, #b5b9bd); } .ds-shs-of { margin-left: auto; } @media (max-width: 640px) { .ds-shs { gap: 12px; font-size: 10.5px; } .ds-shs-note { display: none; } }"
+    },
+    {
+      "name": "Note Panel",
+      "kind": "card",
+      "refersTo": "note-panel",
+      "description": "The installer's note: a square hairline panel on surface at 50%, Satoshi title, steel sentence. No shadow, no radius.",
+      "html": "<article class='ds-note'><h3>Servicing is a small job.</h3><p>Unscrew the bowl, lift the old cartridge out, drop the new one in. Your plumber does it on a schedule, so it is one less thing you have to remember.</p></article>",
+      "css": ".ds-note { max-width: 420px; padding: 22px 24px 24px; border: 1px solid rgba(244, 249, 252, 0.1); background: rgba(21, 22, 23, 0.5); color: var(--steel, #b5b9bd); } .ds-note h3 { margin: 0; font-family: Satoshi, ui-sans-serif, system-ui, sans-serif; font-weight: 700; font-size: 22px; line-height: 1.04; letter-spacing: -0.02em; color: var(--ice, #f4f9fc); } .ds-note p { margin: 10px 0 0; font-family: 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif; font-size: 15.5px; line-height: 1.65; }"
+    },
+    {
+      "name": "Schedule Row",
+      "kind": "custom",
+      "refersTo": "note-panel",
+      "description": "Stages as a schedule, not cards: a hairline row with a mono number, a Satoshi name, a muted value, and a plus drawn from two cyan strokes.",
+      "html": "<ol class='ds-sched'><li class='ds-sched-row is-open'><button type='button' aria-expanded='true'><span class='ds-sched-n'>01</span><span class='ds-sched-name'>Graded sediment</span><span class='ds-sched-in'>Sand, rust flakes and silt the pipes carry</span><i aria-hidden='true'></i></button></li><li class='ds-sched-row'><button type='button' aria-expanded='false'><span class='ds-sched-n'>02</span><span class='ds-sched-name'>Copper-zinc and carbon</span><span class='ds-sched-in'>Chlorine, and dissolved metal picked up on the way</span><i aria-hidden='true'></i></button></li></ol>",
+      "css": ".ds-sched { margin: 0; padding: 0; list-style: none; max-width: 760px; } .ds-sched-row { border-top: 1px solid rgba(244, 249, 252, 0.1); } .ds-sched-row:last-child { border-bottom: 1px solid rgba(244, 249, 252, 0.1); } .ds-sched-row button { width: 100%; display: grid; grid-template-columns: 3em minmax(0, 13em) minmax(0, 1fr) 1.5em; align-items: baseline; gap: 18px; padding: 20px 26px 20px 2px; border: 0; background: none; text-align: left; cursor: pointer; color: inherit; transition: background 0.2s cubic-bezier(0.16, 1, 0.3, 1); } .ds-sched-row button:hover { background: rgba(244, 249, 252, 0.03); } .ds-sched-n { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; letter-spacing: 0.14em; color: var(--cyan, #29c2ee); } .ds-sched-name { font-family: Satoshi, ui-sans-serif, system-ui, sans-serif; font-weight: 700; font-size: 19px; letter-spacing: -0.02em; color: var(--ice, #f4f9fc); } .ds-sched-in { font-family: 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif; font-size: 15px; line-height: 1.5; color: var(--muted, #7d838a); } .ds-sched-row button i { position: relative; justify-self: end; align-self: center; width: 13px; height: 13px; transition: transform 0.4s cubic-bezier(0.22, 1.04, 0.36, 1); } .ds-sched-row button i::before, .ds-sched-row button i::after { content: ''; position: absolute; inset: 50% 0 auto; height: 1.5px; background: var(--cyan, #29c2ee); transform: translateY(-50%); } .ds-sched-row button i::after { inset: 0 auto auto 50%; width: 1.5px; height: 100%; transform: translateX(-50%); transition: opacity 0.3s, transform 0.42s cubic-bezier(0.33, 0.02, 0.2, 1); } .ds-sched-row.is-open button i { transform: rotate(180deg); } .ds-sched-row.is-open button i::after { opacity: 0; transform: translateX(-50%) scaleY(0.3); } .ds-sched-row button:focus-visible { outline: 2px solid var(--cyan, #29c2ee); outline-offset: 3px; }"
+    },
+    {
+      "name": "Nav Glass Bar",
+      "kind": "nav",
+      "refersTo": "nav-glass-bar",
+      "description": "The attached state of the morphing nav: a frosted band with one hairline edge, glass ink, a hairline pill for the call to action. In the site it interpolates into a pill and then an orb as the scroll runs.",
+      "html": "<div class='ds-nav-stage'><header class='ds-nav'><div class='ds-nav-pane' aria-hidden='true'></div><a class='ds-nav-brand' href='#'><svg width='30' height='30' viewBox='0 0 40 40' aria-hidden='true'><defs><linearGradient id='ds-ngmark' x1='20' y1='6' x2='20' y2='34' gradientUnits='userSpaceOnUse'><stop stop-color='#29c2ee'/><stop offset='1' stop-color='#0f6fb0'/></linearGradient></defs><path d='M20 6s10 11 10 18a10 10 0 1 1-20 0C10 17 20 6 20 6Z' fill='url(#ds-ngmark)'/></svg>Next Gen</a><nav class='ds-nav-links'><a href='#' class='is-here'>The system</a><a href='#'>Installation</a><a href='#'>Questions</a><a href='#' class='ds-nav-cta'>Book water test</a></nav></header></div>",
+      "css": ".ds-nav-stage { padding: 24px; background: radial-gradient(50% 42% at 50% 40%, #1a1b1d 0%, #0e0e10 58%, #0a0a0b 100%); } .ds-nav { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 20px; height: 72px; padding: 0 30px; color: var(--glass-ink, #0d1216); } .ds-nav-pane { position: absolute; inset: 0; z-index: 0; overflow: hidden; background: linear-gradient(180deg, rgba(250, 252, 254, 0.86) 0%, rgba(238, 244, 248, 0.78) 100%); backdrop-filter: blur(16px) saturate(150%) brightness(1.06); -webkit-backdrop-filter: blur(16px) saturate(150%) brightness(1.06); box-shadow: 0 1px 0 0 rgba(12, 18, 24, 0.1), inset 0 0 0 1px rgba(12, 18, 24, 0.08); } .ds-nav > * { position: relative; z-index: 1; } .ds-nav-brand { display: flex; align-items: center; gap: 11px; font-family: Satoshi, ui-sans-serif, system-ui, sans-serif; font-weight: 700; font-size: 17px; letter-spacing: -0.01em; color: var(--glass-ink, #0d1216); text-decoration: none; } .ds-nav-links { display: flex; align-items: center; gap: 32px; } .ds-nav-links a { font-family: 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif; font-size: 14px; color: var(--glass-link, #47535c); text-decoration: none; transition: color 0.25s; } .ds-nav-links a:hover { color: var(--glass-ink, #0d1216); } .ds-nav-links a.is-here { color: var(--glass-ink, #0d1216); } .ds-nav-links a.is-here::after { content: ''; display: block; height: 1px; margin-top: 4px; background: var(--deep, #0f6fb0); } .ds-nav-links a.ds-nav-cta { padding: 9px 16px; border: 1px solid rgba(12, 18, 24, 0.22); border-radius: 999px; font-weight: 600; letter-spacing: 0.01em; color: var(--glass-ink, #0d1216); white-space: nowrap; transition: background 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.22s cubic-bezier(0.16, 1, 0.3, 1), color 0.22s cubic-bezier(0.16, 1, 0.3, 1); } .ds-nav-links a.ds-nav-cta:hover, .ds-nav-links a.ds-nav-cta:focus-visible { background: #0d1216; border-color: #0d1216; color: var(--ice, #f4f9fc); } .ds-nav-links a:focus-visible { outline: 2px solid var(--cyan, #29c2ee); outline-offset: 3px; border-radius: 3px; }"
+    },
+    {
+      "name": "Drawing Chrome (fixed title block)",
+      "kind": "custom",
+      "refersTo": "chrome-titleblock",
+      "description": "The title block that sits fixed in the bottom-right corner and re-stamps DWG, SHEET and VIEW as each sheet enters, flipping to APPROVED FOR ISSUE on the booking sheet.",
+      "html": "<div class='ds-chrome-stage'><div class='ds-tb'><div class='ds-tb-co'>NEXT GEN WATER SYSTEMS</div><div class='ds-tb-grid'><div class='ds-tb-cell'><i>DWG</i>NGW-01</div><div class='ds-tb-cell'><i>SHEET</i>03 / 05</div><div class='ds-tb-cell ds-tb-view'><i>VIEW</i>WHERE IT GOES · PLAN</div></div><div class='ds-tb-stamp'>INDICATIVE · PLACEHOLDER*</div></div><div class='ds-tb'><div class='ds-tb-co'>NEXT GEN WATER SYSTEMS</div><div class='ds-tb-grid'><div class='ds-tb-cell'><i>DWG</i>NGW-01</div><div class='ds-tb-cell'><i>SHEET</i>05 / 05</div><div class='ds-tb-cell ds-tb-view'><i>VIEW</i>BOOKING · APPROVED FOR ISSUE</div></div><div class='ds-tb-stamp approved'>APPROVED FOR ISSUE</div></div></div>",
+      "css": ".ds-chrome-stage { display: flex; flex-wrap: wrap; gap: 16px; padding: 20px; background: radial-gradient(50% 42% at 50% 40%, #1a1b1d 0%, #0e0e10 58%, #0a0a0b 100%); } .ds-tb { width: 220px; background: rgba(8, 14, 20, 0.78); border: 1px solid rgba(110, 135, 148, 0.22); border-radius: 4px; backdrop-filter: blur(6px); overflow: hidden; font-family: 'Routed Gothic', 'Geist Mono', ui-monospace, monospace; } .ds-tb-co { padding: 6px 9px; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; color: var(--ice, #f4f9fc); border-bottom: 1px solid rgba(110, 135, 148, 0.22); } .ds-tb-grid { display: grid; grid-template-columns: 1fr 1fr; } .ds-tb-cell { padding: 5px 9px; font-size: 9.5px; color: #aeb9c2; border-bottom: 1px solid rgba(110, 135, 148, 0.16); border-left: 1px solid rgba(110, 135, 148, 0.16); } .ds-tb-cell:nth-child(odd) { border-left: none; } .ds-tb-cell i { display: block; font-style: normal; font-size: 8px; letter-spacing: 0.14em; color: #6f8794; } .ds-tb-view { grid-column: 1 / -1; color: var(--cyan, #29c2ee); } .ds-tb-stamp { padding: 5px 9px; font-size: 9px; letter-spacing: 0.1em; color: #e0846a; } .ds-tb-stamp.approved { color: var(--cyan, #29c2ee); background: rgba(41, 194, 238, 0.1); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Living Drawing",
+    "overview": "The site is one engineering drawing set for one machine. A cover sheet says what the thing is in the visitor's own words, shows the machine live, and names who fits it. Five sheets follow in the order a set would file them: the evidence (your water, a kettle marked up like a site photograph), the general arrangement (the machine in section, scrubbed by the scroll), the hydraulic services plan (where it goes), the installer's note, and the booking sheet, where the set is stamped APPROVED FOR ISSUE. Every section carries the set's own furniture. A sheet strip runs along its top edge, registration ticks hang off each divider, and a fixed title block re-stamps as each sheet enters. The visitor learns the filing system once and then reads a site with an index instead of a long dark scroll.\n\nThe world is a near-black void with one pool of light in it. The machine is photoreal brushed steel, rendered once in WebGL and fixed behind the page; the cover and the journey are two windows onto it, and every other sheet is an opaque page laid over it. Type is ice on the void. Cyan appears only where water or light is. The drawing letters in Routed Gothic, the digitised draughting-template face. The brand speaks in Satoshi and the sentences are set in Hanken Grotesk. Restraint is the premium signal: the ground carries a paper grain and a faint ruling you feel rather than read, and nothing is decorated.\n\nConfirmed rejections, from the build and the brief: the product-hero, three-cards, testimonials, form page order; the chrome-less scroll film this set replaced; graph-paper backdrops (the measurement grid exists once, diegetically, on the plate during the trace); cream paper (the sheet is a lit dark drafting surface); a blue-tinted backdrop (the pool is neutral graphite so the steel reads as steel); type over a photograph with a scrim; the wellness register the client rejected (sage, blush, rounded friendly type, leaves or droplets as decoration); card grids where a schedule will do; and any figure, review or endorsement that cannot be substantiated.",
+    "keyCharacteristics": [
+      "One fixed scene, two windows onto it, opaque sheets over it",
+      "Sheet strips, title blocks, a revision rail and registration ticks as the navigation furniture",
+      "Ice type on a neutral void, with cyan reserved for water and light",
+      "Four faces with one job each: Satoshi, Hanken Grotesk, Routed Gothic, Geist Mono",
+      "The scroll is the timeline: the nav morphs, the plate traces itself, headings form out of water, the plan fills",
+      "Every motion has a reduced-motion equivalent that tells the same story standing still",
+      "Stadium pills for actions, square furniture for the drawing, hairlines for everything structural"
+    ],
+    "rules": [
+      { "name": "The Water-or-Light Rule", "body": "Cyan is used only where water or light physically is: a run filling, a fitting served, a vessel lit, a leader onto evidence, a tick, a focus ring, a numeral in the index. Never a heading colour, never a gradient, never a background wash.", "section": "colors" },
+      { "name": "The Neutral Ground Rule", "body": "The void and its pool of light carry no chroma. Every reflection on the steel is therefore neutral, and the one colour that does appear is deliberate.", "section": "colors" },
+      { "name": "The Hairline Rule", "body": "Structure is drawn, not filled. One-pixel rules at 10-13% ice, with registration ticks where a sheet edge is, instead of boxes with backgrounds.", "section": "colors" },
+      { "name": "The Readout Rule", "body": "Data letters; sentences are typeset. Routed Gothic and Geist Mono carry labels, figures, stamps and index numerals. Anything that reads as a sentence is Hanken Grotesk, and anything that reads as a heading is Satoshi. Monospace under a paragraph is costume, and it is what made an earlier journey read cheap.", "section": "typography" },
+      { "name": "The Four Hands Rule", "body": "Each face has one job. Satoshi is the brand's voice, Hanken the reading voice, Routed Gothic the drawing's own lettering (strips, view titles, dimensions, title blocks, stamps, field names), Geist Mono the page's index and instruments (sheet numerals, stage numbers, plan labels, rails, typed values). No face is chosen for a mood.", "section": "typography" },
+      { "name": "The Tracked-Caps Rule", "body": "Labels are capitals with positive tracking (0.1-0.22em) and small (10-13.5px). Headings are mixed case with negative tracking (-0.02 to -0.034em) and low leading (0.98-1.04). The two never borrow from each other. On phones, functional labels rise to a 12px floor; decorative sheet furniture keeps its size.", "section": "typography" },
+      { "name": "The Pool-of-Light Rule", "body": "There is one light in the world, a neutral radial pool generated once and shared by the CSS ground and the GL backdrop. It moves with the machine. Nothing else casts light except water.", "section": "elevation" },
+      { "name": "The Paper-and-Glass Rule", "body": "A box-shadow belongs only to something that is physically a sheet of paper or a pane of glass. Panels, notes, chips and rows are flat and drawn with hairlines; their depth is their opacity over the pool.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do lay every opaque section on `.ground` (void plus 5.5% soft-light grain) and open it with a sheet strip; give it a `sheet-edge` divider with registration ticks, and `ground--ruled` only where a 64px ruling earns its place.",
+      "Do keep the machine one scene: a fixed canvas at `z-index: -1`, the cover and the journey as transparent windows, everything else opaque over it, and the pool of light following the machine.",
+      "Do use cyan (#29c2ee) only where water or light is, and deep (#0f6fb0) for cyan's job on the light glass.",
+      "Do letter the drawing in Routed Gothic uppercase at 10.5-13.5px with 0.1-0.22em tracking, and set the page's index numerals and instrument readouts in Geist Mono with tabular figures.",
+      "Do set headings in Satoshi at 0.98-1.04 leading and -0.02 to -0.034em tracking, and sentences in Hanken Grotesk at 1.62-1.72 in prose (#d3dce2) or steel.",
+      "Do title a view under its heading (a Routed Gothic reference with an 18px hairline before it), the way a drawing titles a view.",
+      "Do give every action a stadium (999px) and every piece of drawing furniture a square corner (0 or 2px).",
+      "Do reserve the liquid-metal surface for the actions that close the sale, and make its label hold 4.5:1 against the darkest band.",
+      "Do draw structure with 1px hairlines at `--line` and depth with opacity over the pool; a box-shadow goes only under paper or glass.",
+      "Do pin scrolling plates inside a bounded block and measure progress off a runway; reserve any overlap the next section hangs into.",
+      "Do ship a reduced-motion path that tells the same story standing still: the static story, the finished plate, the filled plan, no cursor, no filters.",
+      "Do hold generated stills in the site's cold register with a filter, and label every visualisation as one.",
+      "Do measure contrast against the dark ground rather than assume it, and raise functional labels to a 12px floor on phones.",
+      "Do write a `*` or a plain NOT IN SCOPE line where a figure would otherwise go; mechanism is the proof."
+    ],
+    "donts": [
+      "Don't put a graph grid behind anything. The measurement grid exists once, on the plate, during the trace.",
+      "Don't make the sheet cream, or tint the pool of light blue. The drawing surface is lit dark vellum and the pool is neutral graphite.",
+      "Don't set type over a photograph with a scrim; split the composition instead, or mark the photograph up as evidence.",
+      "Don't use cyan as a heading colour, a gradient, gradient text, or a wash behind a paragraph.",
+      "Don't set a sentence in Geist Mono or Routed Gothic, and don't choose a face for a mood.",
+      "Don't add transitions to the nav's morph variables (`--nw`, `--nh`, `--nr`, `--nt`); the scroll is the timeline.",
+      "Don't give the glass a bevel, a second edge, or a machined highlight; one hairline inside the edge is the whole edge.",
+      "Don't apply the liquid-metal surface to secondary actions, or displace an element that has its own border.",
+      "Don't lay stages, benefits or facts out as a card grid; set them as a schedule, a fact list or a numbered sequence with hairline rows.",
+      "Don't put a box-shadow under a panel, note, chip or row, or outline an invisible sheet with one.",
+      "Don't use a sage, blush or muted-earth wellness palette, rounded friendly type, or leaves and droplets as decoration.",
+      "Don't print a percentage, a review, a rating or an endorsement that cannot be pointed at."
+    ]
+  }
+}

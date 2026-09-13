@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { SheetStrip } from "@/components/site/SheetStrip";
 import Link from "next/link";
 import { asset } from "@/lib/asset";
 import { scrollToY } from "@/lib/providers/SmoothScroll";
@@ -124,8 +125,9 @@ export function HowItWorks() {
   };
 
   return (
-    <section className="hiw ground ground--ruled sheet-edge" ref={rootRef} aria-labelledby="hiw-h">
+    <section className="hiw ground ground--ruled sheet-edge" data-sheet="02" data-rev="B" data-name="THE FIX · SCHEDULE" ref={rootRef} aria-labelledby="hiw-h">
       <div className="hiw-inner">
+        <SheetStrip n="02" title="The fix, standing still" note="Schedule 1 · what each stage does" />
         <header className="hiw-head">
           <h2 className="hiw-h" id="hiw-h">
             That was the machine,
@@ -209,7 +211,7 @@ export function HowItWorks() {
             <Link className="hiw-inline" href="/water-test/">
               the free test
             </Link>{" "}
-            settles.
+            settles. Visualisation, not a photograph of a real set.
           </figcaption>
         </figure>
       </div>

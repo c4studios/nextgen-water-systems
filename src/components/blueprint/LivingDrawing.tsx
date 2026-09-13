@@ -4,8 +4,13 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import { scrollToY } from "@/lib/providers/SmoothScroll";
+import { HERO } from "./heroState";
+import { journeyEndY, journeyProgress, journeyY } from "./journeyMap";
 import { useReducedMotion } from "@/lib/useReducedMotion";
-import { BACKDROP_CSS } from "./backdrop";
+import { BACKDROP_RADII, BACKDROP_STOPS } from "./backdrop";
+
+/** the page-side pool of light, with a centre the frame loop can move */
+const BACKDROP_POOL_CSS = `radial-gradient(${BACKDROP_RADII.x * 100}% ${BACKDROP_RADII.y * 100}% at var(--pool-x, 50%) var(--pool-y, 40%), ${BACKDROP_STOPS.map(([o, c]) => `${c} ${Math.round(o * 100)}%`).join(", ")})`;
 import { asset } from "@/lib/asset";
 import { STORY_BEATS, VESSEL_BEAT_P, VESSEL_TIPS } from "@/content/journeyStory";
 import { WaterTextDefs } from "@/components/ui/WaterText";
@@ -39,6 +44,14 @@ const STAGE_LABEL: Record<string, [string, string]> = {
   handoff: ["NEXT", "Book a free water test"],
 };
 const stageAt = (p: number) => STORY_BEATS.find((b) => p >= b.a && p <= b.b)?.id ?? "";
+/** the rail: one stop per beat, written in desktop time; phones hide the four
+ *  beats their cut skips (journeyMap.ts) */
+const RAIL_STOPS = STORY_BEATS.filter((b) => STAGE_LABEL[b.id]).map((b) => ({
+  id: b.id,
+  p: Math.min(b.a + 0.012, 0.985),
+  label: STAGE_LABEL[b.id][0],
+  mobileHide: ["proof", "cred", "service", "install"].includes(b.id),
+}));
 
 function hasWebGL(): boolean {
   try {
@@ -99,6 +112,15 @@ export function LivingDrawing() {
   const stageT = useRef<HTMLSpanElement>(null);
   const stageRail = useRef<HTMLElement>(null);
   const lastStage = useRef("");
+  const fixedRef = useRef<HTMLDivElement>(null);
+  const railRef = useRef<HTMLElement>(null);
+  const railOn = useRef("");
+  /** what the plate wants the canvas opacity to be (the frame loop applies
+   *  it, or the cover's own rule when the cover owns the scene) */
+  const plateOpacity = useRef(0);
+  /** the phone cut's picture dip, 1 = full */
+  const plateDip = useRef(1);
+  const activeRef = useRef(true);
   // start rendering immediately — the journey is the first thing on screen, so
   // don't wait on the IntersectionObserver (which also fires unreliably under
   // headless virtual-time). The observer below still PAUSES it once off-screen.
@@ -121,10 +143,8 @@ export function LivingDrawing() {
   // Through Lenis, never window.scrollTo: with both running they fight for the
   // scroll position every frame and the page tears back and forth.
   const flyToVessel = useCallback((i: number) => {
-    const el = rootRef.current;
-    if (!el) return;
-    const y = el.offsetTop + VESSEL_BEAT_P[i] * (el.offsetHeight - window.innerHeight);
-    scrollToY(y);
+    if (!rootRef.current) return;
+    scrollToY(journeyY(VESSEL_BEAT_P[i]));
   }, []);
 
   const handleReady = useCallback(() => setGlReady(true), []);
@@ -144,7 +164,11 @@ export function LivingDrawing() {
     let dead: number | undefined;
     const onLost = (e: Event) => {
       e.preventDefault();
-      dead = window.setTimeout(() => setWebgl(false), 4000);
+      dead = window.setTimeout(() => {
+        // the cover's still comes back with the fallback
+        delete document.documentElement.dataset.nggl;
+        setWebgl(false);
+      }, 4000);
     };
     const onRestored = () => {
       if (dead) window.clearTimeout(dead);
@@ -183,6 +207,8 @@ export function LivingDrawing() {
   // — no bare dark rectangle on first paint (Phase 1)
   useEffect(() => {
     glReadyRef.current = glReady;
+    // the cover's still steps aside once the live scene is up
+    if (glReady) document.documentElement.dataset.nggl = "1";
     if (!glReady || reduced) return;
     const shade = svgRef.current?.querySelector<SVGGElement>(".jd-shade");
     if (shade) gsap.to(shade, { opacity: 0, duration: 0.6, ease: "power1.out", overwrite: "auto" });
@@ -237,6 +263,7 @@ export function LivingDrawing() {
     const construct = q<SVGGElement>(".jd-construct");
     const col = q<SVGGElement>(".jd-col");
     const dimG = q<SVGGElement>(".jd-dim");
+    const cuts = q<SVGGElement>(".jd-cuts");
     const dimLabel = q<SVGGElement>(".jd-dim-label");
     const inkG = q<SVGGElement>(".jd-ink");
     const revRows = Array.from(root.querySelectorAll<HTMLElement>(".jd-rev-row"));
@@ -279,6 +306,7 @@ export function LivingDrawing() {
       balloons.forEach((g) => (g.style.opacity = "1"));
       if (bom) bom.style.opacity = "1";
       if (dimG) dimG.style.opacity = "1";
+      if (cuts) cuts.style.opacity = "1";
       if (dimLabel) dimLabel.style.opacity = "1";
       if (construct) construct.style.opacity = "0.16";
       if (inkG) inkG.style.color = "#15324a";
@@ -301,7 +329,7 @@ export function LivingDrawing() {
       // + copy) and the machine simply fades in when the chunk is live
       const posterWanted = !webgl || (!glReadyRef.current && u3d.current > 0.04);
       gsap.set(shade, { opacity: posterWanted ? 1 : 0 });
-      gsap.set([beds, bom, dimG], { opacity: 0 });
+      gsap.set([beds, bom, dimG, cuts], { opacity: 0 });
       // each bed's hatching fills its vessel from the bottom up
       gsap.set(bedRects, { clipPath: "inset(100% 0 0 0)" });
       gsap.set(balloons, { opacity: 0 });
@@ -367,6 +395,7 @@ export function LivingDrawing() {
         tl.to(r, { clipPath: "inset(0% 0 0 0)", duration: 0.16, ease: "power1.inOut" }, 0.56 + i * 0.095),
       );
       tl.to(dimG, { opacity: 1, duration: 0.02 }, 0.82);
+      tl.to(cuts, { opacity: 1, duration: 0.03 }, 0.86);
       dim.forEach((p, i) => tl.to(p, { strokeDashoffset: 0, duration: 0.07, ease: "power2.out" }, 0.82 + i * 0.035));
       // the dimension VALUE letters in only after its lines exist
       tl.to(dimLabel, { opacity: 1, duration: 0.04 }, 0.92);
@@ -434,6 +463,15 @@ export function LivingDrawing() {
             const on = p >= 0.262 && p < 0.985;
             stageRef.current.style.opacity = on ? "1" : "0";
             const id = stageAt(p);
+            if (railRef.current) {
+              railRef.current.classList.toggle("is-on", on);
+              if (id !== railOn.current) {
+                railOn.current = id;
+                for (const b of railRef.current.querySelectorAll<HTMLButtonElement>("button[data-id]")) {
+                  b.classList.toggle("is-on", b.dataset.id === id);
+                }
+              }
+            }
             if (on && id !== lastStage.current && STAGE_LABEL[id]) {
               lastStage.current = id;
               if (stageN.current) stageN.current.textContent = STAGE_LABEL[id][0];
@@ -471,10 +509,18 @@ export function LivingDrawing() {
             // slide rather than as writing appearing on a drawing.
             const parts = el.querySelectorAll<HTMLElement>("[data-stagger]");
             if (parts.length) {
+              // A beat whose title forms out of water GATES everything else on
+              // the title: the reference and the sentence stay at zero until
+              // the heading's letters have resolved, then arrive on the fast
+              // fade with their full rest. Pacing them off the wide window
+              // only dimmed them, which left the reference the first legible
+              // text of the beat and ate the schedule's dwell.
+              const paced = !!el.querySelector("[data-water]");
+              const gate = paced ? gsap.utils.clamp(0, 1, (ioW - 0.65) / 0.2) : 1;
               for (const part of parts) {
                 const d = Number(part.dataset.stagger || 0) * 0.16;
                 const water = part.querySelector<HTMLElement>("[data-water]");
-                const kio = gsap.utils.clamp(0, 1, ((water ? ioW : io) - d) / (1 - d));
+                const kio = gsap.utils.clamp(0, 1, ((water ? ioW : io) - d) / (1 - d)) * (water ? 1 : gate);
                 if (water) {
                   // the heading is liquid on the way in and out, sharp while
                   // the beat holds. Opacity stays 1 — the threshold filter is
@@ -529,7 +575,7 @@ export function LivingDrawing() {
             // underneath, so there's no hitch when it appears), then the
             // vellum-plate rule takes over.
             const plateHide = gsap.utils.clamp(0, 1, gsap.utils.mapRange(0.46, 0.62, 1, 0, bpU));
-            canvasWrapRef.current.style.opacity = String(plateHide * (1 - so));
+            plateOpacity.current = plateHide * (1 - so);
           }
 
           // fallback-only parallax tilt on the SVG still (when there's no live 3D
@@ -576,12 +622,17 @@ export function LivingDrawing() {
         invalidateOnRefresh: true,
         // ?ngjp freezes the WHOLE frame state (ink + cross-fade + 3D) at one
         // scalar, so a capture is WYSIWYG of the real scroll at that point
-        onUpdate: (self) => applyFrame(DBG_JP ?? self.progress),
+        onUpdate: (self) => {
+          // phones play a shorter cut of the same timeline (journeyMap.ts)
+          const j = journeyProgress(self.progress);
+          plateDip.current = j.dip;
+          applyFrame(DBG_JP ?? j.p);
+        },
       });
       // apply the initial frame immediately — ScrollTrigger doesn't fire
       // onUpdate at creation, and the ?ngjp freeze must work with zero scroll.
       // Seed from st.progress (not 0) so scroll-restored loads land mid-journey.
-      applyFrame(DBG_JP ?? st.progress);
+      applyFrame(DBG_JP ?? journeyProgress(st.progress).p);
     }, root);
 
     return () => ctx.revert();
@@ -593,12 +644,41 @@ export function LivingDrawing() {
   useEffect(() => {
     const root = rootRef.current;
     if (!root || !webgl) return;
-    const io = new IntersectionObserver(([e]) => setActive(e.isIntersecting), {
-      threshold: 0,
-      rootMargin: "100% 0px 100% 0px",
-    });
-    io.observe(root);
-    return () => io.disconnect();
+    // ONE loop decides who owns the scene each frame. The cover owns it while
+    // its anchor is on screen and the plate is not; the plate owns it while
+    // the plate is; nobody, in between, and the canvas hides and the frameloop
+    // pauses. The pool of light behind the machine follows the owner.
+    let raf = 0;
+    const pool = { x: 50, y: 40 };
+    const loop = () => {
+      raf = requestAnimationFrame(loop);
+      const vh = window.innerHeight;
+      const pr = root.getBoundingClientRect();
+      const plateNear = pr.top < vh && pr.bottom > 0;
+      const coverOwns = HERO.visible && !plateNear;
+      HERO.mixT = coverOwns ? 1 : 0;
+      const wrap = canvasWrapRef.current;
+      if (wrap) {
+        const op = coverOwns ? (glReadyRef.current ? 1 : 0) : plateNear ? plateOpacity.current * plateDip.current : 0;
+        wrap.style.opacity = op.toFixed(3);
+      }
+      const fixed = fixedRef.current;
+      if (fixed) {
+        const tx = coverOwns ? HERO.cx * 100 : 50;
+        const ty = coverOwns ? (HERO.cy - 0.04) * 100 : 40;
+        pool.x += (tx - pool.x) * 0.12;
+        pool.y += (ty - pool.y) * 0.12;
+        fixed.style.setProperty("--pool-x", pool.x.toFixed(2) + "%");
+        fixed.style.setProperty("--pool-y", pool.y.toFixed(2) + "%");
+      }
+      const act = HERO.visible || plateNear;
+      if (act !== activeRef.current) {
+        activeRef.current = act;
+        setActive(act);
+      }
+    };
+    loop();
+    return () => cancelAnimationFrame(raf);
   }, [webgl]);
 
   // Hold the frameloop open for a beat after load regardless of where the
@@ -613,19 +693,12 @@ export function LivingDrawing() {
   }, [webgl]);
 
   return (
-    <section
-      ref={rootRef}
-      className="plate"
-      id="drawing"
-      data-sheet="01"
-      data-rev="C"
-      data-name="GENERAL ARRANGEMENT"
-      // page + GL share one pool-of-light (backdrop.ts) — zero seam
-      style={{ background: BACKDROP_CSS }}
-    >
-      <div className="plate-stick">
-        {/* FULL-BLEED canvas (Phase 1): the machine floats in the whole
-            viewport; the vellum sheet is a prop that materialises over it */}
+    <>
+      {/* THE ONE SCENE, fixed behind the page. The cover and the journey are
+          the two windows onto it (their sections have no background); every
+          other sheet is an opaque page over it. The pool of light lives here
+          too, so page and GL share one atmosphere with no seam. */}
+      <div className="stage-fixed" ref={fixedRef} aria-hidden="true" style={{ background: BACKDROP_POOL_CSS }}>
         {webgl && (
           <div className="plate-canvas" ref={canvasWrapRef}>
             <ChromeStage
@@ -636,6 +709,16 @@ export function LivingDrawing() {
             />
           </div>
         )}
+      </div>
+    <section
+      ref={rootRef}
+      className="plate"
+      id="drawing"
+      data-sheet="02"
+      data-rev="B"
+      data-name="THE FIX · GENERAL ARRANGEMENT"
+    >
+      <div className="plate-stick">
         {/* Act 1 opener — the machine at rest, photographed rather than
             rendered. Positioned to the SAME framing as the docked 3D beneath it
             (front elevation, camera [0,0.12,8.8], assembly at 0.781 scale
@@ -648,6 +731,28 @@ export function LivingDrawing() {
           <span className="jstage-n" ref={stageN} />
           <span className="jstage-t" ref={stageT} />
         </div>
+        {/* THE RAIL. The hidden right-click menu was the only way to move
+            through the journey, and nobody finds a hidden menu. This is the
+            stage list, always on while the story runs: where you are, every
+            stop you can jump to, and a way past the whole section. */}
+        <nav className="jrail" ref={railRef} aria-label="Stages of the drawing">
+          {RAIL_STOPS.map((st) => (
+            <button
+              key={st.id}
+              type="button"
+              data-id={st.id}
+              data-mobile-hide={st.mobileHide ? "" : undefined}
+              onClick={() => scrollToY(journeyY(st.p))}
+            >
+              {st.label}
+              <i aria-hidden="true" />
+            </button>
+          ))}
+          <button type="button" className="jskip" onClick={() => scrollToY(journeyEndY())}>
+            Skip<span> the section</span>
+            <i aria-hidden="true" />
+          </button>
+        </nav>
         <div className="rest-still" ref={restStillRef} aria-hidden="true">
           <img src={asset("/photos/machine-rest.jpg")} alt="" draggable={false} />
         </div>
@@ -771,6 +876,32 @@ export function LivingDrawing() {
               </g>
 
               {/* the one active dimension */}
+              {/* SECTION CUTS. The stage beats are titled SECTION A–A, B–B, C–C,
+                  and a drawing that titles a section shows where it was cut:
+                  a chain line through each vessel, arrows in the viewing
+                  direction, the letter at both ends. Lands with the dimensions. */}
+              <g className="jd-cuts" opacity={0}>
+                {VESSEL_CX.map((cx, i) => {
+                  const L = String.fromCharCode(65 + i);
+                  // each cut at its own height, so three cuts read as three
+                  // lines rather than one chain line with paired letters
+                  const y = 404 + i * 46;
+                  return (
+                    <g key={L}>
+                      <path d={`M${cx - 86} ${y} H${cx + 86}`} fill="none" stroke="#8fb3c8" strokeWidth="1.1" strokeDasharray="12 4 3 4" />
+                      {[cx - 86, cx + 86].map((x) => (
+                        <g key={x}>
+                          <path d={`M${x} ${y - 16} V${y + 10}`} fill="none" stroke="#8fb3c8" strokeWidth="1.4" />
+                          <path d={`M${x - 4} ${y + 4} L${x} ${y + 11} L${x + 4} ${y + 4} Z`} fill="#8fb3c8" />
+                          <text x={x} y={y - 22} textAnchor="middle" fill="#dce8f0" fontSize="13" fontFamily="var(--font-draft), var(--font-mono), monospace" letterSpacing="1">
+                            {L}
+                          </text>
+                        </g>
+                      ))}
+                    </g>
+                  );
+                })}
+              </g>
               <g className="jd-dim">
                 <path
                   data-dim
@@ -910,11 +1041,6 @@ export function LivingDrawing() {
               /* the LANDING — the page opens as a hero, then scrolls into
                  the journey */
               <div key={bt.id} className={`pbeat pb--hero ${bt.pos}`} data-a={bt.a} data-b={bt.b} data-f={bt.f}>
-                <div className="pbh-rule">
-                  <span>NGW-01</span>
-                  <i aria-hidden="true" />
-                  <span>WHOLE-HOME FILTRATION</span>
-                </div>
                 {/* h2, not h1: Act 0 above is now the page's opening statement
                     and owns the single H1. This beat introduces the machine,
                     which is the section below it, not the page. */}
@@ -933,15 +1059,14 @@ export function LivingDrawing() {
                 {bt.cue && <span className="pb-cue">{bt.cue}</span>}
               </div>
             ) : (
-            <div key={bt.id} className={`pbeat ${bt.pos}`} data-a={bt.a} data-b={bt.b} data-f={bt.f}>
+            <div key={bt.id} className={`pbeat ${bt.pos}`} data-id={bt.id} data-a={bt.a} data-b={bt.b} data-f={bt.f}>
               {/* data-stagger: the beat's parts arrive one after another off
                   the same scroll scalar, instead of the whole block sliding up
                   as one lump. The heading lands first, so the eye has somewhere
                   to go before the sentence appears. */}
-              <span className="pb-eyebrow" data-stagger="0">{bt.eyebrow}</span>
               {/* the title forms out of water: two blurred copies through an
                   alpha threshold, driven by this beat's own fade scalar */}
-              <h2 className="pb-h" data-stagger="1">
+              <h2 className="pb-h" data-stagger="0">
                 <span className="wt" data-water>
                   <span className="wt-stage" aria-hidden="true">
                     <span className="wt-layer">{bt.h}</span>
@@ -950,7 +1075,14 @@ export function LivingDrawing() {
                   <span className="sr-only">{bt.h}</span>
                 </span>
               </h2>
-              <p className="pb-body" data-stagger="2">{bt.body}</p>
+              {/* the drawing reference, set the way a drawing titles a view:
+                  under it. The section letters are real: the general
+                  arrangement carries the cut lines they refer to. */}
+              <span className="pb-ref" data-stagger="1">{bt.eyebrow}</span>
+              <p className="pb-body" data-stagger="2">
+                {bt.body}
+                {bt.more && <span className="pb-more"> {bt.more}</span>}
+              </p>
               {bt.rows && (
                 <dl className="pb-rows" data-stagger="3">
                   {bt.rows.map(([k, v]) => (
@@ -977,5 +1109,6 @@ export function LivingDrawing() {
         <div className="plate-grain" aria-hidden="true" />
       </div>
     </section>
+    </>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { SheetStrip } from "@/components/site/SheetStrip";
 import Link from "next/link";
 
 /**
@@ -102,15 +103,20 @@ type Fixture = {
   lx: number;
   ly: number;
   anchor?: "start" | "middle" | "end";
+  /** one drafted line about this fitting, shown on hover/focus and in the list */
+  note: string;
+  /** where the note sits: the anchor corner of its box */
+  nx: number;
+  ny: number;
 };
 
 const FIXTURES: Fixture[] = [
-  { label: "TROUGH", run: "A", bx: 346, by: 450, fx: 214, fy: 450, sym: "trough", lx: 214, ly: 490, anchor: "middle" },
-  { label: "FRIDGE / ICE", run: "A", bx: 372, by: 505, fx: 372, fy: 345, sym: "fridge", lx: 400, ly: 349, anchor: "start" },
-  { label: "KITCHEN SINK", run: "A", bx: 450, by: 505, fx: 450, fy: 515, sym: "sink", lx: 450, ly: 483, anchor: "middle" },
-  { label: "DISHWASHER", run: "A", bx: 510, by: 505, fx: 520, fy: 516, sym: "dishwasher", lx: 548, ly: 520, anchor: "start" },
-  { label: "SHOWER", run: "B", bx: 882, by: 200, fx: 764, fy: 200, sym: "shower", lx: 764, ly: 242, anchor: "middle" },
-  { label: "BASIN", run: "B", bx: 882, by: 132, fx: 850, fy: 118, sym: "basin", lx: 846, ly: 152, anchor: "middle" },
+  { label: "TROUGH", run: "A", bx: 346, by: 450, fx: 214, fy: 450, sym: "trough", lx: 214, ly: 490, anchor: "middle", note: "THE LAUNDRY'S COLD FEED", nx: 124, ny: 402 },
+  { label: "FRIDGE / ICE", run: "A", bx: 372, by: 505, fx: 372, fy: 345, sym: "fridge", lx: 400, ly: 349, anchor: "start", note: "ICE AND CHILLED WATER", nx: 400, ny: 356 },
+  { label: "KITCHEN SINK", run: "A", bx: 450, by: 505, fx: 450, fy: 515, sym: "sink", lx: 450, ly: 483, anchor: "middle", note: "THE TAP YOU DRINK FROM", nx: 372, ny: 436 },
+  { label: "DISHWASHER", run: "A", bx: 510, by: 505, fx: 520, fy: 516, sym: "dishwasher", lx: 548, ly: 520, anchor: "start", note: "FILLS FROM THE SAME LINE", nx: 548, ny: 528 },
+  { label: "SHOWER", run: "B", bx: 882, by: 200, fx: 764, fy: 200, sym: "shower", lx: 764, ly: 242, anchor: "middle", note: "THE SCREEN THAT SCALES", nx: 700, ny: 250 },
+  { label: "BASIN", run: "B", bx: 882, by: 132, fx: 850, fy: 118, sym: "basin", lx: 846, ly: 152, anchor: "middle", note: "THE FIRST TAP OF THE DAY", nx: 738, ny: 158 },
 ];
 
 const arc = (cx: number, cy: number, r: number, a0: number, a1: number) => {
@@ -285,8 +291,9 @@ export function FloorPlan() {
   const inner = { x: OUT.x + EXT, y: OUT.y + EXT, w: OUT.w - 2 * EXT, h: OUT.h - 2 * EXT };
 
   return (
-    <section className="fp ground sheet-edge" ref={rootRef} aria-labelledby="fp-h">
+    <section className="fp ground sheet-edge" id="plan" data-sheet="03" data-rev="C" data-name="WHERE IT GOES · PLAN" ref={rootRef} aria-labelledby="fp-h">
       <div className="fp-inner">
+        <SheetStrip n="03" title="Where it goes" note="Hydraulic services plan" />
         <header className="fp-head">
           <h2 className="fp-h" id="fp-h">
             One machine.
@@ -416,12 +423,31 @@ export function FloorPlan() {
 
             {/* branches, drawn under the runs so the water reads as on top */}
             {FIXTURES.map((f, i) => (
-              <g key={f.label} className={`fp-fix${served[i] ? " is-served" : ""}`}>
+              <g
+                key={f.label}
+                className={`fp-fix${served[i] ? " is-served" : ""}`}
+                tabIndex={0}
+                role="img"
+                aria-label={`${f.label}: ${f.note.toLowerCase()}`}
+              >
                 <path className="fp-branch" d={`M${f.bx} ${f.by} L${f.fx} ${f.fy}`} />
                 <Symbol f={f} />
                 <text className="fp-fixlabel" x={f.lx} y={f.ly} textAnchor={f.anchor ?? "start"}>
                   {f.label}
                 </text>
+                {/* the balloon: phones drop the labels, so the fitting is
+                    numbered here and named in the list below, drawing-fashion */}
+                <g className="fp-balloon">
+                  <circle cx={f.fx + 36} cy={f.fy - 36} r={20} />
+                  <text x={f.fx + 36} y={f.fy - 27} textAnchor="middle">
+                    {i + 1}
+                  </text>
+                </g>
+                {/* the drafted note, on hover or focus */}
+                <g className="fp-tip">
+                  <rect x={f.nx} y={f.ny} width={f.note.length * 7.4 + 18} height={20} rx={1.5} />
+                  <text x={f.nx + 9} y={f.ny + 13.5}>{f.note}</text>
+                </g>
               </g>
             ))}
 
@@ -460,8 +486,11 @@ export function FloorPlan() {
         <ol className="fp-list" aria-hidden="true">
           {FIXTURES.map((f, i) => (
             <li key={f.label} className={served[i] ? "is-served" : undefined}>
-              <i />
-              {f.label}
+              <i data-n={i + 1} />
+              <span>
+                {f.label}
+                <small>{f.note.toLowerCase()}</small>
+              </span>
             </li>
           ))}
         </ol>

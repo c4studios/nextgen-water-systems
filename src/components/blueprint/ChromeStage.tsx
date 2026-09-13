@@ -4,6 +4,9 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Environment, ContactShadows, Html, Lightformer, RoundedBox, Decal, MeshTransmissionMaterial } from "@react-three/drei";
 import { EffectComposer, Bloom, Vignette, ChromaticAberration, DepthOfField, N8AO } from "@react-three/postprocessing";
 import { makeBrushedSteel, makeCastGrain, makeOrangePeel, makeSmudge, makeDroplets, makeScratch, makeGranules } from "./surfaces";
+import { HERO, HERO_HOT_EVENT } from "./heroState";
+import { journeyY } from "./journeyMap";
+import { scrollToY } from "@/lib/providers/SmoothScroll";
 import { detectTier, QUALITY } from "./quality";
 import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import * as THREE from "three";
@@ -185,13 +188,17 @@ function Backdrop() {
       depthWrite: false,
       depthTest: false,
       fog: false,
+      // the pool's centre is a uniform: the cover parks it under the machine's
+      // anchor, the journey keeps it where the CSS gradient has it
+      uniforms: { uCenter: { value: new THREE.Vector2(BACKDROP_CENTER.x, 1 - BACKDROP_CENTER.y) } },
       vertexShader: `varying vec2 vUv; void main(){ vUv = position.xy * 0.5 + 0.5; gl_Position = vec4(position.xy, 1.0, 1.0); }`,
       fragmentShader: `
         varying vec2 vUv;
+        uniform vec2 uCenter;
         void main(){
           // CSS geometry: centre (${BACKDROP_CENTER.x}, ${BACKDROP_CENTER.y} from top), radii ${BACKDROP_RADII.x}/${BACKDROP_RADII.y}
-          vec2 q = vec2((vUv.x - ${BACKDROP_CENTER.x.toFixed(3)}) / ${BACKDROP_RADII.x.toFixed(3)},
-                        (vUv.y - ${(1 - BACKDROP_CENTER.y).toFixed(3)}) / ${BACKDROP_RADII.y.toFixed(3)});
+          vec2 q = vec2((vUv.x - uCenter.x) / ${BACKDROP_RADII.x.toFixed(3)},
+                        (vUv.y - uCenter.y) / ${BACKDROP_RADII.y.toFixed(3)});
           float d = clamp(length(q), 0.0, 1.0);
           vec3 a = vec3(${a.map((v) => v.toFixed(4)).join(",")});
           vec3 b = vec3(${b.map((v) => v.toFixed(4)).join(",")});
@@ -201,6 +208,12 @@ function Backdrop() {
         }`,
     });
   }, []);
+  useFrame(() => {
+    const m = HERO.mix;
+    const c = mat.uniforms.uCenter.value as THREE.Vector2;
+    c.x = BACKDROP_CENTER.x + (HERO.cx - BACKDROP_CENTER.x) * m;
+    c.y = 1 - BACKDROP_CENTER.y + (1 - (HERO.cy - 0.04) - (1 - BACKDROP_CENTER.y)) * m;
+  });
   return <mesh geometry={geo} material={mat} renderOrder={-1} frustumCulled={false} />;
 }
 
@@ -455,15 +468,40 @@ function Rig({ progress, sheetRatio }: { progress: MutableRefObject<number>; she
     const cam = camera as THREE.PerspectiveCamera;
     const narrow = THREE.MathUtils.clamp((1.15 - cam.aspect) / 0.5, 0, 1);
     const heroW = narrow * (1 - ss(p, 0.05, 0.075));
+    // THE COVER borrows the scene: `mix` eases toward 1 while the cover's
+    // anchor box owns the screen (heroState.ts), and the camera pans so the
+    // machine sits inside that box, whatever the layout put there.
+    HERO.mix = THREE.MathUtils.damp(HERO.mix, HERO.mixT, 5, delta);
+    const hm = HERO.mix;
     if (heroW > 0) {
       camera.position.z += heroW * 4.5;
       camera.position.x *= 1 - heroW * 0.3;
       camera.position.y += heroW * 0.2;
-      // the hero look-target is shoved left (machine right, copy left) on wide
-      // screens; on portrait there's no room for that — recentre it AND raise
-      // it so the machine drops into the lower frame, clear of the top copy
-      tgt.current.x *= 1 - heroW * 0.85;
-      tgt.current.y += heroW * 1.05;
+      // on portrait at the dock the target is recentred and raised so the
+      // machine drops into the lower frame, clear of the top copy; the cover
+      // places the machine itself, so the shove fades out with `mix`
+      tgt.current.x *= 1 - heroW * 0.85 * (1 - hm);
+      tgt.current.y += heroW * 1.05 * (1 - hm);
+    }
+    if (hm > 0.001) {
+      // drag to turn: eases to the dragged yaw, and back to square when let go
+      if (!HERO.dragging) HERO.yawT = THREE.MathUtils.damp(HERO.yawT, 0, 0.35, delta);
+      HERO.yaw = THREE.MathUtils.damp(HERO.yaw, HERO.yawT, HERO.dragging ? 24 : 5, delta);
+      // a touch further back so the whole machine sits inside its column
+      camera.position.z += hm * 1.4 * (1 - narrow * 0.7);
+      const dist = camera.position.distanceTo(tgt.current);
+      const worldH = 2 * dist * Math.tan(THREE.MathUtils.degToRad(cam.fov) / 2);
+      const worldW = worldH * cam.aspect;
+      // a pan, not a turn: camera and target move together, so the machine is
+      // translated on screen and its perspective stays the dock's
+      const dx = -(HERO.cx - 0.5) * worldW * hm;
+      const dy = (HERO.cy - 0.5) * worldH * hm;
+      camera.position.x += dx;
+      camera.position.y += dy;
+      tgt.current.x += dx;
+      tgt.current.y += dy;
+    } else {
+      HERO.yaw = 0;
     }
     // dock registration zoom (Phase 1): the canvas is full-bleed but the ink
     // is drawn at SHEET scale — camera.zoom scales the NDC image uniformly
@@ -521,6 +559,13 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
   // Phase 2 interactivity: hovered vessel (ring brighten + tooltip) and the
   // explode card currently expanded
   const [hover, setHover] = useState<number | null>(null);
+  // the cover's taste check lights a vessel: React state, so its label raises
+  const [heroHot, setHeroHot] = useState<number | null>(null);
+  useEffect(() => {
+    const on = (e: Event) => setHeroHot((e as CustomEvent<number | null>).detail ?? null);
+    window.addEventListener(HERO_HOT_EVENT, on);
+    return () => window.removeEventListener(HERO_HOT_EVENT, on);
+  }, []);
   const [openCard, setOpenCard] = useState<number | null>(null);
 
   // procedural micro-roughness — real steel is never a perfect mirror. Fine
@@ -1171,7 +1216,9 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
       // product at rest doesn't move. Yaw 0 also means the rest pose IS the
       // dock pose, so the photoreal still, the live 3D and the ink trace share
       // one registration and can dissolve into each other without a jump.
-      g.rotation.y = 0;
+      // The cover is the exception: there the visitor can turn it by hand, and
+      // it squares up again as the cover hands the scene back.
+      g.rotation.y = HERO.yaw * HERO.mix;
     }
 
     // per-vessel: sump ghosts in its window; cartridge fades in (and stays
@@ -1239,7 +1286,11 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
       if (rm) {
         // damp BOTH directions toward the single target (hover -> 2.2, else the
         // scroll-driven base) so the ring eases in/out instead of snapping
-        const ringTarget = hover === i && p > 0.26 ? 2.2 : lerp(1.1, 0.15, through);
+        const onCover = HERO.mix > 0.5;
+        const lit = (hover === i && (p > 0.26 || onCover)) || (onCover && heroHot === i);
+        // the vessel the taste check named breathes, so the eye finds it
+        const pulse = onCover && heroHot === i ? 0.5 * (0.5 + 0.5 * Math.sin(state.clock.elapsedTime * 2.6)) : 0;
+        const ringTarget = lit ? 2.2 + pulse : lerp(1.1, 0.15, through);
         rm.emissiveIntensity = THREE.MathUtils.damp(rm.emissiveIntensity, ringTarget, HOVER_EMISSIVE_LAMBDA, delta);
       }
       // SERVICE — the way the real housing is actually serviced.
@@ -1619,7 +1670,7 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
           // ring + raises its label; click flies the scroll to its beat.
           // Gated past the dock so nothing fights the ink trace.
           onPointerOver={(e) => {
-            if (progress.current < 0.26) return;
+            if (progress.current < 0.26 && HERO.mix < 0.5) return;
             e.stopPropagation();
             setHover(i);
             document.body.style.cursor = "pointer";
@@ -1629,12 +1680,14 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
             document.body.style.cursor = "";
           }}
           onClick={(e) => {
-            if (progress.current < 0.26 || progress.current > 0.8) return;
+            const onCover = HERO.mix > 0.5;
+            // on the cover a drag is a drag, not a tap; in the journey the
+            // click works only while the machine is the subject
+            if (onCover ? HERO.dragged : progress.current < 0.26 || progress.current > 0.8) return;
             e.stopPropagation();
-            const el = document.getElementById("drawing");
-            if (!el) return;
-            const y = el.offsetTop + VESSEL_BEAT_P[i] * (el.offsetHeight - window.innerHeight);
-            window.scrollTo({ top: y, behavior: "smooth" });
+            // through Lenis, never window.scrollTo: with both running they
+            // fight for the scroll position every frame
+            scrollToY(journeyY(VESSEL_BEAT_P[i]));
           }}
         >
           {/* head / cap (lifts on the service explode) */}
@@ -2058,8 +2111,8 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
                   expands into a spec card on click/keyboard */}
               <Html position={[0.55, 0.2, 0.4]} zIndexRange={[30, 10]} className="xlabel-wrap">
                 <div
-                  className={`xlabel ${labelsOn || (hover === i && progress.current > 0.26) ? "on" : ""} ${openCard === i ? "is-open" : ""}`.trim()}
-                  aria-hidden={!labelsOn && hover !== i}
+                  className={`xlabel ${labelsOn || (hover === i && (progress.current > 0.26 || HERO.mix > 0.5)) || (heroHot === i && HERO.mix > 0.5) ? "on" : ""} ${openCard === i ? "is-open" : ""}`.trim()}
+                  aria-hidden={!labelsOn && hover !== i && heroHot !== i}
                 >
                   <span className="xl-leader" aria-hidden="true" />
                   <button

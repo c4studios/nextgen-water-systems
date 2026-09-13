@@ -11,7 +11,7 @@ import { SITE_REVISIONS } from "@/content/plates";
  * — pure DOM, no 3D risk.
  */
 export function DrawingChrome() {
-  const [active, setActive] = useState({ sheet: "01", name: "GENERAL ARRANGEMENT", rev: "C" });
+  const [active, setActive] = useState({ sheet: "00", name: "COVER", rev: "" });
   const [reached, setReached] = useState<string[]>([]);
 
   useEffect(() => {
@@ -38,7 +38,7 @@ export function DrawingChrome() {
     return () => io.disconnect();
   }, []);
 
-  const approved = active.sheet === "09";
+  const approved = active.sheet === "05";
   const go = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 
   return (
@@ -66,7 +66,7 @@ export function DrawingChrome() {
           </div>
           <div className="chrome-tb-cell">
             <i>SHEET</i>
-            {active.sheet} / 09
+            {active.sheet} / 05
           </div>
           <div className="chrome-tb-cell chrome-tb-view">
             <i>VIEW</i>

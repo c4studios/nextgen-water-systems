@@ -89,7 +89,7 @@ export function BookingForm() {
       {taste && (
         <p className="tform-carried">
           <span>WHAT YOU TOLD US</span>
-          {taste}
+          <b>{taste}</b>
           <input type="hidden" name="taste" value={taste} />
         </p>
       )}

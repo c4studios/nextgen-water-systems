@@ -31,3 +31,7 @@ pnpm-debug.log*
 next-env.d.ts
 
 .vercel
+
+# impeccable review captures and mocks are session artefacts
+.impeccable/review/
+.impeccable/mocks/

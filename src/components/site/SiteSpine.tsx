@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { SheetStrip } from "@/components/site/SheetStrip";
 import { PROOF_ROWS } from "@/content/booking";
 import { BookingForm } from "@/components/site/BookingForm";
 
@@ -118,9 +119,9 @@ function Schedule() {
 
 export function SiteSpine() {
   return (
-    <section id="plate-cta" className="tail ground ground--ruled sheet-edge" data-sheet="02" data-rev="D" data-name="BOOKING · APPROVED FOR ISSUE">
+    <section id="plate-cta" className="tail ground ground--ruled sheet-edge" data-sheet="05" data-rev="E" data-name="BOOKING · APPROVED FOR ISSUE">
+      <SheetStrip n="05" title="Book the test" />
       <div className="tail-inner">
-        <span className="tail-eyebrow">REV D · BOOKING · APPROVED FOR ISSUE</span>
         <h2 className="tail-h">
           Find out what&rsquo;s
           <br />

@@ -1,47 +1,41 @@
 import { LivingDrawing } from "@/components/blueprint/LivingDrawing";
 import { DrawingChrome } from "@/components/site/DrawingChrome";
 import { Opening } from "@/components/site/Opening";
-import { TasteKey } from "@/components/site/TasteKey";
 import { HowItWorks } from "@/components/site/HowItWorks";
 import { FloorPlan } from "@/components/site/FloorPlan";
 import { Band } from "@/components/site/Band";
 import { Exhibit } from "@/components/site/Exhibit";
 import { StaticStory } from "@/components/site/StaticStory";
+import { Installer } from "@/components/site/Installer";
 import { SiteSpine } from "@/components/site/SiteSpine";
 
+/**
+ * THE HOME PAGE IS A DRAWING SET: a cover, then five sheets.
+ *
+ *   COVER     the outcome, the machine, the taste check, who fits it
+ *   SHEET 01  your water — the kettle, marked up like a site inspection
+ *   SHEET 02  the fix, in section — the scroll-pinned journey through the
+ *             machine, then the same three stages standing still
+ *   SHEET 03  where it goes — the house plan, and the wall it hangs on
+ *   SHEET 04  who fits it — the licensed plumber, servicing, the install day
+ *   SHEET 05  book the test
+ *
+ * The machine is one WebGL scene fixed behind the page (LivingDrawing owns
+ * it). The cover borrows it; the journey drives it; every other sheet is an
+ * opaque page over it.
+ */
 export default function Home() {
   return (
     <>
       <DrawingChrome />
       <main id="main">
-        {/* Act 0 — the outcome, in the homeowner's terms. The machine used to
-            open the page; per PRODUCT.md it now backs this up instead. */}
         <Opening />
-        {/* Recognition, before the machine: the visitor's own water is the
-            subject for one screen, and what they pick rides along to the
-            booking so the technician knows before he arrives. */}
-        <TasteKey />
-        {/* The complaint, photographed AND argued. This was a full-bleed photo
-            with a caption, and it is the screen the client reported scrolling
-            as feeling stuck. Nothing was wrong with the scrolling; measured, no
-            input is lost there. There was simply nothing happening on it. The
-            photograph is now marked up like a site inspection and hands off
-            into the drawing instead of dead-ending in front of it. */}
         <Exhibit />
-        {/* the pinned 3D journey — now the proof rather than the pitch */}
         <LivingDrawing />
         {/* reduced-motion fallback: the same story as a static document
             (display:none for everyone else — see globals.css) */}
         <StaticStory />
-        {/* The still version of what the journey just showed. People arrive
-            expecting sections that explain a process and scroll past a pinned
-            animation without registering that it WAS the process, so the site
-            now says it both ways. This is also an index back INTO the journey:
-            open a stage and it will take you to that vessel. */}
         <HowItWorks />
-        {/* Coverage as the payoff, and the site's one scroll mechanic outside
-            the journey: the water advances through a real house plan and each
-            fitting lights as it is reached. */}
         <FloorPlan />
         {/* Where it actually goes. Warm raking light on purpose: this is the
             one moment in the site that is a place rather than an object. */}
@@ -51,7 +45,7 @@ export default function Home() {
           tag="NOTE 2 · WHERE IT GOES"
           caption="On the wall where the water comes into the property, with isolation either side so it can be serviced without shutting the house down. It needs clearance underneath for the bowls to come off. Visualisation, not a photograph of a completed job."
         />
-        {/* the compact booking tail */}
+        <Installer />
         <SiteSpine />
       </main>
     </>

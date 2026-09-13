@@ -190,11 +190,10 @@
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.9),
-      inset 0 -1px 0 rgba(12, 18, 24, 0.06),
-      inset 1px 0 0 rgba(255, 255, 255, 0.45),
-      inset -1px 0 0 rgba(255, 255, 255, 0.45);
+    /* one hairline edge, no bevel: the band is frosted glass over the page,
+       and a fake machined edge on a page that renders real metal reads as
+       exactly that */
+    box-shadow: inset 0 0 0 1px rgba(12, 18, 24, 0.08);
     pointer-events: none;
   }
   .nav-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
@@ -752,7 +751,7 @@
        shorter there. Every beat is a fraction of the pin, so this compresses
        them all equally rather than cutting any. */
     @media (max-width: 900px) {
-      height: 880svh;
+      height: 620svh;
     }
     /* subtle studio pool-of-light so the chrome sits in depth, not flat black */
     background: radial-gradient(50% 42% at 50% 40%, #1a1b1d 0%, #0e0e10 58%, #0a0a0b 100%);
@@ -3098,140 +3097,17 @@
    photo has no large field that holds 4.5:1 without a scrim, and the scrim is
    the thing that would make it look like a template.
    =========================================================================== */
-.opening {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1fr;
-  align-items: center;
-  min-height: 100svh;
-  background: var(--void);
-  isolation: isolate;
-}
-@media (min-width: 900px) {
-  .opening { grid-template-columns: 1fr 52%; }
-}
-
-.opening-copy {
-  grid-row: 1;
-  padding: clamp(88px, 12vh, 160px) clamp(22px, 6vw, 96px) clamp(40px, 8vh, 96px);
-  max-width: 46rem;
-  z-index: 1;
-}
 
 /* Restraint is the premium signal: this sits deliberately BELOW the 104px the
    journey hero uses. Smaller and better beats louder. */
-.opening-h {
-  font-family: var(--font-satoshi), system-ui, sans-serif;
-  font-weight: 500;
-  font-size: clamp(38px, 5.2vw, 72px);
-  line-height: 1.04;
-  letter-spacing: -0.032em;
-  color: var(--ice);
-  text-wrap: balance;
-  margin: 0;
-}
-
-.opening-body {
-  margin: clamp(20px, 3vh, 32px) 0 0;
-  max-width: 46ch;
-  font-family: var(--font-hanken), system-ui, sans-serif;
-  /* light-on-dark reads lighter than it is — extra leading, and --steel rather
-     than --muted, which fails contrast against --void at body size */
-  font-size: clamp(15.5px, 1.25vw, 18px);
-  line-height: 1.72;
-  color: var(--steel);
-  text-wrap: pretty;
-}
 
 .opening-act { margin-top: clamp(30px, 4.5vh, 46px); }
 
-.opening-cta {
-  display: inline-block;
-  padding: 15px 26px;
-  border: 1px solid var(--cyan);
-  border-radius: 2px;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 13px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ice);
-  background: transparent;
-  transition: background 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-              color 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-}
 .opening-cta:hover { background: var(--cyan); color: var(--void); }
 .opening-cta:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
 
-.opening-installer {
-  margin: 16px 0 0;
-  font-family: var(--font-hanken), system-ui, sans-serif;
-  font-size: 14px;
-  color: var(--muted);
-}
-
-.opening-figure {
-  grid-row: 2;
-  position: relative;
-  margin: 0;
-  height: 42svh;
-  overflow: hidden;
-}
-@media (min-width: 900px) {
-  .opening-figure { grid-row: 1; height: 100svh; }
-}
-.opening-figure img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 38% 50%;
-}
 /* Ties the photograph's left edge back into the void so the split reads as one
    composition rather than two panels butted together. */
-.opening-figure::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  /* Fully void by 76% of the figure's height: that is exactly where the
-     journey section's overlap begins (margin-top:-24svh), so the plate never
-     cuts across a lit photograph — the image is already dark by then. */
-  background:
-    linear-gradient(180deg, rgba(10, 10, 11, 0) 40%, var(--void) 76%),
-    linear-gradient(90deg, var(--void) 0%, rgba(10, 10, 11, 0.55) 22%, rgba(10, 10, 11, 0) 62%);
-  pointer-events: none;
-}
-
-.opening-cue {
-  display: none; /* the machine hanging into view is the cue now */
-  position: absolute;
-  left: clamp(22px, 6vw, 96px);
-  bottom: clamp(20px, 4vh, 40px);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--muted);
-  z-index: 1;
-}
-.opening-cue-rule {
-  display: block;
-  width: 44px;
-  height: 1px;
-  background: var(--line);
-  transform-origin: left;
-  animation: opening-cue-draw 3.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
-}
-@keyframes opening-cue-draw {
-  0%, 100% { transform: scaleX(0.35); opacity: 0.5; }
-  50%      { transform: scaleX(1);    opacity: 1; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .opening-cue-rule { animation: none; transform: scaleX(1); }
-  .opening-cta { transition: none; }
-}
 
 /* ── exploded-part callouts on narrow viewports ──
    At ≤640px three 236px labels can't sit beside three vessels that share a
@@ -5613,3 +5489,657 @@ header.site-nav.is-light .nav-ring-btn {
 @media (prefers-reduced-motion: reduce) {
   .jstage { transition: none; }
 }
+
+/* ===========================================================================
+   THE COVER, THE FIXED SCENE, THE SHEET STRIPS, THE RAIL.
+   One WebGL scene sits fixed behind the document. The cover and the journey
+   are the two windows onto it; every other sheet is an opaque page over it.
+   =========================================================================== */
+
+.stage-fixed {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  /* the pool of light follows the machine: the cover parks it under the
+     anchor, the journey brings it back to centre */
+  --pool-x: 50%;
+  --pool-y: 40%;
+}
+.stage-fixed .plate-canvas {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: auto;
+  will-change: opacity;
+}
+/* the two windows: no background, and no box of their own catching the
+   pointer, so hover and click fall through to the machine */
+.opening,
+.plate {
+  background: transparent;
+  pointer-events: none;
+}
+.plate-stick { pointer-events: none; }
+/* The scene sits at z-index -1, under every in-flow box. A hit test walks
+   paint order from the top, and `main` and `body` are boxes too: with the
+   windows letting events through, the pointer landed on `main`, never on
+   the machine. So the page's own boxes step aside and every real child steps
+   back in; the windows keep their own `none`, which outranks `main > *`. */
+body,
+main { pointer-events: none; }
+body > *,
+main > * { pointer-events: auto; }
+/* `main` is itself a body child, so it steps aside again, one notch higher */
+body > main { pointer-events: none; }
+.opening > *,
+.opening-copy > * { pointer-events: auto; }
+/* vertical pans still scroll the page over the machine on a phone; a
+   sideways move is the drag, and the taps stay taps */
+.stage-fixed .plate-canvas canvas { touch-action: pan-y !important; }
+.opening-stage { pointer-events: none; }
+.jrail { pointer-events: auto; }
+
+/* ---- the cover ---- */
+.opening {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 11fr) minmax(0, 9fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-height: 100svh;
+}
+.opening-copy {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: center;
+  max-width: 46rem;
+  padding: clamp(112px, 15vh, 168px) clamp(20px, 4vw, 64px) clamp(28px, 4vh, 48px) clamp(22px, 6vw, 96px);
+}
+.opening-h {
+  font-family: var(--font-satoshi), system-ui, sans-serif;
+  font-weight: 500;
+  font-size: clamp(40px, 5.1vw, 74px);
+  line-height: 1.02;
+  letter-spacing: -0.034em;
+  color: var(--ice);
+  text-wrap: balance;
+  margin: 0;
+}
+.opening-body {
+  margin: clamp(18px, 2.6vh, 26px) 0 0;
+  max-width: 44ch;
+  font-size: clamp(16px, 1.55vw, 18px);
+  line-height: 1.62;
+  color: var(--steel);
+  text-wrap: pretty;
+}
+.opening-act {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 26px;
+  margin-top: clamp(26px, 4vh, 40px);
+}
+.opening-cta {
+  display: inline-block;
+  padding: 16px 26px;
+  border-radius: 999px;
+  font-family: var(--font-draft, "Routed Gothic"), var(--font-mono), monospace;
+  font-size: 13.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.opening-cta > span { position: relative; z-index: 1; }
+.opening-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  font-family: var(--font-draft, "Routed Gothic"), var(--font-mono), monospace;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--steel);
+  transition: color 0.3s var(--ease);
+}
+.opening-more i {
+  width: 9px;
+  height: 9px;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  rotate: 45deg;
+  translate: 0 -2px;
+  transition: translate 0.3s var(--ease);
+}
+.opening-more:hover { color: var(--ice); }
+.opening-more:hover i { translate: 0 1px; }
+
+/* the taste check, on the cover */
+.oc { margin-top: clamp(30px, 5vh, 54px); }
+.oc-h {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ice);
+}
+.oc-h span { color: var(--muted); }
+.oc-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.oc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 13px 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: rgba(21, 22, 23, 0.55);
+  font-family: var(--font-draft, "Routed Gothic"), var(--font-mono), monospace;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--steel);
+  cursor: pointer;
+  transition: border-color 0.3s var(--ease), color 0.3s var(--ease), background 0.3s var(--ease);
+}
+.oc-chip i {
+  position: relative;
+  width: 12px;
+  height: 12px;
+  border: 1px solid rgba(244, 249, 252, 0.35);
+  border-radius: 1px;
+  transition: border-color 0.3s var(--ease);
+}
+.oc-chip i::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  background: var(--cyan);
+  transform: scale(0);
+  transition: transform 0.25s var(--ease);
+}
+.oc-chip:hover { border-color: rgba(244, 249, 252, 0.3); color: var(--ice); }
+.oc-chip.is-on { color: var(--ice); border-color: rgba(41, 194, 238, 0.55); }
+.oc-chip.is-on i { border-color: var(--cyan); }
+.oc-chip.is-on i::after { transform: scale(1); }
+.oc-chip.is-live { background: rgba(41, 194, 238, 0.1); }
+.oc-answer {
+  margin: 16px 0 0;
+  min-height: 3.2em;
+  max-width: 46ch;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--steel);
+}
+.oc-answer b {
+  display: block;
+  margin-bottom: 4px;
+  font-family: var(--font-draft, "Routed Gothic"), var(--font-mono), monospace;
+  font-weight: 500;
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  color: var(--cyan);
+}
+.oc-idle { color: var(--muted); }
+
+/* the machine's anchor: the scene fits the machine to this box */
+.opening-stage {
+  grid-column: 2;
+  grid-row: 1;
+  position: relative;
+  min-height: 62svh;
+}
+.opening-still {
+  position: absolute;
+  left: calc(50% - 4.6svh);
+  top: calc(50% - 3.4svh);
+  height: 88.3svh;
+  width: auto;
+  max-width: none;
+  translate: -50% -50%;
+  -webkit-mask-image: radial-gradient(52% 58% at 50% 50%, #000 42%, rgba(0, 0, 0, 0.6) 66%, transparent 96%);
+  mask-image: radial-gradient(52% 58% at 50% 50%, #000 42%, rgba(0, 0, 0, 0.6) 66%, transparent 96%);
+  transition: opacity 0.9s var(--ease);
+}
+/* once the live scene is up, the still steps aside */
+html[data-nggl="1"] .opening-still { opacity: 0; }
+.opening-drag {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(18px, 4vh, 40px);
+  translate: -50% 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 13px;
+  border: 1px solid rgba(244, 249, 252, 0.12);
+  border-radius: 999px;
+  background: rgba(10, 10, 11, 0.45);
+  font-family: var(--font-draft, "Routed Gothic"), var(--font-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.5s var(--ease), translate 0.5s var(--ease);
+}
+.opening-drag.is-on { opacity: 1; translate: -50% 0; }
+.opening-drag i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--cyan);
+  animation: hint-pulse 2.4s ease-in-out infinite;
+}
+html:not([data-nggl="1"]) .opening-drag { opacity: 0; }
+
+/* the inspector strip along the cover's bottom edge */
+.opening-proof {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 30px;
+  padding: 16px clamp(22px, 6vw, 96px) 22px;
+  border-top: 1px solid var(--line);
+  font-family: var(--font-draft, "Routed Gothic"), var(--font-mono), monospace;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--steel);
+}
+.opening-proof-who { color: var(--muted); }
+.opening-proof-who a {
+  color: var(--ice);
+  border-bottom: 1px solid rgba(244, 249, 252, 0.3);
+  transition: border-color 0.3s var(--ease);
+}
+.opening-proof-who a:hover { border-color: var(--cyan); }
+
+@media (max-width: 900px) {
+  .opening {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto auto auto;
+    min-height: 0;
+  }
+  /* the copy column dissolves so the machine can sit between the action and
+     the taste check in the reading order phones need */
+  .opening-copy { display: contents; }
+  .opening-h,
+  .opening-body,
+  .opening-act,
+  .oc { padding-inline: 22px; }
+  .opening-h { grid-row: 1; padding-top: 84px; font-size: clamp(36px, 10.4vw, 46px); }
+  .opening-body { grid-row: 2; }
+  .opening-act { grid-row: 3; }
+  .opening-cta { flex: 1 1 100%; text-align: center; }
+  .opening-stage { grid-column: 1; grid-row: 4; min-height: 30svh; margin-top: 4px; }
+  .opening-still {
+    left: 50%;
+    top: 50%;
+    height: auto;
+    width: 118%;
+  }
+  .opening-drag { bottom: 4px; }
+  .oc { grid-row: 5; margin-top: 8px; }
+  .oc-list { gap: 7px; }
+  .oc-chip { padding: 9px 11px 9px 10px; font-size: 11px; }
+  .opening-proof { grid-row: 6; gap: 6px 18px; padding: 14px 22px 20px; font-size: 11px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .opening-drag i { animation: none; }
+}
+
+/* ---- the sheet strip: where you are in the set ---- */
+.shs {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  max-width: var(--maxw);
+  margin: 0 auto clamp(28px, 5vh, 56px);
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-draft, "Routed Gothic"), var(--font-mono), monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.shs-n { color: var(--cyan); }
+.shs-t { color: var(--steel); }
+.shs-of { margin-left: auto; }
+@media (max-width: 640px) {
+  .shs { gap: 12px; font-size: 10.5px; }
+  .shs-note { display: none; }
+}
+
+/* ---- sheet 04: who fits it ---- */
+.who {
+  position: relative;
+  z-index: 1;
+  padding: clamp(72px, 12vh, 150px) clamp(18px, 5vw, 34px);
+}
+.who-inner {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: clamp(28px, 5vw, 80px);
+  align-items: start;
+}
+.who-h {
+  font-size: clamp(32px, 4.6vw, 54px);
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+  text-wrap: balance;
+}
+.who-lead {
+  margin-top: 18px;
+  max-width: 52ch;
+  font-size: clamp(16px, 1.6vw, 18px);
+  line-height: 1.65;
+  color: var(--steel);
+  text-wrap: pretty;
+}
+.who-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 24px;
+  margin: 30px 0 0;
+  padding: 0;
+}
+.who-facts div {
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+}
+.who-facts dt {
+  font-family: var(--font-mono), monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+}
+.who-facts dd {
+  margin: 5px 0 0;
+  font-size: 17px;
+  color: var(--ice);
+}
+.who-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 28px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid rgba(244, 249, 252, 0.3);
+  font-family: var(--font-mono), monospace;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ice);
+  transition: border-color 0.3s var(--ease);
+}
+.who-link:hover { border-color: var(--cyan); }
+.who-link i { font-style: normal; color: var(--cyan); }
+.who-notes { display: grid; gap: 20px; }
+.who-note {
+  padding: 22px 24px 24px;
+  border: 1px solid var(--line);
+  background: rgba(21, 22, 23, 0.5);
+}
+.who-note h3 {
+  font-size: 22px;
+  letter-spacing: -0.02em;
+}
+.who-note p {
+  margin-top: 10px;
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: var(--steel);
+}
+@media (max-width: 900px) {
+  .who-inner { grid-template-columns: 1fr; }
+}
+
+/* ---- the journey rail: where you are, and how to move ---- */
+.jrail {
+  position: absolute;
+  right: clamp(14px, 2.4vw, 34px);
+  bottom: clamp(84px, 11vh, 118px);
+  z-index: 8;
+  display: grid;
+  gap: 1px;
+  padding: 10px 12px 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(203, 224, 236, 0.1);
+  background: rgba(10, 10, 11, 0.42);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 0.4s var(--ease);
+}
+.jrail.is-on { opacity: 1; }
+.jrail button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 5px 0 5px 8px;
+  border: 0;
+  background: none;
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.3s var(--ease);
+}
+.jrail button i {
+  display: block;
+  width: 32px;
+  height: 1px;
+  background: rgba(203, 224, 236, 0.28);
+  transform: scaleX(0.56);
+  transform-origin: right center;
+  transition: transform 0.3s var(--ease), background 0.3s var(--ease);
+}
+.jrail button:hover { color: var(--steel); }
+.jrail button.is-on { color: var(--ice); }
+.jrail button.is-on i { transform: scaleX(1); background: var(--cyan); }
+.jrail .jskip {
+  margin-top: 12px;
+  color: var(--cyan);
+}
+.jrail .jskip i {
+  width: 9px;
+  height: 9px;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  background: none;
+  rotate: 45deg;
+  translate: 0 -2px;
+}
+.jrail .jskip i { transform: none; }
+@media (max-width: 900px) {
+  .jrail {
+    right: auto;
+    left: 50%;
+    top: 204px;
+    bottom: auto;
+    translate: -50% 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 8px 4px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .jrail .jskip span { display: none; }
+  .jrail button { padding: 8px 3px; font-size: 0; gap: 0; }
+  .jrail button i {
+    width: 18px;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(203, 224, 236, 0.3);
+    transform: scaleX(0.34);
+    transform-origin: center;
+  }
+  .jrail button.is-on i { transform: scaleX(1); }
+  .jrail button[data-mobile-hide] { display: none; }
+  .jrail .jskip {
+    margin: 0 0 0 10px;
+    padding: 8px 6px;
+    font-size: 10px;
+    gap: 8px;
+  }
+  .jrail .jskip i { width: 8px; height: 8px; border-radius: 0; transform: none; }
+}
+
+/* ---- the plan answers touch: a drafted note per fitting ---- */
+.fp-fix { outline: none; }
+.fp-tip {
+  opacity: 0;
+  transition: opacity 0.3s var(--ease);
+  pointer-events: none;
+}
+.fp-fix:hover .fp-tip,
+.fp-fix:focus-visible .fp-tip { opacity: 1; }
+.fp-tip rect {
+  fill: rgba(10, 10, 11, 0.88);
+  stroke: rgba(203, 224, 236, 0.28);
+  stroke-width: 0.8;
+}
+.fp-tip text {
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  fill: var(--ice);
+}
+.fp-list small {
+  display: block;
+  font-size: 12px;
+  letter-spacing: 0;
+  color: var(--muted);
+}
+
+/* ---- finish-review fixes ---- */
+
+/* the journey's drawing reference is a view title UNDER the heading, the way
+   a drawing titles a view; the heading carries its own weight */
+.plate-hud .pb-h { margin-top: 0; }
+.pb-ref {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  font-family: var(--font-draft, "Routed Gothic"), var(--font-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.pb-ref::before {
+  content: "";
+  width: 18px;
+  height: 1px;
+  background: rgba(203, 224, 236, 0.35);
+}
+.pb--below .pb-ref { justify-content: center; }
+.pb--bc .pb-ref { justify-content: center; }
+@media (max-width: 900px) {
+  .pb-ref { justify-content: center; font-size: 10.5px; }
+}
+
+/* the rail on desktop: the current stop and the skip at rest, the whole list
+   on hover or keyboard focus, so it never sits on top of a beat's copy */
+@media (min-width: 901px) {
+  .jrail::before {
+    content: "STAGES";
+    margin-bottom: 4px;
+    font-family: var(--font-draft, "Routed Gothic"), var(--font-mono), monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-align: right;
+  }
+  /* the schedule beat, the one whose rows reached the rail, steps in */
+  .pbeat[data-id="proof"] { right: calc(clamp(24px, 6vw, 96px) + 164px); }
+}
+
+/* the plan's balloons: on phones the fittings are numbered on the drawing and
+   named in the list, like a set's bill of materials */
+.fp-balloon { display: none; }
+.fp-list li i {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  font-family: var(--font-draft, "Routed Gothic"), var(--font-mono), monospace;
+  font-size: 11px;
+  color: var(--steel);
+}
+.fp-list li i::before { content: attr(data-n); }
+.fp-list li.is-served i { color: var(--void); }
+@media (max-width: 900px) {
+  .fp-balloon { display: block; }
+  .fp-balloon circle {
+    fill: rgba(10, 10, 11, 0.85);
+    stroke: rgba(203, 224, 236, 0.7);
+    stroke-width: 1.4;
+    transition: stroke 0.45s var(--ease);
+  }
+  .fp-balloon text {
+    font-family: var(--font-draft, "Routed Gothic"), var(--font-mono), monospace;
+    font-size: 26px;
+    fill: var(--ice);
+  }
+  .fp-fix.is-served .fp-balloon circle { stroke: var(--cyan); }
+}
+
+/* the carried line on the booking form: label, a gap, a rule, the value */
+.tform-carried {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 14px;
+  margin: 0 0 18px;
+}
+.tform-carried span {
+  font-family: var(--font-draft, "Routed Gothic"), var(--font-mono), monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  color: var(--cyan);
+}
+.tform-carried b {
+  font-weight: 500;
+  color: var(--ice);
+  padding-left: 14px;
+  border-left: 1px solid var(--line);
+}
+
+/* ---- second finish round ---- */
+/* one action, one lettering: every liquid pill is set like the cover's */
+.lm.ex-go,
+.lm.tform-submit,
+.lm.ex-go > span,
+.lm.tform-submit > span {
+  font-family: var(--font-draft, "Routed Gothic"), var(--font-mono), monospace;
+  font-weight: 400;
+  font-size: 13.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+/* the phone hand-off: the folded sentence steps out, and the copy sits in a
+   darker dwell where it crosses the vessels' highlights */
+@media (max-width: 900px) {
+  .pb-more { display: none; }
+  .pbeat[data-id="handoff"]::before {
+    inset: -40px -50px;
+    background: radial-gradient(closest-side, rgba(4, 8, 12, 0.96), rgba(4, 8, 12, 0.74) 62%, rgba(4, 8, 12, 0) 100%);
+  }
+}
+
+/* the booking submit is a stadium like every other liquid pill */
+.lm.tform-submit { border-radius: 999px; }

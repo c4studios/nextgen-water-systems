@@ -32,6 +32,8 @@ export type Beat = {
   rows?: [string, string][];
   cta?: boolean;
   cue?: string;
+  /** a further sentence for wide screens; phones keep the body short */
+  more?: string;
 };
 
 /** where each vessel's water-run beat parks — shared by the 3D vessel clicks
@@ -51,17 +53,20 @@ export const STORY_BEATS: Beat[] = [
     // the assembly high-centre, so the band beneath it is the one place copy
     // can live without touching a vessel. No CTA here — Act 0 has the primary
     // one a single screen above; repeating it is noise, not conversion.
+    // The cover already introduced the machine, so this is the sheet's own
+    // title and a plain word about what the scroll is about to do: nobody
+    // should find themselves inside a ten-screen drawing without warning.
     id: "hero", a: -0.05, b: 0.052, f: 0.022, pos: "pb--below",
-    eyebrow: "NGW-01 · WHOLE-HOME FILTRATION",
-    h: "One machine at the mains.",
-    body: "Three stainless vessels sit where the water comes into your house. Every tap runs through them.",
+    eyebrow: "SHEET 02 · THE FIX, IN SECTION",
+    h: "Now the machine, in section.",
+    body: "Scroll and it opens, one stage at a time. Skip past it any time.",
     cta: false,
   },
   {
     // the PROBLEM — told while the camera holds the mains-in side of the
     // machine (V1 frames right of centre, so the words own the left)
     id: "problem", a: 0.268, b: 0.348, f: 0.02, pos: "pb--left",
-    eyebrow: "DETAIL A · MAINS IN",
+    eyebrow: "MAINS IN · SUPPLY SIDE",
     h: "The kettle. The glassware. The taste.",
     body: "Perth mains water arrives safe and then spends the rest of its life being a nuisance. Chlorine you can taste. Scale that fogs the glassware. Grit and rust picked up from the pipes on the way. Here is what the machine does with it.",
     stat: "WHAT GOES IN · CHLORINE · SCALE · SEDIMENT · RUST",
@@ -119,23 +124,19 @@ export const STORY_BEATS: Beat[] = [
   {
     // BENEFITS share the explode dwell — the machine is open on screen
     id: "service", a: 0.850, b: 0.940, f: 0.02, pos: "pb--tl",
-    eyebrow: "DETAIL B · SERVICE",
+    eyebrow: "SERVICE · CARTRIDGE CHANGE",
     h: "Servicing is a small job.",
     body: "Unscrew the bowl, lift the old cartridge out, drop the new one in. Your plumber does it on a schedule, so it is one less thing you have to remember. Tap a label to see what each stage holds.",
   },
   {
-    // INSTALL steps letter in while the machine reassembles
-    id: "install", a: 0.944, b: 0.978, f: 0.018, pos: "pb--left",
-    eyebrow: "SEQUENCE · INSTALL",
-    h: "It takes an afternoon.",
-    body: "A free test at your kitchen tap first, so you know what is actually in your water. Then a clean fit at the mains, usually inside a few hours.",
-    stat: "NO OBLIGATION AFTER THE TEST",
-  },
-  {
-    id: "handoff", a: 0.980, b: 2, f: 0.02, pos: "pb--left",
+    // the HAND-OFF holds the whole settle. The install beat used to sit in the
+    // 3% of scroll before it and never reached full opacity; its one fact
+    // rides here, and sheet 04 says it standing still.
+    id: "handoff", a: 0.948, b: 2, f: 0.018, pos: "pb--left",
     eyebrow: "APPROVED FOR ISSUE",
     h: "Find out what's in your water.",
     body: "Book the free test below. A technician comes out and tests your own supply, at your own tap, and tells you what is in it.",
+    more: "The fit itself is an afternoon's work at the mains, with no obligation after the test.",
     cue: "BOOK YOUR FREE WATER TEST ↓",
   },
 ];

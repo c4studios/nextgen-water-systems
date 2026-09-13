@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { satoshi, hanken, geistMono } from "./fonts";
 import { SmoothScroll } from "@/lib/providers/SmoothScroll";
+import { DirectionContract } from "@/components/site/DirectionContract";
 import { Cursor } from "@/components/Cursor";
 import { LiquidMetalDefs } from "@/components/ui/LiquidMetal";
 import { asset } from "@/lib/asset";
@@ -78,6 +79,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         />
       </head>
       <body>
+        <DirectionContract />
         <script
           type="application/ld+json"
           // eslint-disable-next-line react/no-danger

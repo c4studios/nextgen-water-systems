@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { SheetStrip } from "@/components/site/SheetStrip";
 import { asset } from "@/lib/asset";
 import { scrollToEl } from "@/lib/providers/SmoothScroll";
 
@@ -160,13 +161,10 @@ export function Exhibit() {
   const shown = (i: number) => i <= step;
 
   return (
-    <section className="ex ground sheet-edge" ref={rootRef} aria-labelledby="ex-h">
+    <section className="ex ground sheet-edge" id="your-water" data-sheet="01" data-rev="A" data-name="YOUR WATER · EXHIBIT A" ref={rootRef} aria-labelledby="ex-h">
       <div className="ex-inner">
+        <SheetStrip n="01" title="Your water" note="Exhibit A · scale, domestic supply" />
         <header className="ex-head">
-          <span className="ex-stamp">
-            <b>EXHIBIT A</b>
-            <span>SCALE · DOMESTIC SUPPLY</span>
-          </span>
           <h2 className="ex-h" id="ex-h">
             The kettle tells you
             <br />
