@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { asset } from "@/lib/asset";
 import { INSTALLER } from "@/lib/jsonld";
 import { TASTE_OPTIONS } from "@/content/taste";
-import { HERO, HERO_HOT_EVENT } from "@/components/blueprint/heroState";
+import { HERO, HERO_HOT_EVENT, HERO_OPEN_EVENT } from "@/components/blueprint/heroState";
 import { journeyY } from "@/components/blueprint/journeyMap";
 import { scrollToY } from "@/lib/providers/SmoothScroll";
 
@@ -39,6 +39,14 @@ export function Opening() {
   const [picked, setPicked] = useState<string[]>([]);
   const [latest, setLatest] = useState<string | null>(null);
   const [hintOn, setHintOn] = useState(false);
+  // the hint names what a tap does: lifts the cover while it is on, picks out
+  // a housing once it is off
+  const [coverOpen, setCoverOpen] = useState(false);
+  useEffect(() => {
+    const onOpen = () => setCoverOpen(true);
+    window.addEventListener(HERO_OPEN_EVENT, onOpen);
+    return () => window.removeEventListener(HERO_OPEN_EVENT, onOpen);
+  }, []);
 
   // the machine anchor: the scene fits the machine to this box every frame
   useEffect(() => {
@@ -55,6 +63,7 @@ export function Opening() {
       HERO.cx = (r.left + r.width / 2) / vw;
       HERO.cy = (r.top + r.height / 2) / vh;
       HERO.ch = r.height / vh;
+      HERO.cw = r.width / vw;
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(measure);
@@ -149,6 +158,9 @@ export function Opening() {
       setPicked(next);
       setLatest(show?.id ?? null);
       HERO.hot = show?.stage ? show.stage - 1 : null;
+      // anything ticked lifts the cover so the stage it names can be seen
+      HERO.openT = next.length > 0 ? 1 : 0;
+      setCoverOpen(next.length > 0);
       window.dispatchEvent(new CustomEvent(HERO_HOT_EVENT, { detail: HERO.hot }));
       const plain = TASTE_OPTIONS.filter((o) => next.includes(o.id))
         .map((o) => o.plain)
@@ -235,17 +247,17 @@ export function Opening() {
       <div className="opening-stage" ref={stageRef} aria-hidden="true">
         <img
           className="opening-still"
-          src={asset("/photos/machine-rest.webp")}
+          src={asset("/photos/cover-still.jpg")}
           alt=""
-          width={1600}
-          height={1073}
+          width={972}
+          height={1262}
           draggable={false}
           decoding="async"
           fetchPriority="high"
         />
         <span className={`opening-drag${hintOn ? " is-on" : ""}`}>
           <i aria-hidden="true" />
-          Drag to turn · tap a vessel
+          Drag to turn · {coverOpen ? "tap a housing" : "tap to open"}
         </span>
       </div>
 

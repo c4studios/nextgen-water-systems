@@ -1,4 +1,5 @@
 import localFont from "next/font/local";
+import { Michroma } from "next/font/google";
 
 /**
  * Self-hosted (no runtime CDN). Type system:
@@ -35,4 +36,19 @@ export const geistMono = localFont({
   variable: "--font-mono",
   display: "swap",
   fallback: ["ui-monospace", "monospace"],
+});
+
+/**
+ * Michroma — the Next Gen wordmark ONLY. Aaron's brand concept sets NEXT GEN in
+ * a wide, squared face with rounded corners; Michroma is the closest open face
+ * to it. It is the logo's lettering, never a text face on the site. Fetched and
+ * self-hosted at build time by next/font. Swap for the master artwork when
+ * Aaron supplies it (brain gap, 15 Sep 2026).
+ */
+export const michroma = Michroma({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-brand",
+  display: "swap",
+  fallback: ["ui-sans-serif", "system-ui", "sans-serif"],
 });

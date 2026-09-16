@@ -500,10 +500,9 @@ export function FloorPlan() {
             {count} of {FIXTURES.length}
           </span>
           fittings past the filter. Garden taps and reticulation depend on how the house was
-          plumbed, and that gets answered at the test. It is not a water softener and it is not
-          reverse osmosis:{" "}
+          plumbed, and that gets answered at the test.{" "}
           <Link className="fp-inline" href="/system/">
-            what it does and does not do
+            What it does and does not do
           </Link>{" "}
           is set out in full on the system sheet.
         </p>

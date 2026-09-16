@@ -21,8 +21,9 @@ export const HERO = {
   /** centre of the cover's machine anchor, as a fraction of the viewport */
   cx: 0.5,
   cy: 0.5,
-  /** the anchor's height as a fraction of the viewport (the machine is fitted to it) */
+  /** the anchor's height and width as fractions of the viewport (the machine is fitted to it) */
   ch: 0.6,
+  cw: 0.4,
   /** yaw the visitor has dragged the machine to, radians, and where it eases to */
   yaw: 0,
   yawT: 0,
@@ -31,7 +32,15 @@ export const HERO = {
   dragged: false,
   /** vessel index the taste check has lit, or null */
   hot: null as number | null,
+  /** eased 0..1: how far the cover is lifted off on the cover sheet, and its
+   *  target (1 while anything is ticked, or after a tap on the closed cover) */
+  open: 0,
+  openT: 0,
 };
 
 /** name of the DOM event the cover fires when the lit vessel changes */
 export const HERO_HOT_EVENT = "ngw:hero-hot";
+
+/** fired by the scene when a tap on the closed cover lifts it, so the page's
+ *  hint can stop offering to open something that is already open */
+export const HERO_OPEN_EVENT = "ngw:hero-open";

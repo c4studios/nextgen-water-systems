@@ -2,10 +2,15 @@
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Environment, ContactShadows, Html, Lightformer, RoundedBox, Decal, MeshTransmissionMaterial } from "@react-three/drei";
-import { EffectComposer, Bloom, Vignette, ChromaticAberration, DepthOfField, N8AO } from "@react-three/postprocessing";
+import { EffectComposer, Bloom, ChromaticAberration, DepthOfField, N8AO } from "@react-three/postprocessing";
 import { makeBrushedSteel, makeCastGrain, makeOrangePeel, makeSmudge, makeDroplets, makeScratch, makeGranules } from "./surfaces";
-import { HERO, HERO_HOT_EVENT } from "./heroState";
-import { journeyY } from "./journeyMap";
+import { HERO, HERO_HOT_EVENT, HERO_OPEN_EVENT } from "./heroState";
+import {
+  V_X, V_R, V_S, V_PIVOT, vy, MACHINE_Y, FRAME_G, FLOOR_Y, PIPE_Y, RUN_Y, ELBOW_X,
+  COVER, COVER_H, COVER_CY, DOCK,
+} from "./machineGeometry";
+import { makeCoverWordmark } from "./coverTexture";
+import { journeyY, MOBILE_CUT_QUERY } from "./journeyMap";
 import { scrollToY } from "@/lib/providers/SmoothScroll";
 import { detectTier, QUALITY } from "./quality";
 import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
@@ -14,22 +19,26 @@ import { BACKDROP_STOPS, BACKDROP_CENTER, BACKDROP_RADII, BACKDROP_FOG } from ".
 import { VESSEL_BEAT_P } from "@/content/journeyStory";
 
 /**
- * THE REAL MACHINE — NGW-01 as it actually is: three 20″×4.5″ vessels on a
- * bracket/manifold, plumbed in series (Clear2O FHWR-3SI-20 architecture, no RO),
- * rendered in the brand's brushed-steel language. ONE scalar (journey progress p)
- * drives everything:
- *   0.000–0.075  hero + slow drift (meet the assembly)
- *   0.075–0.26  front DOCK (held) — the SVG white-ink trace + plate run here
- *   0.26–0.37  PROBLEM beat (mains-in side) → approach vessel 1
- *   0.37–0.70  THE WATER RUN — visit V1 → V2 (double dwell) → V3; each sump
- *              reveal its cartridge; flow guides read the true radial path
- *              (down the annulus → in through the media wall → up the core)
- *   0.70–0.78  PROOF (house-out side) → CREDIBILITY orbit
- *   0.78–0.92  service EXPLODE: heads lift, cartridges rise, labels + benefits
- *   0.92–1.00  reassemble (INSTALL beat) + settle → booking tail
+ * THE REAL MACHINE, as Next Gen sells it: the manufacturer's FHWR-3S1-20 series
+ * (datasheet version 1.1, 2024). Three full-size 20 x 4.5 inch housings, white
+ * food-grade bowls under black heads, hang from the top plate of a black steel
+ * frame and are plumbed in series; two gauges stand on the plate; a clip-on
+ * steel cover carrying the Next Gen lockup goes over the lot (Aaron's brand
+ * concept, 15 Sep 2026). The proportions live in machineGeometry.ts, which the
+ * drawing plate reads too. ONE scalar (journey progress p) drives everything:
+ *   0.000-0.075  the covered machine at rest; the cover lifts away
+ *   0.075-0.26   front DOCK (held): the ink trace and the drawing plate
+ *   0.26-0.37    PROBLEM beat (mains-in side), then approach vessel 1
+ *   0.37-0.70    THE WATER RUN: V1, V2 (double dwell), V3, each bowl ghosting
+ *                to show its cartridge; flow reads the true radial path
+ *                (down the annulus, in through the media wall, up the core)
+ *   0.70-0.78    PROOF (house-out side), then the CREDIBILITY orbit
+ *   0.78-0.92    SERVICE: bowls unscrew and set down, cartridges hang in place
+ *   0.92-1.00    reassemble and settle into the booking tail
  *
- * Stage order per the client's spec sheet: 1 graded sediment → 2 KDF 55/85 +
- * coconut carbon (the redox bed) → 3 limescale-reduction carbon.
+ * Stage order per the datasheet: 1 sediment (3 layers, to 1 micron), 2 KDF
+ * 55/85 + coconut carbon, 3 limescale reduction + coconut carbon (to 1 micron).
+ * The site is light since 15 Sep 2026: the studio is a white sweep.
  */
 type Props = {
   progress: MutableRefObject<number>;
@@ -56,6 +65,11 @@ const TIER = detectTier();
 const Q = QUALITY[TIER];
 
 const ss = (x: number, a: number, b: number) => THREE.MathUtils.smoothstep(x, a, b);
+/** a sphere inside a slimmed (V_R) and stretched (V_S) vessel group, kept round */
+const round = (o: THREE.Object3D, size: number) => o.scale.set(size / V_R, size / V_S, size / V_R);
+const _dir = new THREE.Vector3();
+const _right = new THREE.Vector3();
+const _up = new THREE.Vector3(0, 1, 0);
 const lerp = THREE.MathUtils.lerp;
 
 // Damped-interaction tuning — frame-rate-independent via THREE.MathUtils.damp
@@ -73,21 +87,21 @@ const VESSELS = [
   // about drinking water, which is regulated. What remains describes the
   // media and what it targets.
   {
-    x: -1.9, n: "01", title: "Sediment", sub: "10/5/1µm 3-layer",
+    x: V_X[0], n: "01", title: "Sediment", sub: "3 layers · to 1µm",
     cart: "#e8ecee", cartMetal: 0.05, cartRough: 0.85,
-    media: "Graded polypropylene · 3 layers", rating: "10 / 5 / 1 µm", service: "Replaceable cartridge",
+    media: "Graded polypropylene · 3 layers", rating: "3 layers · to 1 µm", service: "Change every 12 months",
     removes: ["Grit", "Rust", "Silt"],
   },
   {
-    x: 0.0, n: "02", title: "KDF 55/85 + carbon", sub: "heavy metals · chlorine",
+    x: V_X[1], n: "02", title: "KDF 55/85 + carbon", sub: "heavy metals · chlorine",
     cart: "#a97142", cartMetal: 0.65, cartRough: 0.5,
-    media: "Copper-zinc granules + coconut carbon", rating: "redox bed", service: "Long-interval",
+    media: "Copper-zinc granules + coconut carbon", rating: "KDF 55/85 + coconut carbon", service: "Change every 12 months",
     removes: ["Heavy metals", "Chlorine", "Taste"],
   },
   {
-    x: 1.9, n: "03", title: "Limescale carbon", sub: "scale · taste · 1µm",
+    x: V_X[2], n: "03", title: "Limescale carbon", sub: "scale · taste · 1µm",
     cart: "#232c33", cartMetal: 0.1, cartRough: 0.7,
-    media: "Scale-reduction media + carbon", rating: "1 µm polish", service: "Replaceable cartridge",
+    media: "Scale-reduction media + carbon", rating: "to 1 µm", service: "Change every 12 months",
     removes: ["Scale formation", "Taste", "Odour"],
   },
 ] as const;
@@ -110,7 +124,7 @@ function interiorWindows(p: number): [number, number, number] {
 }
 const interiorMax = (p: number) => Math.max(...interiorWindows(p));
 
-/* material recipes — one story: brushed steel sumps, dark machined heads.
+/* material recipes: white food-grade bowls, black heads and frame, a grey powder-coated cover.
    NOTE (review-confirmed): per-material envMapIntensity is a no-op under
    scene.environment (three r163+) — env strength comes solely from
    scene.environmentIntensity (<Environment> prop, scrubbed in JourneyLights). */
@@ -119,8 +133,15 @@ const interiorMax = (p: number) => Math.max(...interiorWindows(p));
 const STEEL = { color: "#c9cecf", metalness: 1, roughness: 0.33, clearcoat: 0.5, clearcoatRoughness: 0.16, anisotropy: 0.5, anisotropyRotation: Math.PI / 2 } as const;
 const CAPS = { color: "#79848e", metalness: 1, roughness: 0.3, clearcoat: 0.6, clearcoatRoughness: 0.22 } as const;
 const MACHINED = { color: "#2b333b", metalness: 0.95, roughness: 0.42 } as const;
-const HEAD = { color: "#23272c", metalness: 0.9, roughness: 0.5 } as const; // matte charcoal cap
-const FRAME = { color: "#2c3034", metalness: 0.42, roughness: 0.6 } as const; // powder-coat cage
+// The real heads are black moulded plastic, not metal (datasheet photo).
+const HEAD = { color: "#141517", metalness: 0.06, roughness: 0.46 } as const;
+// black powder-coated steel frame
+const FRAME = { color: "#1c1d1f", metalness: 0.3, roughness: 0.52 } as const;
+// The housings are white food-grade plastic, faintly glossy: the datasheet
+// photo, not the brushed-steel bowls the first model invented.
+const HOUSING = { color: "#c6cacc", metalness: 0, roughness: 0.4, clearcoat: 0.55, clearcoatRoughness: 0.16 } as const;
+// the clip-on cover, in the brand concept's grey powder coat
+const COVER_MAT = { color: "#a7a9aa", metalness: 0.2, roughness: 0.6 } as const;
 const BRASS = { color: "#b28a4e", metalness: 1, roughness: 0.34 } as const; // connector ports
 const CA_OFFSET = new THREE.Vector2(0.0006, 0.0004);
 
@@ -180,7 +201,12 @@ function Backdrop() {
     // mapping + sRGB encode to everything) — feed it linear values or the
     // encode washes the pool-of-light to grey
     const [a, b, c] = BACKDROP_STOPS.map(([, hex]) => {
-      const col = new THREE.Color(hex).convertSRGBToLinear();
+      // MEASURED (15 Sep 2026, light studio). THREE.Color already stores the
+      // hex as linear, and this used to convert it to linear a second time: on
+      // the dark site nobody could see it, on the light one the pool landed 18
+      // levels darker than the page's CSS ground (218 against 236). The stored
+      // linear value, once, is what meets the page with no seam.
+      const col = new THREE.Color(hex);
       return [col.r, col.g, col.b] as [number, number, number];
     });
     const mid = BACKDROP_STOPS[1][0];
@@ -231,7 +257,7 @@ function FocusRig({ progress, dof }: { progress: MutableRefObject<number>; dof: 
     const dockW = ss(p, 0.03, 0.075) * (1 - ss(p, 0.26, 0.33));
     const sum = w[0] + w[1] + w[2];
     const x = sum > 0.001 ? (w[0] * VESSELS[0].x + w[1] * VESSELS[1].x + w[2] * VESSELS[2].x) / sum : 0;
-    if (eff.target) eff.target.set(x, -0.1, 0);
+    if (eff.target) eff.target.set(x + DOCK.dx * dockW, -0.1, 0);
     if (eff.cocMaterial) eff.cocMaterial.worldFocusRange = 3.4 - through * 1.2;
     eff.bokehScale = (1.3 + through * 1.9) * (1 - dockW);
   });
@@ -293,12 +319,16 @@ function JourneyLights({ progress }: { progress: MutableRefObject<number> }) {
   const { scene } = useThree();
   useFrame(() => {
     const through = interiorMax(progress.current);
-    const dimmed = 1 - through * 0.8;
-    if (amb.current) amb.current.intensity = 0.12 * dimmed;
-    if (key.current) key.current.intensity = 0.85 * dimmed;
-    if (rim.current) rim.current.intensity = 0.6 * dimmed;
-    if (fill.current) fill.current.intensity = 0.22 * dimmed;
-    scene.environmentIntensity = 0.82 * (1 - through * 0.95);
+    // In the dark void the studio dropped to a fifth inside a vessel so the
+    // lit cartridge glowed out of the black. In the white studio that turned
+    // the neighbouring housings into dark slabs behind the copy, so the
+    // studio now only eases down, enough to keep the section from flooding.
+    const dimmed = 1 - through * 0.3;
+    if (amb.current) amb.current.intensity = 0.2 * dimmed;
+    if (key.current) key.current.intensity = 1.05 * dimmed;
+    if (rim.current) rim.current.intensity = 0.5 * dimmed;
+    if (fill.current) fill.current.intensity = 0.28 * dimmed;
+    scene.environmentIntensity = 1.0 * (1 - through * 0.45);
   });
   return (
     <>
@@ -318,37 +348,35 @@ type Key = { p: number; pos: [number, number, number]; tgt: [number, number, num
    PROBLEM beat holds the mains-in side while contaminants gather, the PROOF
    beat holds the house-out side as clean water exits. */
 const CAM: Key[] = [
-  // Rest pose == dock pose. The hero used to be a low ¾ that orbited into the
-  // dock, which is what made the machine look tilted and spinning on arrival.
-  // Now: front elevation, static, from p=0 — the photoreal still sits over
-  // exactly this framing and dissolves into it before the ink trace begins.
-  { p: 0.0, pos: [0, 0.12, 8.8], tgt: [0, 0.12, 0] }, // rest (= dock)
-  { p: 0.075, pos: [0, 0.12, 8.8], tgt: [0, 0.12, 0] }, // front dock (trace)
-  { p: 0.26, pos: [0, 0.12, 8.8], tgt: [0, 0.12, 0] }, // hold dock until the plate exits
-  { p: 0.305, pos: [-4.0, -0.2, 5.8], tgt: [-2.85, 0.3, 0] }, // PROBLEM — mains-in side: supply run + V1; V2 crops at the edge on purpose, V3 is out
-  { p: 0.345, pos: [-2.7, -0.1, 5.2], tgt: [-2.1, 0.1, 0] }, // ease toward V1
-  { p: 0.37, pos: [-1.9, 0.05, 4.6], tgt: [-1.9, -0.1, 0] }, // arrive V1
-  { p: 0.445, pos: [-1.9, -0.05, 4.1], tgt: [-1.9, -0.15, 0] }, // slow push through V1
-  { p: 0.47, pos: [0, 0.05, 4.6], tgt: [0, -0.1, 0] }, // slide to V2 (KDF)
-  { p: 0.575, pos: [0, -0.05, 4.05], tgt: [0, -0.15, 0] }, // deep push through V2 (double dwell)
-  { p: 0.6, pos: [1.9, 0.05, 4.6], tgt: [1.9, -0.1, 0] }, // slide to V3
-  { p: 0.662, pos: [1.9, -0.05, 4.1], tgt: [1.9, -0.15, 0] }, // deepest inside V3
-  // Getting from inside a vessel to the proof pose is ~2.9 world units, and
-  // there is nowhere near enough scroll left to travel that at the rail's usual
-  // ~6 units per p. Doing it as one move produced a whip. A dolly straight back
-  // reads fine at any speed because nothing rotates, so the exit is now split:
-  // pull out along V3's own axis first, THEN make a small swing to the right.
-  { p: 0.708, pos: [1.9, -0.02, 7.2], tgt: [1.9, -0.06, 0] }, // straight back out, no rotation
-  { p: 0.756, pos: [3.3, 0.3, 6.9], tgt: [2.5, 0.42, 0] }, // PROOF — machine left of centre, the schedule owns the right
-  { p: 0.78, pos: [5.4, 1.6, 5.6], tgt: [0, 0.3, 0] }, // pull back (credibility orbit)
-  { p: 0.845, pos: [5.0, 2.6, 6.2], tgt: [0, 0.35, 0] }, // rise…
-  // …to the service view. The sumps now finish on the floor (y=-1.955) a good
-  // way forward (z=2.15), so this pulls back and drops its aim: the row of
-  // set-down sumps AND the cartridges left hanging under the fixed heads both
-  // have to be in frame, or the beat shows a teardown you can't see.
-  { p: 0.898, pos: [4.7, 2.2, 10.6], tgt: [0.25, -0.5, 1.0] },
-  { p: 0.955, pos: [3.6, 0.9, 8.6], tgt: [-1.55, 0.05, 0] }, // INSTALL — reassembled, machine right of centre so the copy column is clear
-  { p: 1.0, pos: [3.0, 0.4, 9.0], tgt: [-1.55, 0.1, 0] }, // settle, same offset for the hand-off copy
+  // Rest pose == dock pose, framed for the taller real machine and its cover.
+  // DOCK.d and DOCK.ty come from machineGeometry, which the drawing plate reads
+  // too, so the ink registers to exactly this framing.
+  { p: 0.0, pos: [0, DOCK.ty, DOCK.d], tgt: [0, DOCK.ty, 0] }, // rest (= dock), cover on
+  { p: 0.075, pos: [0, DOCK.ty, DOCK.d], tgt: [0, DOCK.ty, 0] }, // front dock (trace)
+  { p: 0.26, pos: [0, DOCK.ty, DOCK.d], tgt: [0, DOCK.ty, 0] }, // hold dock until the plate exits
+  // PROBLEM: the mains supply run arriving at the inlet head. Camera and
+  // target sit 0.45 lower than the dark-scene pose, the same view carried down,
+  // so the run crosses the frame above the headline rather than through it.
+  { p: 0.305, pos: [-3.5, 0.9, 6.2], tgt: [-2.3, 1.0, 0] },
+  { p: 0.345, pos: [-2.2, 0.9, 5.6], tgt: [-1.6, 0.9, 0] }, // ease toward V1
+  { p: 0.37, pos: [V_X[0], 0.25, 5.1], tgt: [V_X[0], 0.05, 0] }, // arrive V1
+  { p: 0.445, pos: [V_X[0], 0.1, 4.5], tgt: [V_X[0], 0.0, 0] }, // slow push through V1
+  { p: 0.47, pos: [V_X[1], 0.25, 5.1], tgt: [V_X[1], 0.05, 0] }, // slide to V2 (KDF)
+  { p: 0.575, pos: [V_X[1], 0.1, 4.45], tgt: [V_X[1], 0.0, 0] }, // deep push through V2 (double dwell)
+  { p: 0.6, pos: [V_X[2], 0.25, 5.1], tgt: [V_X[2], 0.05, 0] }, // slide to V3
+  { p: 0.662, pos: [V_X[2], 0.1, 4.5], tgt: [V_X[2], 0.0, 0] }, // deepest inside V3
+  // out of V3 along its own axis first (a dolly reads fine at any speed), then
+  // a small swing to the house-out side
+  { p: 0.708, pos: [V_X[2], 0.3, 7.6], tgt: [V_X[2], 0.2, 0] },
+  { p: 0.756, pos: [3.0, 1.4, 7.1], tgt: [2.2, 1.5, 0] }, // PROOF: clean water leaving; the schedule owns the right
+  { p: 0.78, pos: [5.6, 1.6, 6.6], tgt: [0, -0.1, 0] }, // pull back (credibility orbit)
+  { p: 0.845, pos: [5.2, 2.5, 7.4], tgt: [0, 0.0, 0] }, // rise
+  // the service view: bowls set down forward on the floor, cartridges hanging
+  // carried up 0.6 (camera and target together) so the head labels sit
+  // below the stage chip rather than under it
+  { p: 0.898, pos: [4.7, 2.7, 12.2], tgt: [0.2, -0.5, 1.1] },
+  { p: 0.955, pos: [3.7, 0.7, 10.0], tgt: [-1.2, -0.1, 0] }, // hand-off: machine right of centre, copy column clear
+  { p: 1.0, pos: [3.1, 0.4, 10.4], tgt: [-1.2, -0.05, 0] }, // settle
 ];
 
 function segIndex(p: number): number {
@@ -449,6 +477,8 @@ function Rig({ progress, sheetRatio }: { progress: MutableRefObject<number>; she
     (window as unknown as Record<string, unknown>).__ngScene = scene;
   }, [gl, scene]);
   const tgt = useRef(new THREE.Vector3(0, 0.12, 0));
+  // one live media query for the phone cut, read every frame without allocating
+  const cutMq = useMemo(() => (typeof window === "undefined" ? null : window.matchMedia(MOBILE_CUT_QUERY)), []);
   // persistent smoothed pointer offset — damps toward the raw pointer each frame
   // so the parallax floats instead of twitching (applied below the rail base)
   const ptr = useRef(new THREE.Vector2(0, 0));
@@ -468,6 +498,27 @@ function Rig({ progress, sheetRatio }: { progress: MutableRefObject<number>; she
     const cam = camera as THREE.PerspectiveCamera;
     const narrow = THREE.MathUtils.clamp((1.15 - cam.aspect) / 0.5, 0, 1);
     const heroW = narrow * (1 - ss(p, 0.05, 0.075));
+    // WIDE-FRAME COMPOSITION. In a wide frame the copy stands beside the
+    // machine, and at stage 1, stage 3 and the installer beat the frame posts
+    // were running through it. The machine steps aside: camera and target
+    // move together along the camera's own right vector, so the view is the
+    // same view, shifted. Phones carry their copy on a card at the base, so
+    // the shift fades out as the frame narrows.
+    {
+      const [w1, , w3] = interiorWindows(p);
+      const credW = ss(p, 0.775, 0.795) * (1 - ss(p, 0.84, 0.86));
+      // the opening beat stands to the right of the closed cover, so the
+      // machine starts further left and slides home to the dock before the
+      // ink starts tracing it at 0.06 (traceHold below, LivingDrawing's bp)
+      const openW = (1 - ss(p, 0.028, 0.058)) * (1 - HERO.mix);
+      const pan = (cutMq?.matches ? 0 : 1 - narrow) * (-0.5 * w1 + 0.5 * w3 - 0.4 * credW + 1.5 * openW);
+      if (Math.abs(pan) > 1e-4) {
+        _dir.copy(tgt.current).sub(camera.position);
+        _right.crossVectors(_dir, _up).normalize();
+        camera.position.addScaledVector(_right, pan);
+        tgt.current.addScaledVector(_right, pan);
+      }
+    }
     // THE COVER borrows the scene: `mix` eases toward 1 while the cover's
     // anchor box owns the screen (heroState.ts), and the camera pans so the
     // machine sits inside that box, whatever the layout put there.
@@ -483,12 +534,32 @@ function Rig({ progress, sheetRatio }: { progress: MutableRefObject<number>; she
       tgt.current.x *= 1 - heroW * 0.85 * (1 - hm);
       tgt.current.y += heroW * 1.05 * (1 - hm);
     }
+    // PORTRAIT: the side-on beats (the supply run, the house-out run and the
+    // hand-off) are composed for a wide frame. On a phone they dolly back
+    // along their own line of sight so the subject stays in the picture.
+    const side = ss(p, 0.27, 0.3) * (1 - ss(p, 0.355, 0.375)) + ss(p, 0.7, 0.735) * (1 - ss(p, 0.84, 0.86)) + ss(p, 0.93, 0.955);
+    const pull = narrow * side * (1 - hm);
+    if (pull > 0.001) {
+      _dir.copy(camera.position).sub(tgt.current).normalize();
+      camera.position.addScaledVector(_dir, pull * 4.2);
+    }
     if (hm > 0.001) {
       // drag to turn: eases to the dragged yaw, and back to square when let go
       if (!HERO.dragging) HERO.yawT = THREE.MathUtils.damp(HERO.yawT, 0, 0.35, delta);
       HERO.yaw = THREE.MathUtils.damp(HERO.yaw, HERO.yawT, HERO.dragging ? 24 : 5, delta);
-      // a touch further back so the whole machine sits inside its column
-      camera.position.z += hm * 1.4 * (1 - narrow * 0.7);
+      // FIT the cover to its anchor: the distance at which the cover's height
+      // fills 84% of the anchor box, aimed at the cover's own centre
+      const fovNow = 38 + heroW * 10;
+      const want = Math.min(0.56, Math.max(0.18, HERO.ch * 0.64));
+      const tanH = Math.tan(THREE.MathUtils.degToRad(fovNow) / 2);
+      // fit the height, and the width of the column, whichever is tighter
+      const dFit = Math.max(COVER_H / (want * 2 * tanH), COVER.w / (Math.max(0.12, HERO.cw * 0.62) * 2 * tanH * cam.aspect));
+      const aimY = MACHINE_Y + COVER_CY;
+      camera.position.x = lerp(camera.position.x, 0, hm);
+      camera.position.y = lerp(camera.position.y, aimY, hm);
+      camera.position.z = lerp(camera.position.z, dFit, hm);
+      tgt.current.x = lerp(tgt.current.x, 0, hm);
+      tgt.current.y = lerp(tgt.current.y, aimY, hm);
       const dist = camera.position.distanceTo(tgt.current);
       const worldH = 2 * dist * Math.tan(THREE.MathUtils.degToRad(cam.fov) / 2);
       const worldW = worldH * cam.aspect;
@@ -514,12 +585,28 @@ function Rig({ progress, sheetRatio }: { progress: MutableRefObject<number>; she
     // damp the smoothed offset toward the live pointer (frame-rate independent),
     // then add it on top of the rail-set base — re-based every frame by
     // sampleRail above, so it never accumulates
+    // the lens fringe stays off the cover sheet, where the lockup's small
+    // tagline sits off-centre and would pick it up
+    CA_OFFSET.set(0.0006 * (1 - hm * 0.9), 0.0004 * (1 - hm * 0.9));
     ptr.current.x = THREE.MathUtils.damp(ptr.current.x, state.pointer.x, POINTER_LAMBDA, delta);
     ptr.current.y = THREE.MathUtils.damp(ptr.current.y, state.pointer.y, POINTER_LAMBDA, delta);
     camera.position.x += ptr.current.x * 0.16 * par;
     camera.position.y += ptr.current.y * 0.09 * par;
     camera.up.set(0, 1, 0);
     camera.lookAt(tgt.current);
+    // FOG walks out ahead of the camera. It is set for the journey's working
+    // distances (the dock sits 11.5 out, so it starts 6.5 behind the machine).
+    // The cover fit parks the camera up to three times further back on a
+    // phone, which fogged the closed cover to a pale ghost. Near and far are
+    // uniforms, so moving them costs nothing and recompiles nothing.
+    const fog = scene.fog as THREE.Fog | null;
+    if (fog) {
+      const near = Math.max(18, camera.position.distanceTo(tgt.current) + 6.5);
+      if (Math.abs(fog.near - near) > 0.01) {
+        fog.near = near;
+        fog.far = near + 20;
+      }
+    }
     // subtle dolly-zoom "breath" — the lens pushes in at each vessel visit
     const fov = 38 - interiorMax(p) * 5 + heroW * 10;
     const zoom = lerp(1, Math.min(sheetRatio?.current ?? 1, 1), zoomW);
@@ -567,6 +654,25 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
     return () => window.removeEventListener(HERO_HOT_EVENT, on);
   }, []);
   const [openCard, setOpenCard] = useState<number | null>(null);
+  // whether the cover sheet owns the scene, mirrored into state so the labels
+  // (which read it at render time) follow it; flips with hysteresis
+  const [onCoverSheet, setOnCoverSheet] = useState(false);
+  // the taste check's reveal: the housing it names turns translucent so the
+  // cartridge inside can be seen, eased per vessel
+  const reveal = useRef([0, 0, 0]);
+  // THE COVER: its group, the materials that fade with it, and the lockup
+  const coverGroup = useRef<THREE.Group>(null);
+  const runsGroup = useRef<THREE.Group>(null);
+  const [wordmark, setWordmark] = useState<{ map: THREE.CanvasTexture; normalMap: THREE.CanvasTexture; aspect: number } | null>(null);
+  useEffect(() => {
+    let live = true;
+    makeCoverWordmark().then((w) => {
+      if (live) setWordmark(w);
+    });
+    return () => {
+      live = false;
+    };
+  }, []);
 
   // procedural micro-roughness — real steel is never a perfect mirror. Fine
   // grayscale noise + faint vertical brush streaks break the reflection into
@@ -665,10 +771,10 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
     map.needsUpdate = normalMap.needsUpdate = true;
     return { map, normalMap };
   };
-  const kdfWall = useMemo(() => tileBed(kdfMaps, 3, 2.4), [kdfMaps]);
-  const gacWall = useMemo(() => tileBed(gacMaps, 2, 2.4), [gacMaps]);
-  const kdfFace = useMemo(() => tileBed(kdfMaps, 0.16, 2.4), [kdfMaps]);
-  const gacFace = useMemo(() => tileBed(gacMaps, 0.2, 2.4), [gacMaps]);
+  const kdfWall = useMemo(() => tileBed(kdfMaps, 3 * V_R, 2.4 * V_S), [kdfMaps]);
+  const gacWall = useMemo(() => tileBed(gacMaps, 2 * V_R, 2.4 * V_S), [gacMaps]);
+  const kdfFace = useMemo(() => tileBed(kdfMaps, 0.16 * V_R, 2.4 * V_S), [kdfMaps]);
+  const gacFace = useMemo(() => tileBed(gacMaps, 0.2 * V_R, 2.4 * V_S), [gacMaps]);
   const bedRelief = useMemo(() => new THREE.Vector2(0.75 * Q.relief, 0.75 * Q.relief), []);
   const noRelief = useMemo(() => new THREE.Vector2(1, 1), []);
 
@@ -889,7 +995,7 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
       g.fillText("NEXT GEN", 30, 56);
       g.font = "400 26px Arial, sans-serif";
       g.textAlign = "right";
-      g.fillText("NGW-01", w - 30, 55);
+      g.fillText("WATER SYSTEMS", w - 30, 55);
       g.textAlign = "left";
       // stage number + title
       g.fillStyle = "#12324a";
@@ -1133,7 +1239,7 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
 
   // clean exit: still, clear water rising at the house-out elbow (PROOF)
   const exitMat = useMemo(
-    () => new THREE.MeshStandardMaterial({ color: "#dff6ff", emissive: "#7fd8f5", emissiveIntensity: 0.7, transparent: true, opacity: 0, depthWrite: false }),
+    () => new THREE.MeshStandardMaterial({ color: "#a6ddf2", emissive: "#2aa9dc", emissiveIntensity: 0.45, transparent: true, opacity: 0, depthWrite: false }),
     [],
   );
   const exitSpecs = useMemo(
@@ -1171,8 +1277,92 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
     frameMat.needsUpdate = true;
   }, [frameMat, roughMap, peelNormal, reliefSoft]);
   const tabGeo = useMemo(() => tabGeometry(0.52, 0.34, 0.14, 0.055), []);
+  // The cover's side profile from the brand concept, extruded across its width:
+  // flat top, a chamfer down to the front face, a crease two thirds down where
+  // the lower face angles back to the foot.
+  const coverGeo = useMemo(() => {
+    const C = COVER;
+    // shape u = -z so a +90 degree turn about y maps it back to +z
+    const pts: [number, number][] = [
+      [C.back, C.top],
+      [C.front - C.chamferBack, C.top],
+      [C.front, C.top - C.chamferDrop],
+      [C.front, C.creaseY],
+      [C.front - C.footBack, C.bottom],
+      [C.back, C.bottom],
+    ];
+    const sh = new THREE.Shape();
+    sh.moveTo(-pts[0][0], pts[0][1]);
+    for (let k = 1; k < pts.length; k++) sh.lineTo(-pts[k][0], pts[k][1]);
+    sh.closePath();
+    const g = new THREE.ExtrudeGeometry(sh, { depth: C.w, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.03, bevelSegments: 3, curveSegments: 4 });
+    g.rotateY(Math.PI / 2);
+    g.translate(-C.w / 2, 0, 0);
+    g.computeVertexNormals();
+    return g;
+  }, []);
+  const coverMat = useMemo(() => new THREE.MeshStandardMaterial({ ...COVER_MAT, transparent: true }), []);
+  const coverWindowMat = useMemo(() => new THREE.MeshStandardMaterial({ color: "#0f1011", roughness: 0.9, transparent: true }), []);
+  const coverBrassMat = useMemo(() => new THREE.MeshStandardMaterial({ ...BRASS, transparent: true }), []);
+  const wordmarkMat = useMemo(() => new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.5, metalness: 0.1, transparent: true, alphaTest: 0.02 }), []);
+  useEffect(() => {
+    // Light falls off down the face of a real cover, and powder coat is
+    // speckled. The extrusion's side-wall UVs run u along height (world y) and
+    // v along the width, so a gradient across u is a top-to-bottom falloff.
+    if (typeof document !== "undefined") {
+      const cv = document.createElement("canvas");
+      cv.width = 512;
+      cv.height = 256;
+      const g2 = cv.getContext("2d");
+      if (g2) {
+        const grad = g2.createLinearGradient(0, 0, 512, 0);
+        grad.addColorStop(0, "#9ea0a1"); // bottom
+        grad.addColorStop(0.55, "#b1b3b4");
+        grad.addColorStop(1, "#bcbebf"); // top
+        g2.fillStyle = grad;
+        g2.fillRect(0, 0, 512, 256);
+        for (let k = 0; k < 9000; k++) {
+          g2.fillStyle = Math.random() < 0.5 ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)";
+          g2.fillRect(Math.random() * 512, Math.random() * 256, 1, 1);
+        }
+        const t = new THREE.CanvasTexture(cv);
+        t.colorSpace = THREE.SRGBColorSpace;
+        // u spans COVER.bottom..COVER.top. The side-wall v is 1 - z, and z
+        // runs 0..COVER.w, so the width lands on 0..1 only with an offset of
+        // (w - 1) / w. The old offset of 1 put the first metre past the edge,
+        // where clamping stretched the texture's edge row into streaks.
+        t.wrapS = THREE.ClampToEdgeWrapping;
+        t.wrapT = THREE.RepeatWrapping;
+        t.repeat.set(1 / (COVER.top - COVER.bottom), 1 / COVER.w);
+        t.offset.set(-COVER.bottom / (COVER.top - COVER.bottom), (COVER.w - 1) / COVER.w);
+        coverMat.map = t;
+        coverMat.color.set("#ffffff");
+      }
+    }
+    // powder coat: a fine orange peel, tiled small
+    if (peelNormal) {
+      const t = peelNormal.clone();
+      t.wrapS = t.wrapT = THREE.RepeatWrapping;
+      t.repeat.set(5, 5);
+      t.needsUpdate = true;
+      coverMat.normalMap = t;
+      coverMat.normalScale.set(0.5 * Q.relief, 0.5 * Q.relief);
+    }
+    // (no roughness map: the brushed-steel one streaks, and powder coat has no grain direction)
+    coverMat.needsUpdate = true;
+  }, [coverMat, peelNormal]);
+  useEffect(() => {
+    if (!wordmark) return;
+    wordmarkMat.map = wordmark.map;
+    wordmarkMat.normalMap = wordmark.normalMap;
+    wordmarkMat.normalScale.set(0.9, 0.9);
+    wordmarkMat.needsUpdate = true;
+  }, [wordmark, wordmarkMat]);
+  const coverMats = useMemo(() => [coverMat, coverWindowMat, coverBrassMat, wordmarkMat], [coverMat, coverWindowMat, coverBrassMat, wordmarkMat]);
   const gussetGeo = useMemo(() => gussetGeometry(0.22, 0.05), []);
   const supplyMat = useMemo(() => new THREE.MeshStandardMaterial({ ...MACHINED, transparent: true }), []);
+  // the condensation decal fades with its pipe (it was left floating as a white smudge through the ink trace)
+  const dropsMat = useRef<THREE.MeshPhysicalMaterial | null>(null);
   const outMat = useMemo(() => new THREE.MeshStandardMaterial({ ...MACHINED, transparent: true }), []);
 
   useFrame((state, delta) => {
@@ -1187,6 +1377,12 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
     frameMat.depthWrite = frameMat.opacity > 0.5;
     const w = interiorWindows(p);
     const through = Math.max(...w);
+    const coverNow = onCoverSheet ? HERO.mix > 0.35 : HERO.mix > 0.65;
+    if (coverNow !== onCoverSheet) setOnCoverSheet(coverNow);
+    for (let k = 0; k < 3; k++) {
+      const want = HERO.mix > 0.5 && heroHot === k && HERO.open > 0.6 ? 1 : 0;
+      reveal.current[k] = THREE.MathUtils.damp(reveal.current[k], want, 3.2, delta);
+    }
     // time-staggered deconstruction: heads lift first (in a slight wave),
     // cartridges follow per-vessel; reassembly mirrors it (carts seat, then
     // heads close) under the INSTALL beat, into the settle
@@ -1207,9 +1403,14 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
       // dock registration: the SVG plate draws the assembly at ~0.78 scale,
       // centred 60px left of the sheet centre and higher than world origin —
       // computed from the camera projection, then tuned against ink overlays
-      g.position.x = lerp(-0.4, 0, reg);
-      g.position.y = lerp(0.56, 0, reg);
-      g.scale.setScalar(lerp(0.781, 1, reg));
+      // While the drawing holds, the assembly sits DOCK.dx to the left so the
+      // sheet's title block has the right of the plate; the cover sheet
+      // centres it (its own anchor does the placing).
+      // (portrait screens skip the drawing act, so they keep the machine centred)
+      const narrowA = THREE.MathUtils.clamp((1.15 - (state.camera as THREE.PerspectiveCamera).aspect) / 0.5, 0, 1);
+      g.position.x = DOCK.dx * (1 - reg) * (1 - HERO.mix) * (1 - narrowA);
+      g.position.y = MACHINE_Y;
+      g.scale.setScalar(1);
       // The rest pose is SET. This used to add a 0.35rad yaw plus a continuous
       // elapsedTime spin and a vertical bob before the dock — the machine
       // rotated and floated on the hero, and read as a turntable render. A
@@ -1221,17 +1422,39 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
       g.rotation.y = HERO.yaw * HERO.mix;
     }
 
+    // THE COVER. Closed at rest; it lifts away as the plate's dock hold plays,
+    // or on the cover sheet when the taste check asks to see inside.
+    HERO.open = THREE.MathUtils.damp(HERO.open, HERO.openT, 4.2, delta);
+    const openScroll = ss(p, 0.012, 0.056);
+    const open = Math.max(openScroll * (1 - HERO.mix), HERO.open * HERO.mix);
+    const oe = open * open * (3 - 2 * open);
+    const cvg = coverGroup.current;
+    if (cvg) {
+      cvg.position.set(0, 0.55 * oe, 2.6 * oe);
+      cvg.rotation.x = -0.12 * oe;
+      const op = 1 - ss(open, 0.32, 0.88);
+      for (const m of coverMats) {
+        m.opacity = op;
+        m.depthWrite = op > 0.6;
+      }
+      cvg.visible = op > 0.003;
+    }
+    // the mains and house runs only show once the cover is off: on the cover
+    // sheet the product is the product, not a plumbing diagram
+    if (runsGroup.current) runsGroup.current.visible = HERO.mix < 0.5 && open > 0.5;
+
     // per-vessel: sump ghosts in its window; cartridge fades in (and stays
     // visible through the service explode); flow guides live only in-window
     for (let i = 0; i < 3; i++) {
+      const gw = Math.max(w[i], reveal.current[i] * 0.86);
       const sm = sumpMats.current[i];
       if (sm) {
-        sm.opacity = lerp(1, 0.12, w[i]);
+        sm.opacity = lerp(1, 0.12, gw);
         sm.depthWrite = sm.opacity > 0.5;
       }
       const dm = domeMats.current[i];
       if (dm) {
-        dm.opacity = lerp(1, 0.12, w[i]);
+        dm.opacity = lerp(1, 0.12, gw);
         dm.depthWrite = dm.opacity > 0.5;
       }
       // the cartridge is ALWAYS physically there — fully opaque inside its
@@ -1239,8 +1462,8 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
       // easing to 0.85 only inside the interior window so the emissive core
       // reads through the media wall. Nothing ever fades in or 'appears'.
       const cm = cartMats.current[i];
-      if (cm) cm.opacity = lerp(1, 0.85, w[i]);
-      cartMatList.current[i].forEach((m) => { m.opacity = lerp(1, 0.9, w[i]); });
+      if (cm) cm.opacity = lerp(1, 0.85, gw);
+      cartMatList.current[i].forEach((m) => { m.opacity = lerp(1, 0.9, gw); });
       capMatRefs.current[i].forEach((m) => {
         if (m) m.opacity = lerp(1, 0.85, w[i]);
       });
@@ -1253,12 +1476,12 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
       // housing hardware (o-ring / seam / drain) ghosts with the sump too
       housingExtraMats.current[i].forEach((m) => {
         if (m) {
-          m.opacity = lerp(1, 0.12, w[i]);
+          m.opacity = lerp(1, 0.12, gw);
           m.depthWrite = m.opacity > 0.5;
         }
       });
       const km = coreMats.current[i];
-      if (km) km.opacity = w[i] * 0.85;
+      if (km) km.opacity = gw * 0.85;
       const fg = flowGroups.current[i];
       if (fg) fg.visible = w[i] > 0.05;
       // interior action particles (radial capture motion, per the reference doc)
@@ -1279,7 +1502,7 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
           const r = lerp(0.6, rStop, eased);
           mesh.position.set(Math.sin(s.angle) * r, s.y - t01 * 0.1, Math.cos(s.angle) * r);
           const sc = i === 2 ? s.size * (1 - eased * 0.85) : s.size; // V3: flecks dissolve
-          mesh.scale.setScalar(Math.max(sc, 1e-4));
+          round(mesh, Math.max(sc, 1e-4));
         });
       }
       const rm = ringMats.current[i];
@@ -1290,8 +1513,12 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
         const lit = (hover === i && (p > 0.26 || onCover)) || (onCover && heroHot === i);
         // the vessel the taste check named breathes, so the eye finds it
         const pulse = onCover && heroHot === i ? 0.5 * (0.5 + 0.5 * Math.sin(state.clock.elapsedTime * 2.6)) : 0;
-        const ringTarget = lit ? 2.2 + pulse : lerp(1.1, 0.15, through);
+        // On the light studio the ring is a highlight only: the vessel you
+        // point at, or the one the taste check named. Otherwise it is off.
+        const ringTarget = lit ? 2.2 + pulse : 0;
         rm.emissiveIntensity = THREE.MathUtils.damp(rm.emissiveIntensity, ringTarget, HOVER_EMISSIVE_LAMBDA, delta);
+        const rmesh = ringMeshes.current[i];
+        if (rmesh) rmesh.visible = rm.emissiveIntensity > 0.04 && !hidden("ring");
       }
       // SERVICE — the way the real housing is actually serviced.
       //
@@ -1321,7 +1548,9 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
       const unscrew = ss(p, 0.850 + i * 0.006, 0.872 + i * 0.006) * (1 - reformHeads);
       const pullOut = ss(p, 0.872 + i * 0.006, 0.898 + i * 0.006) * (1 - reformCarts);
       const setDown = ss(p, 0.894 + i * 0.006, 0.918 + i * 0.006) * (1 - reformCarts);
-      const sumpY = -0.42 * unscrew - 0.455 * setDown;
+      // unscrew clears the thread (0.3); set-down lands the bowl's foot on the
+      // floor under the frame's base rail
+      const sumpY = -0.3 * unscrew - (vy(-1.805) - 0.3 - FLOOR_Y) * setDown;
       const sumpZ = 2.15 * pullOut;
       const sg = sumpGroups.current[i];
       if (sg) {
@@ -1331,7 +1560,7 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
       }
       const rg = ringMeshes.current[i];
       if (rg) {
-        rg.position.y = -1.5 + sumpY;
+        rg.position.y = vy(-1.5) + sumpY;
         rg.position.z = sumpZ;
       }
       const hg = headGroups.current[i];
@@ -1352,7 +1581,7 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
         if (!m) return;
         const pulse = Math.max(0, Math.sin(tt * s.freq + s.phase));
         // a flash, not a ball: half the old peak, so it reads as an event on the bed
-        m.scale.setScalar(0.008 + Math.pow(pulse, 8) * 0.026);
+        round(m, 0.008 + Math.pow(pulse, 8) * 0.026);
       });
     }
 
@@ -1368,6 +1597,7 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
     const wIn = ss(p, 0.335, 0.375) * (1 - ss(p, 0.41, 0.45));
     supplyMat.opacity = (1 - traceHold) * (1 - 0.72 * wIn);
     supplyMat.depthWrite = supplyMat.opacity > 0.5;
+    if (dropsMat.current) dropsMat.current.opacity = 0.85 * supplyMat.opacity;
     if (inflowGroup.current) inflowGroup.current.visible = wIn > 0.02;
     if (wIn > 0.02) {
       inflowSpecs.forEach((sp, k) => {
@@ -1376,7 +1606,7 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
         const t01 = (tt2 * sp.speed + sp.phase) % 1;
         // x: from well inside the supply run to V1's inlet boss; y/z: bounded
         // to the pipe bore (r 0.11) so nothing drifts outside the wall
-        m.position.set(-5.0 + t01 * 2.45, 0.9 + sp.dy * 0.9 + Math.sin(t01 * 9 + k) * 0.03, sp.dz * 0.5);
+        m.position.set(-(ELBOW_X + 1.9) + t01 * 2.45, RUN_Y + sp.dy * 0.9 + Math.sin(t01 * 9 + k) * 0.03, sp.dz * 0.5);
         m.scale.setScalar(sp.size);
       });
       inflowMats.forEach((m) => (m.opacity = wIn * 0.9));
@@ -1389,7 +1619,7 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
     // the lead skin GROWS as you push deeper into the visit (scroll-tied)
     const plateProg = THREE.MathUtils.clamp((p - 0.47) / 0.105, 0, 1);
     platingRefs.current.forEach((m) => {
-      if (m) m.scale.setScalar(0.012 + plateProg * 0.05);
+      if (m) round(m, 0.012 + plateProg * 0.05);
     });
     platingMat.opacity = w2live;
     if (w2live > 0.02) {
@@ -1403,12 +1633,12 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
         if (t01 < 0.7) {
           const r = lerp(0.62, 0.418, t01 / 0.7);
           gas.position.set(sx * r, sp.y, cz * r);
-          gas.scale.setScalar(0.03);
-          grain.scale.setScalar(1e-4);
+          round(gas, 0.03);
+          round(grain, 1e-4);
         } else {
-          gas.scale.setScalar(1e-4);
+          round(gas, 1e-4);
           grain.position.set(sx * 0.415, sp.y, cz * 0.415);
-          grain.scale.setScalar(Math.sin(((t01 - 0.7) / 0.3) * Math.PI) * 0.032);
+          round(grain, Math.max(1e-4, Math.sin(((t01 - 0.7) / 0.3) * Math.PI) * 0.032));
         }
       });
       clSpecs.forEach((sp, k) => {
@@ -1421,17 +1651,17 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
         if (t01 < 0.6) {
           const r = lerp(0.64, 0.43, t01 / 0.6);
           gas.position.set(sx * r, sp.y, cz * r);
-          gas.scale.setScalar(0.028);
-          ions.forEach((io) => io && io.scale.setScalar(1e-4));
+          round(gas, 0.028);
+          ions.forEach((io) => io && round(io, 1e-4));
         } else {
-          gas.scale.setScalar(1e-4);
+          round(gas, 1e-4);
           const u = (t01 - 0.6) / 0.4;
           const env = Math.sin(u * Math.PI) * 0.016;
           ions.forEach((io, j) => {
             if (!io) return;
             const r = lerp(0.43, 0.14, u);
             io.position.set(sx * r + (j ? 0.05 : -0.05), sp.y + u * 0.8, cz * r);
-            io.scale.setScalar(env);
+            round(io, Math.max(1e-4, env));
           });
         }
       });
@@ -1459,7 +1689,7 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
         if (!m) return;
         const t01 = (tt2 * sp.speed + sp.phase) % 1;
         // along the pipe bore, out toward the house (+x)
-        m.position.set(3.3 + t01 * 1.25, 0.9 + sp.dz * 0.5 + Math.sin(t01 * 7 + k) * 0.025, sp.dx * 0.5);
+        m.position.set(ELBOW_X - 0.4 + t01 * 1.25, RUN_Y + sp.dz * 0.5 + Math.sin(t01 * 7 + k) * 0.025, sp.dx * 0.5);
         m.scale.setScalar(sp.size * (0.55 + 0.45 * Math.sin(t01 * Math.PI)));
       });
       exitMat.opacity = wOut * 0.95;
@@ -1493,7 +1723,7 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
       {/* interior glow (window-driven; slides to the active vessel) */}
       {!hidden("borelight") && (
         // cool white-cyan, not saturated cyan — saturated cyan × copper = green
-        <pointLight ref={boreLight} position={[0, -0.3, 0.5]} color="#cfeef8" intensity={0} distance={3.2} decay={2} />
+        <pointLight ref={boreLight} position={[0, -0.95, 0.45]} color="#cfeef8" intensity={0} distance={3.8} decay={2} />
       )}
 
       {/* Slice 3 — dirty water IN at the mains (PROBLEM beat) */}
@@ -1535,7 +1765,7 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
           stutter past stage 3 — measured, not guessed: programs 39 -> 55 at
           p=0.697. Intensity is still driven by wOut, so nothing looks
           different; the light simply stops joining and leaving the scene. */}
-      <pointLight ref={exitLight} position={[3.9, 0.95, 0.55]} color="#dff3fb" intensity={0} distance={2.4} decay={2} />
+      <pointLight ref={exitLight} position={[ELBOW_X + 0.7, RUN_Y + 0.05, 0.55]} color="#dff3fb" intensity={0} distance={2.4} decay={2} />
 
       {/* ── the open charcoal steel FRAME/CAGE — the FHWR-3SI-20 silhouette:
           the vessels hang from a top manifold plate INSIDE a rectangular tube
@@ -1551,121 +1781,223 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
           map so the finish is not one uniform value. ── */}
       {!hidden("kit") && (
         <>
-          {/* top manifold plate the vessels hang from */}
-          <RoundedBox args={[5.72, 0.14, 1.5]} radius={0.022} smoothness={4} material={frameMat} position={[0, 1.33, 0]} />
-          {/* head mounting brackets — each head bolts up through the plate via
-              a short cast bracket; two bolt heads show on the plate top */}
+          {/* top manifold plate the housings hang from */}
+          <RoundedBox args={[FRAME_G.plateW, 0.14, FRAME_G.plateD]} radius={0.022} smoothness={4} material={frameMat} position={[0, FRAME_G.plateY, 0]} />
+          {/* head brackets: each head bolts up through the plate */}
           {VESSELS.map((v) => (
             <group key={`hbr${v.n}`} position={[v.x, 0, 0]}>
-              <RoundedBox args={[0.98, 0.09, 0.62]} radius={0.014} smoothness={3} material={frameMat} position={[0, 1.215, 0]} />
-              {[-0.34, 0.34].map((bx) => (
-                <group key={bx} position={[bx, 1.4, 0]}>
+              <RoundedBox args={[0.8, 0.09, 0.5]} radius={0.014} smoothness={3} material={frameMat} position={[0, 1.215, 0]} />
+              {[-0.27, 0.27].map((bx) => (
+                <group key={bx} position={[bx, 1.4, -0.16]}>
                   <mesh position={[0, 0.012, 0]}>
-                    <cylinderGeometry args={[0.058, 0.058, 0.014, 20]} />
+                    <cylinderGeometry args={[0.05, 0.05, 0.014, 20]} />
                     <meshStandardMaterial {...MACHINED} />
                   </mesh>
-                  <mesh position={[0, 0.045, 0]}>
-                    <cylinderGeometry args={[0.04, 0.04, 0.05, 6]} />
+                  <mesh position={[0, 0.042, 0]}>
+                    <cylinderGeometry args={[0.034, 0.034, 0.046, 6]} />
                     <meshStandardMaterial {...MACHINED} metalness={0.9} roughness={0.38} />
                   </mesh>
                 </group>
               ))}
             </group>
           ))}
-          {/* four corner posts */}
-          {([[-2.72, 0.66], [2.72, 0.66], [-2.72, -0.66], [2.72, -0.66]] as const).map(([px, pz], k) => (
-            <RoundedBox key={`post${k}`} args={[0.09, 3.28, 0.09]} radius={0.012} smoothness={3} material={frameMat} position={[px, -0.3, pz]} />
+          {/* four corner posts, base to plate */}
+          {([[-FRAME_G.postX, FRAME_G.postZ], [FRAME_G.postX, FRAME_G.postZ], [-FRAME_G.postX, -FRAME_G.postZ], [FRAME_G.postX, -FRAME_G.postZ]] as const).map(([px, pz], k) => (
+            <RoundedBox
+              key={`post${k}`}
+              args={[0.09, FRAME_G.plateY - FRAME_G.baseY, 0.09]}
+              radius={0.012}
+              smoothness={3}
+              material={frameMat}
+              position={[px, (FRAME_G.plateY + FRAME_G.baseY) / 2, pz]}
+            />
           ))}
-          {/* bottom rectangle rails */}
-          <RoundedBox args={[5.53, 0.09, 0.09]} radius={0.012} smoothness={3} material={frameMat} position={[0, -1.9, 0.66]} />
-          <RoundedBox args={[5.53, 0.09, 0.09]} radius={0.012} smoothness={3} material={frameMat} position={[0, -1.9, -0.66]} />
-          <RoundedBox args={[0.09, 0.09, 1.41]} radius={0.012} smoothness={3} material={frameMat} position={[-2.72, -1.9, 0]} />
-          <RoundedBox args={[0.09, 0.09, 1.41]} radius={0.012} smoothness={3} material={frameMat} position={[2.72, -1.9, 0]} />
+          {/* base rectangle */}
+          <RoundedBox args={[FRAME_G.postX * 2 + 0.09, 0.09, 0.09]} radius={0.012} smoothness={3} material={frameMat} position={[0, FRAME_G.baseY, FRAME_G.postZ]} />
+          <RoundedBox args={[FRAME_G.postX * 2 + 0.09, 0.09, 0.09]} radius={0.012} smoothness={3} material={frameMat} position={[0, FRAME_G.baseY, -FRAME_G.postZ]} />
+          <RoundedBox args={[0.09, 0.09, FRAME_G.postZ * 2 + 0.09]} radius={0.012} smoothness={3} material={frameMat} position={[-FRAME_G.postX, FRAME_G.baseY, 0]} />
+          <RoundedBox args={[0.09, 0.09, FRAME_G.postZ * 2 + 0.09]} radius={0.012} smoothness={3} material={frameMat} position={[FRAME_G.postX, FRAME_G.baseY, 0]} />
           {/* top side rails tie the posts to the plate corners */}
-          <RoundedBox args={[0.09, 0.12, 1.41]} radius={0.012} smoothness={3} material={frameMat} position={[-2.72, 1.27, 0]} />
-          <RoundedBox args={[0.09, 0.12, 1.41]} radius={0.012} smoothness={3} material={frameMat} position={[2.72, 1.27, 0]} />
+          <RoundedBox args={[0.09, 0.12, FRAME_G.postZ * 2 + 0.09]} radius={0.012} smoothness={3} material={frameMat} position={[-FRAME_G.postX, 1.27, 0]} />
+          <RoundedBox args={[0.09, 0.12, FRAME_G.postZ * 2 + 0.09]} radius={0.012} smoothness={3} material={frameMat} position={[FRAME_G.postX, 1.27, 0]} />
           {/* plate-to-post bolts at the four top corners */}
-          {([[-2.72, 0.66], [2.72, 0.66], [-2.72, -0.66], [2.72, -0.66]] as const).map(([px, pz], k) => (
+          {([[-FRAME_G.postX, FRAME_G.postZ], [FRAME_G.postX, FRAME_G.postZ], [-FRAME_G.postX, -FRAME_G.postZ], [FRAME_G.postX, -FRAME_G.postZ]] as const).map(([px, pz], k) => (
             <group key={`pb${k}`} position={[px, 1.4, pz]}>
               <mesh position={[0, 0.012, 0]}>
-                <cylinderGeometry args={[0.062, 0.062, 0.014, 20]} />
+                <cylinderGeometry args={[0.058, 0.058, 0.014, 20]} />
                 <meshStandardMaterial {...MACHINED} />
               </mesh>
-              <mesh position={[0, 0.048, 0]}>
-                <cylinderGeometry args={[0.042, 0.042, 0.055, 6]} />
+              <mesh position={[0, 0.046, 0]}>
+                <cylinderGeometry args={[0.04, 0.04, 0.052, 6]} />
                 <meshStandardMaterial {...MACHINED} metalness={0.9} roughness={0.38} />
               </mesh>
             </group>
           ))}
-          {/* corner gussets — welded into the bottom post/rail joints. Real
-              frames are stiffened; floating tubes that just touch read as a
-              render. */}
-          {([[-2.72, 0.66, 1], [2.72, 0.66, -1], [-2.72, -0.66, 1], [2.72, -0.66, -1]] as const).map(([px, pz, dir], k) => (
+          {/* corner gussets welded into the base joints */}
+          {([[-FRAME_G.postX, FRAME_G.postZ, 1], [FRAME_G.postX, FRAME_G.postZ, -1], [-FRAME_G.postX, -FRAME_G.postZ, 1], [FRAME_G.postX, -FRAME_G.postZ, -1]] as const).map(([px, pz, dir], k) => (
             <mesh
               key={`gus${k}`}
               geometry={gussetGeo}
               material={frameMat}
-              position={[px + dir * 0.045, -1.855, pz]}
+              position={[px + dir * 0.045, FRAME_G.baseY + 0.045, pz]}
               rotation={[0, 0, dir > 0 ? 0 : Math.PI / 2]}
             />
           ))}
-          {/* mounting tab, top-left, with two REAL through-holes */}
-          <mesh geometry={tabGeo} material={frameMat} position={[-3.06, 1.33, 0]} />
+          {/* wall-mounting tab, top left, with two real through-holes */}
+          <mesh geometry={tabGeo} material={frameMat} position={[-(FRAME_G.postX + 0.34), FRAME_G.plateY, 0]} />
 
-          {/* series pipework (mains → V1 → V2 → V3 → house), under the plate */}
-          {[-2.94, -0.95, 0.95, 2.94].map((x, i) => (
-            <mesh key={x} material={frameMat} position={[x, 1.0, 0]} rotation={[0, 0, Math.PI / 2]}>
-              <cylinderGeometry args={[0.11, 0.11, i === 0 || i === 3 ? 0.6 : 0.44, 20]} />
+          {/* series pipework: the short nipples between heads, which nearly touch */}
+          {(() => {
+            const port = 0.7 * V_R;
+            const segs: [number, number][] = [
+              [-ELBOW_X, V_X[0] - port],
+              [V_X[0] + port, V_X[1] - port],
+              [V_X[1] + port, V_X[2] - port],
+              [V_X[2] + port, ELBOW_X],
+            ];
+            return segs.map(([a, b], k) => (
+              <mesh key={`nip${k}`} material={frameMat} position={[(a + b) / 2, PIPE_Y, 0]} rotation={[0, 0, Math.PI / 2]}>
+                <cylinderGeometry args={[0.11, 0.11, Math.max(0.16, Math.abs(b - a)), 20]} />
+              </mesh>
+            ));
+          })()}
+          {/* the two gauges, standing on the top plate above stage 1 and stage 3
+              (the datasheet photo), stainless case under glass */}
+          {gaugeMaps &&
+            ([0, 2] as const).map((gi) => (
+              <group key={`gauge${gi}`} position={[V_X[gi], FRAME_G.plateY + 0.36, 0.3]} rotation={[-0.16, 0, 0]}>
+                <mesh position={[0, -0.21, -0.02]}>
+                  <cylinderGeometry args={[0.03, 0.03, 0.22, 12]} />
+                  <meshStandardMaterial {...MACHINED} />
+                </mesh>
+                <mesh position={[0, 0, -0.035]} rotation={[Math.PI / 2, 0, 0]}>
+                  <cylinderGeometry args={[0.165, 0.165, 0.07, 32]} />
+                  <meshPhysicalMaterial {...CAPS} />
+                </mesh>
+                <mesh position={[0, 0, 0.004]}>
+                  <torusGeometry args={[0.154, 0.02, 10, 40]} />
+                  <meshStandardMaterial {...MACHINED} />
+                </mesh>
+                <mesh position={[0, 0, 0.001]}>
+                  <circleGeometry args={[0.142, 32]} />
+                  <meshStandardMaterial map={gaugeMaps[gi]} roughness={0.35} metalness={0} />
+                </mesh>
+                <mesh position={[0, 0, 0.026]} rotation={[Math.PI / 2, 0, 0]}>
+                  <cylinderGeometry args={[0.146, 0.146, 0.02, 32]} />
+                  {Q.glass ? (
+                    <MeshTransmissionMaterial
+                      thickness={0.05}
+                      ior={1.52}
+                      roughness={0.012}
+                      chromaticAberration={0.015}
+                      anisotropicBlur={0}
+                      samples={6}
+                      resolution={512}
+                      clearcoat={1}
+                      transmission={1}
+                      color="#ffffff"
+                    />
+                  ) : (
+                    <meshPhysicalMaterial color="#ffffff" metalness={0} roughness={0.05} transmission={0.92} thickness={0.05} ior={1.5} clearcoat={1} transparent />
+                  )}
+                </mesh>
+              </group>
+            ))}
+          {/* the mains and house runs, and their elbows. Hidden on the cover
+              sheet while the cover is on. */}
+          <group ref={runsGroup}>
+            {[-ELBOW_X, ELBOW_X].map((x) => (
+              <mesh key={x} material={frameMat} position={[x, RUN_Y, 0]}>
+                <sphereGeometry args={[0.14, 18, 14]} />
+              </mesh>
+            ))}
+            {/* the mains SUPPLY run, arriving from off-left into the elbow. The
+                dirty-water stream travels inside it and the pipe turns
+                translucent to show that (supplyMat, useFrame). */}
+            <mesh material={supplyMat} position={[-(ELBOW_X + 1.15), RUN_Y, 0]} rotation={[0, 0, Math.PI / 2]}>
+              <cylinderGeometry args={[0.11, 0.11, 2.3, 24, 1, true]} />
+              {/* condensation on the upper surface of a cold mains pipe; local
+                  +X is world up here (the pipe is rolled onto its side) */}
+              {Q.decals && drops && (
+                <Decal position={[0.11, 0.2, 0]} rotation={[0, Math.PI / 2, 0]} scale={[0.36, 1.2, 0.3]}>
+                  <meshPhysicalMaterial
+                    ref={dropsMat}
+                    color="#ffffff"
+                    metalness={0}
+                    roughness={0.03}
+                    clearcoat={1}
+                    clearcoatRoughness={0.02}
+                    normalMap={drops.normalMap}
+                    normalScale={reliefScale}
+                    alphaMap={drops.alphaMap}
+                    transparent
+                    opacity={0.85}
+                    depthWrite={false}
+                    polygonOffset
+                    polygonOffsetFactor={-4}
+                  />
+                </Decal>
+              )}
             </mesh>
-          ))}
-          {/* mains-in / house-out elbows */}
-          {[-3.22, 3.22].map((x) => (
-            <mesh key={x} material={frameMat} position={[x, 0.9, 0]}>
-              <sphereGeometry args={[0.14, 18, 14]} />
+            {/* house-out run, mirrored; goes translucent while clean water is
+                shown leaving through it (outMat, useFrame) */}
+            <mesh material={outMat} position={[ELBOW_X + 0.7, RUN_Y, 0]} rotation={[0, 0, Math.PI / 2]}>
+              <cylinderGeometry args={[0.11, 0.11, 1.4, 24, 1, true]} />
             </mesh>
-          ))}
-          {/* the mains SUPPLY run, arriving from off-left into the elbow. The
-              dirty-water stream travels inside it and the pipe turns
-              translucent to show that (supplyMat, useFrame). Before this
-              existed the stream had nothing to be in. */}
-          <mesh material={supplyMat} position={[-4.35, 0.9, 0]} rotation={[0, 0, Math.PI / 2]}>
-            <cylinderGeometry args={[0.11, 0.11, 2.3, 24, 1, true]} />
-            {/* condensation. A cold mains pipe in a warm garage sweats, and the
-                beads sit on the upper surface where they have not yet run.
-                Local +X is world up here (the pipe is rolled 90 degrees onto
-                its side), so the decal sits at +X and projects inward. */}
-            {Q.decals && drops && (
-              <Decal position={[0.11, 0.2, 0]} rotation={[0, Math.PI / 2, 0]} scale={[0.36, 1.2, 0.3]}>
-                <meshPhysicalMaterial
-                  color="#ffffff"
-                  metalness={0}
-                  roughness={0.03}
-                  clearcoat={1}
-                  clearcoatRoughness={0.02}
-                  normalMap={drops.normalMap}
-                  normalScale={reliefScale}
-                  alphaMap={drops.alphaMap}
-                  transparent
-                  opacity={0.85}
-                  depthWrite={false}
-                  polygonOffset
-                  polygonOffsetFactor={-4}
-                />
-              </Decal>
-            )}
-          </mesh>
-          {/* house-out run, mirrored — goes translucent while clean water is
-              shown leaving through it (outMat, useFrame) */}
-          <mesh material={outMat} position={[3.9, 0.9, 0]} rotation={[0, 0, Math.PI / 2]}>
-            <cylinderGeometry args={[0.11, 0.11, 1.4, 24, 1, true]} />
-          </mesh>
+          </group>
         </>
+      )}
+
+      {/* THE COVER: Aaron's brand concept, clipped over the frame. Closed at
+          rest; lifts away on scroll, or on the cover sheet when asked. While
+          it is opaque it takes the pointer, so nothing behind it lights. */}
+      {!hidden("cover") && (
+        <group ref={coverGroup}>
+          <mesh
+            geometry={coverGeo}
+            material={coverMat}
+            onPointerOver={(e) => {
+              if (coverMat.opacity < 0.5) return;
+              e.stopPropagation();
+              if (HERO.mix > 0.5) document.body.style.cursor = "pointer";
+            }}
+            onPointerOut={() => {
+              document.body.style.cursor = "";
+            }}
+            onClick={(e) => {
+              if (coverMat.opacity < 0.5) return;
+              e.stopPropagation();
+              if (HERO.mix > 0.5 && !HERO.dragged) {
+                HERO.openT = 1;
+                window.dispatchEvent(new CustomEvent(HERO_OPEN_EVENT));
+              }
+            }}
+          />
+          {/* the side windows the mains and house runs pass through */}
+          {[-1, 1].map((sx) => (
+            <group key={`win${sx}`} position={[sx * (COVER.w / 2 + 0.034), RUN_Y + 0.02, 0.02]} rotation={[0, (sx * Math.PI) / 2, 0]}>
+              <mesh material={coverWindowMat}>
+                <planeGeometry args={[0.66, 0.92]} />
+              </mesh>
+              <mesh material={coverBrassMat} position={[0, -0.02, 0.02]} rotation={[Math.PI / 2, 0, 0]}>
+                <cylinderGeometry args={[0.12, 0.12, 0.06, 24]} />
+              </mesh>
+            </group>
+          ))}
+          {/* the lockup, recessed into the powder coat */}
+          {wordmark && (
+            <mesh material={wordmarkMat} position={[0, COVER.top - 1.22, COVER.front + 0.036]}>
+              <planeGeometry args={[COVER.w * 0.66, (COVER.w * 0.66) / wordmark.aspect]} />
+            </mesh>
+          )}
+        </group>
       )}
 
       {VESSELS.map((v, i) => (
         <group
           key={v.n}
           position={[v.x, 0, 0]}
+          scale={[V_R, 1, V_R]}
           // Phase 2 — the machine answers touch: hover brightens this vessel's
           // ring + raises its label; click flies the scroll to its beat.
           // Gated past the dock so nothing fights the ink trace.
@@ -1726,10 +2058,10 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
                   </Decal>
                 )}
               </mesh>
-              {/* pressure-release button */}
-              <mesh position={[0, 1.32, 0]}>
-                <cylinderGeometry args={[0.09, 0.09, 0.14, 16]} />
-                <meshStandardMaterial {...MACHINED} />
+              {/* pressure-release button: the red dot that shows on top of the plate */}
+              <mesh position={[0, 1.44, 0]}>
+                <cylinderGeometry args={[0.075, 0.075, 0.08, 16]} />
+                <meshStandardMaterial color="#a3261b" roughness={0.42} metalness={0} />
               </mesh>
               {/* head collar detail */}
               <mesh position={[0, 0.78, 0]} rotation={[Math.PI / 2, 0, 0]}>
@@ -1760,59 +2092,6 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
                   </mesh>
                 </group>
               ))}
-              {/* pressure gauge on the head face — dial per vessel */}
-              {gaugeMaps && (
-                <group position={[0, 1.05, 0.72]}>
-                  <mesh position={[0, 0, 0.04]} rotation={[Math.PI / 2, 0, 0]}>
-                    <cylinderGeometry args={[0.035, 0.035, 0.16, 12]} />
-                    <meshStandardMaterial {...MACHINED} />
-                  </mesh>
-                  <mesh position={[0, 0, 0.15]} rotation={[Math.PI / 2, 0, 0]}>
-                    <cylinderGeometry args={[0.13, 0.13, 0.07, 32]} />
-                    <meshPhysicalMaterial {...CAPS} />
-                  </mesh>
-                  <mesh position={[0, 0, 0.19]}>
-                    <torusGeometry args={[0.122, 0.018, 10, 40]} />
-                    <meshStandardMaterial {...MACHINED} />
-                  </mesh>
-                  <mesh position={[0, 0, 0.187]}>
-                    <circleGeometry args={[0.112, 32]} />
-                    <meshStandardMaterial map={gaugeMaps[i]} roughness={0.35} metalness={0} />
-                  </mesh>
-                  {/* the lens. A gauge has glass over the dial, and the dial
-                      was sitting in open air. Refracting glass on desktop;
-                      a clear physical disc on phones, where a transmission
-                      buffer per lens is not worth what it costs. */}
-                  <mesh position={[0, 0, 0.212]} rotation={[Math.PI / 2, 0, 0]}>
-                    <cylinderGeometry args={[0.116, 0.116, 0.02, 32]} />
-                    {Q.glass ? (
-                      <MeshTransmissionMaterial
-                        thickness={0.05}
-                        ior={1.52}
-                        roughness={0.012}
-                        chromaticAberration={0.015}
-                        anisotropicBlur={0}
-                        samples={6}
-                        resolution={512}
-                        clearcoat={1}
-                        transmission={1}
-                        color="#ffffff"
-                      />
-                    ) : (
-                      <meshPhysicalMaterial
-                        color="#ffffff"
-                        metalness={0}
-                        roughness={0.05}
-                        transmission={0.92}
-                        thickness={0.05}
-                        ior={1.5}
-                        clearcoat={1}
-                        transparent
-                      />
-                    )}
-                  </mesh>
-                </group>
-              )}
             </group>
           )}
 
@@ -1825,64 +2104,39 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
                 sumpGroups.current[i] = el;
               }}
             >
+              <group position={[0, V_PIVOT, 0]} scale={[1, V_S, 1]}>
+              <group position={[0, -V_PIVOT, 0]}>
               <mesh position={[0, -0.4, 0]}>
                 <cylinderGeometry args={[0.62, 0.62, 2.3, 48]} />
                 <meshPhysicalMaterial
                   ref={(el) => {
                     sumpMats.current[i] = el;
                   }}
-                  {...STEEL}
-                  roughnessMap={steelMaps?.roughnessMap ?? roughMap ?? undefined}
-                  normalMap={steelMaps?.normalMap ?? undefined}
-                  normalScale={reliefScale}
+                  {...HOUSING}
                   transparent
                   opacity={1}
                 />
-                {/* the fingerprint: an oil film raises roughness, so the highlight
-                    goes dull exactly there. Same grey map drives where (alpha)
-                    and how dull (roughness). On the middle vessel only, front
-                    right, about where a hand steadies the bowl to unscrew it. */}
-                {Q.decals && smudge && i === 1 && (
-                  <Decal position={[0.566, -0.55, 0.253]} rotation={[0, 1.15, 0.2]} scale={[0.5, 0.64, 0.6]}>
-                    <meshStandardMaterial
-                      color="#e4e8ea"
-                      metalness={0.82}
-                      roughness={1}
-                      roughnessMap={smudge}
-                      alphaMap={smudge}
-                      transparent
-                      depthWrite={false}
-                      polygonOffset
-                      polygonOffsetFactor={-4}
-                    />
-                  </Decal>
-                )}
               </mesh>
-              {/* the thread. The bowl screws into the head, and the join was a
-                  flat step. Five ridges climbing toward the head give it the
-                  register of something that unscrews. Skipped on the low tier
-                  where five extra tori per vessel are not worth their draw. */}
+              {/* the thread the bowl screws into the head with */}
               {Q.hardware &&
                 [0, 1, 2, 3, 4, 5].map((k) => (
                   <mesh key={`thr${k}`} position={[0, 0.575 + k * 0.03, 0]} rotation={[Math.PI / 2, 0, 0]}>
                     <torusGeometry args={[0.596 + k * 0.0045, 0.013, 8, 56]} />
-                    <meshStandardMaterial {...MACHINED} roughness={0.5} transparent />
+                    <meshStandardMaterial color="#dfe3e4" roughness={0.42} transparent />
                   </mesh>
                 ))}
-              {/* shallow domed base (flattened to match the GA's rounded foot) */}
+              {/* shallow domed foot */}
               <mesh position={[0, -1.55, 0]} scale={[1, 0.32, 1]}>
                 <sphereGeometry args={[0.62, 40, 18, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2]} />
                 <meshPhysicalMaterial
                   ref={(el) => {
                     domeMats.current[i] = el;
                   }}
-                  {...CAPS}
+                  {...HOUSING}
                   transparent
                 />
               </mesh>
-              {/* housing hardware — o-ring seat, rolled seam, drain plug
-                  (ghost with the sump; the o-ring stays when the head lifts,
-                  exactly like the real service moment) */}
+              {/* o-ring seat, moulded seam, drain plug (ghost with the bowl) */}
               <mesh position={[0, 0.745, 0]} rotation={[Math.PI / 2, 0, 0]}>
                 <torusGeometry args={[0.615, 0.02, 10, 48]} />
                 <meshStandardMaterial
@@ -1900,9 +2154,9 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
                   ref={(el) => {
                     housingExtraMats.current[i][1] = el;
                   }}
-                  color="#4c565e"
-                  metalness={1}
-                  roughness={0.5}
+                  color="#d5dadc"
+                  metalness={0}
+                  roughness={0.45}
                   transparent
                 />
               </mesh>
@@ -1912,27 +2166,13 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
                   ref={(el) => {
                     housingExtraMats.current[i][2] = el;
                   }}
-                  {...MACHINED}
+                  color="#dfe3e4"
+                  roughness={0.5}
                   transparent
                 />
               </mesh>
-              {/* Phase 3: printed vinyl label wrap (~109° facing front) —
-                  ghosts with its sump during the interior dive */}
-              {labelMaps && (
-                <mesh position={[0, -0.34, 0]}>
-                  <cylinderGeometry args={[0.625, 0.625, 0.76, 48, 1, true, -0.95, 1.9]} />
-                  <meshStandardMaterial
-                    ref={(el) => {
-                      labelMatRefs.current[i] = el;
-                    }}
-                    map={labelMaps[i]}
-                    roughness={0.5}
-                    metalness={0}
-                    transparent
-                    side={THREE.FrontSide}
-                  />
-                </mesh>
-              )}
+              </group>
+              </group>
             </group>
           )}
 
@@ -1945,6 +2185,8 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
                 cartGroups.current[i] = el;
               }}
             >
+              <group position={[0, V_PIVOT, 0]} scale={[1, V_S, 1]}>
+              <group position={[0, -V_PIVOT, 0]}>
               {/* ── the cartridge, SECTIONED. A 90° wedge is cut from the front
                   (toward the camera's parked position for this vessel) so the
                   media reads in section: for stage 1, three graded layers —
@@ -2109,10 +2351,10 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
               {/* Phase 2 — the label RIDES the lifted cartridge and is a real
                   interactive text space: leader draws → tag letters → the tag
                   expands into a spec card on click/keyboard */}
-              <Html position={[0.55, 0.2, 0.4]} zIndexRange={[30, 10]} className="xlabel-wrap">
+              <Html position={[0.55, 0.62 - i * 0.44, 0.4]} zIndexRange={[30, 10]} className="xlabel-wrap">
                 <div
-                  className={`xlabel ${labelsOn || (hover === i && (progress.current > 0.26 || HERO.mix > 0.5)) || (heroHot === i && HERO.mix > 0.5) ? "on" : ""} ${openCard === i ? "is-open" : ""}`.trim()}
-                  aria-hidden={!labelsOn && hover !== i && heroHot !== i}
+                  className={`xlabel ${labelsOn || (hover === i && (progress.current > 0.26 || onCoverSheet)) || (heroHot === i && onCoverSheet) ? "on" : ""} ${openCard === i ? "is-open" : ""}`.trim()}
+                  aria-hidden={!labelsOn && hover !== i && !(heroHot === i && onCoverSheet)}
                 >
                   <span className="xl-leader" aria-hidden="true" />
                   <button
@@ -2151,6 +2393,8 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
                   </div>
                 </div>
               </Html>
+              </group>
+              </group>
             </group>
           )}
 
@@ -2163,6 +2407,8 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
               }}
               visible={false}
             >
+              <group position={[0, V_PIVOT, 0]} scale={[1, V_S, 1]}>
+              <group position={[0, -V_PIVOT, 0]}>
               {/* annulus streaks (staggered around the front half) */}
               {[
                 [0.52, 0.42, 0.12],
@@ -2172,10 +2418,10 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
                 <mesh key={k} position={pos as [number, number, number]}>
                   <capsuleGeometry args={[0.011, 0.3, 3, 10]} />
                   <meshBasicMaterial
-                    color="#8fdcf7"
+                    color="#2aa3d4"
                     transparent
-                    opacity={0.34}
-                    blending={THREE.AdditiveBlending}
+                    opacity={0.5}
+                    blending={THREE.NormalBlending}
                     depthWrite={false}
                     toneMapped={false}
                   />
@@ -2189,10 +2435,10 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
                 <mesh key={k} position={pos as [number, number, number]} rotation={[0, 0, Math.PI / 2]}>
                   <capsuleGeometry args={[0.01, 0.24, 3, 10]} />
                   <meshBasicMaterial
-                    color="#a8e6fb"
+                    color="#3aaedb"
                     transparent
-                    opacity={0.28}
-                    blending={THREE.AdditiveBlending}
+                    opacity={0.42}
+                    blending={THREE.NormalBlending}
                     depthWrite={false}
                     toneMapped={false}
                   />
@@ -2202,14 +2448,16 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
               <mesh position={[0, 0.62, 0]}>
                 <capsuleGeometry args={[0.014, 0.4, 3, 10]} />
                 <meshBasicMaterial
-                  color="#9fe8ff"
+                  color="#2cb0e0"
                   transparent
-                  opacity={0.4}
-                  blending={THREE.AdditiveBlending}
+                  opacity={0.55}
+                  blending={THREE.NormalBlending}
                   depthWrite={false}
                   toneMapped={false}
                 />
               </mesh>
+              </group>
+              </group>
             </group>
           )}
 
@@ -2222,6 +2470,8 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
               }}
               visible={false}
             >
+              <group position={[0, V_PIVOT, 0]} scale={[1, V_S, 1]}>
+              <group position={[0, -V_PIVOT, 0]}>
               {actionSpecs[i].map((s, k) => (
                 <mesh
                   key={`a${k}`}
@@ -2308,6 +2558,8 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
                   ))}
                 </>
               )}
+              </group>
+              </group>
             </group>
           )}
 
@@ -2317,9 +2569,9 @@ function VesselAssembly({ progress }: { progress: MutableRefObject<number> }) {
             ref={(el) => {
               ringMeshes.current[i] = el;
             }}
-            position={[0, -1.5, 0]}
+            position={[0, vy(-1.5), 0]}
             rotation={[Math.PI / 2, 0, 0]}
-            visible={!hidden("ring")}
+            visible={false}
           >
             <torusGeometry args={[0.655, 0.015, 12, 64]} />
             <meshStandardMaterial
@@ -2344,7 +2596,12 @@ export default function ChromeStage({ progress, active, sheetRatio, onReady }: P
     <Canvas
       frameloop={active ? "always" : "never"}
       dpr={Q.dpr}
-      camera={{ position: [0, 0.12, 8.8], fov: 38 }}
+      // The canvas is fixed at inset 0, so viewport coordinates ARE canvas
+      // coordinates. The default (offset) measures from whatever element the
+      // pointer landed on, and a tap that landed on a label's box raycast
+      // from that box's corner and missed the cover underneath.
+      eventPrefix="client"
+      camera={{ position: [0, DOCK.ty, DOCK.d], fov: 38 }}
       // OPAQUE canvas: blending ghosted layers against an alpha framebuffer and
       // letting the BROWSER composite produces a milky wash. The full-bleed
       // canvas paints its own pool-of-light (Backdrop) from the SAME stops as
@@ -2354,11 +2611,11 @@ export default function ChromeStage({ progress, active, sheetRatio, onReady }: P
         // Phase 3: Khronos PBR Neutral — ACES washed the metals into "CG
         // chrome"; Neutral keeps colour and contrast like product photography
         gl.toneMapping = THREE.NeutralToneMapping;
-        gl.toneMappingExposure = 1.12;
-        gl.setClearColor("#0a121b", 1);
+        gl.toneMappingExposure = 0.96;
+        gl.setClearColor("#eef0f1", 1);
         // far edges of the machine melt into the space's ambient tone —
         // barely reaches the assembly, only the pipe extremities at distance
-        scene.fog = new THREE.Fog(BACKDROP_FOG, 12, 28);
+        scene.fog = new THREE.Fog(BACKDROP_FOG, 18, 38);
       }}
       style={{ position: "absolute", inset: 0 }}
     >
@@ -2370,19 +2627,19 @@ export default function ChromeStage({ progress, active, sheetRatio, onReady }: P
           large warm overhead rounds the head shoulders, a floor bounce lifts
           the domes, and a dim backdrop sheet keeps reflections alive from
           every camera angle. The window-dive env scrub dims all of it. */}
-      <Environment resolution={256} frames={1} environmentIntensity={0.82}>
+      <Environment resolution={256} frames={1} environmentIntensity={1.0}>
         {/* signature vertical streaks */}
-        <Lightformer form="rect" position={[-6, 1, 4]} rotation-y={Math.PI / 2.6} scale={[1.1, 7, 1]} intensity={6.5} color="#eaf3fa" />
-        <Lightformer form="rect" position={[6, 1, 4]} rotation-y={-Math.PI / 2.6} scale={[1.1, 7, 1]} intensity={6.5} color="#eaf3fa" />
+        <Lightformer form="rect" position={[-6, 1, 4]} rotation-y={Math.PI / 2.6} scale={[1.1, 7, 1]} intensity={3.2} color="#f2f6f9" />
+        <Lightformer form="rect" position={[6, 1, 4]} rotation-y={-Math.PI / 2.6} scale={[1.1, 7, 1]} intensity={1.3} color="#f2f6f9" />
         {/* broad soft KEY, camera-front-left — carries the body of the steel */}
         <Lightformer form="rect" position={[-3, 2.5, 7]} rotation-y={Math.PI / 8} rotation-x={-Math.PI / 14} scale={[7, 5, 1]} intensity={2.8} color="#f4f9fc" />
         {/* warm overhead softbox rounds the head shoulders */}
         <Lightformer form="rect" position={[0, 8, 2]} rotation-x={-Math.PI / 2} scale={[10, 6, 1]} intensity={3.2} color="#fdf4e6" />
         {/* floor bounce lifts the domes */}
-        <Lightformer form="rect" position={[0, -7, 3]} rotation-x={Math.PI / 2} scale={[9, 5, 1]} intensity={1.3} color="#a4a8ac" />
+        <Lightformer form="rect" position={[0, -7, 3]} rotation-x={Math.PI / 2} scale={[9, 5, 1]} intensity={1.0} color="#c9ccce" />
         {/* dim sheets behind + in front keep reflections alive at every angle */}
-        <Lightformer form="rect" position={[0, 1.5, -7]} scale={[12, 8, 1]} intensity={1.5} color="#4c5054" />
-        <Lightformer form="rect" position={[0, 0.5, 8]} rotation-y={Math.PI} scale={[11, 7, 1]} intensity={1.1} color="#33373b" />
+        <Lightformer form="rect" position={[0, 1.5, -7]} scale={[12, 8, 1]} intensity={0.55} color="#aeb2b5" />
+        <Lightformer form="rect" position={[0, 0.5, 8]} rotation-y={Math.PI} scale={[11, 7, 1]} intensity={0.3} color="#7d8286" />
       </Environment>
 
       <JourneyLights progress={progress} />
@@ -2395,7 +2652,7 @@ export default function ChromeStage({ progress, active, sheetRatio, onReady }: P
       {typeof window !== "undefined" && new URLSearchParams(window.location.search).has("ngdbgray") && <DebugRay />}
 
       {!hidden("shadows") && (
-        <ContactShadows position={[0, -1.955, 0]} opacity={0.6} scale={16} blur={2.6} far={5.5} color="#000000" />
+        <ContactShadows position={[0, MACHINE_Y + FLOOR_Y, 0]} opacity={0.38} scale={18} blur={2.8} far={6.5} color="#1a1c1e" />
       )}
 
       {!hidden("post") && (
@@ -2414,7 +2671,7 @@ export default function ChromeStage({ progress, active, sheetRatio, onReady }: P
                 key="ao"
                 aoRadius={0.42}
                 distanceFalloff={0.7}
-                intensity={2.1}
+                intensity={1.7}
                 aoSamples={Q.aoHalfRes ? 8 : 16}
                 denoiseSamples={Q.aoHalfRes ? 4 : 8}
                 denoiseRadius={8}
@@ -2431,10 +2688,9 @@ export default function ChromeStage({ progress, active, sheetRatio, onReady }: P
             ) : null,
             // bloom OFF the metal speculars (the #1 CG tell) — only genuinely
             // emissive things (rings, redox sparks) may glow
-            <Bloom key="bloom" intensity={0.34} luminanceThreshold={0.92} luminanceSmoothing={0.3} mipmapBlur />,
+            <Bloom key="bloom" intensity={0.2} luminanceThreshold={1.0} luminanceSmoothing={0.2} mipmapBlur />,
             // lens fringe kept to the frame edges — dead-centre chrome stays clinically sharp
             Q.lens ? <ChromaticAberration key="ca" offset={CA_OFFSET} radialModulation modulationOffset={0.3} /> : null,
-            <Vignette key="vig" eskil={false} offset={0.26} darkness={0.55} />,
           ].filter((e): e is JSX.Element => e !== null)}
         </EffectComposer>
       )}

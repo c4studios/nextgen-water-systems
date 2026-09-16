@@ -12,10 +12,13 @@
 // dark-tech. Product photography on dark is a NEUTRAL soft spot behind the
 // object — chroma ~0 — so the steel reads as steel and any colour that does
 // appear (the ring accent) is deliberate.
+// 15 Sep 2026: the site went light (Aaron's brief, brand greys). The studio is
+// now a white sweep: a brighter pool under the machine falling to the page's
+// own ground at the edge, so the canvas still has no seam against the page.
 export const BACKDROP_STOPS: [number, string][] = [
-  [0, "#1a1b1d"],
-  [0.58, "#0e0e10"],
-  [1, "#0a0a0b"],
+  [0, "#f9fafa"],
+  [0.58, "#f2f4f4"],
+  [1, "#eef0f1"],
 ];
 
 export const BACKDROP_CENTER = { x: 0.5, y: 0.4 }; // from the TOP, CSS-style

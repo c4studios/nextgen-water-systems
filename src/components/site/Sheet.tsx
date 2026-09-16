@@ -18,6 +18,7 @@ export function Sheet({
   lead,
   photo,
   photoAlt,
+  photoNote,
   children,
 }: {
   sheet: string;
@@ -28,6 +29,8 @@ export function Sheet({
    *  as documents without one, which is what made them feel dry */
   photo?: string;
   photoAlt?: string;
+  /** every generated photograph says so where it is shown */
+  photoNote?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -38,7 +41,7 @@ export function Sheet({
             <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
               <path d="M14.5 5.5 8 12l6.5 6.5" />
             </svg>
-            Sheet 01
+            Home
           </Link>
           <span aria-hidden="true">/</span>
           <span aria-current="page">{kicker}</span>
@@ -47,7 +50,7 @@ export function Sheet({
         <header className="doc-head">
           <span className="doc-no">
             <i>SHEET</i>
-            {sheet} / 09
+            {sheet}
           </span>
           <h1 className="doc-h">{title}</h1>
           <p className="doc-lead">{lead}</p>
@@ -56,6 +59,7 @@ export function Sheet({
         {photo && (
           <figure className="doc-photo">
             <img src={asset(photo)} alt={photoAlt || ""} width={1600} height={1073} loading="lazy" decoding="async" />
+            {photoNote && <figcaption className="doc-photo-note">{photoNote}</figcaption>}
           </figure>
         )}
 

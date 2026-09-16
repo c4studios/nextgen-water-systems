@@ -34,8 +34,9 @@ export default function InstallationPage() {
           </>
         }
         lead="Nothing arrives in a box for you to work out. The system is fitted at your mains by the same licensed plumbers who service it afterwards, and the work carries a warranty."
-        photo="/photos/installed.jpg"
-        photoAlt="A three-vessel filtration unit mounted on a rendered wall beside a garden bed, plumbed in with copper pipework and isolation valves"
+        photo="/photos/fitting.jpg"
+        photoAlt="A plumber's hands tightening a brass fitting on a copper pipe against a rendered wall"
+        photoNote="Visualisation, not a photograph of a Next Gen job."
       >
         <Block title="Who does the work">
           <p>
@@ -69,7 +70,7 @@ export default function InstallationPage() {
             </li>
             <li>
               <b>Water off, system in.</b> The frame is mounted, the unit is plumbed into the incoming line
-              with isolation either side, and the joints are pressure-checked before the water goes back on.
+              with isolation either side, and the joints are pressure-checked before the water goes back on. Then the cover clips on.
             </li>
             <li>
               <b>Flush and hand over.</b> New cartridges are flushed through until the water runs clear, the
@@ -84,13 +85,13 @@ export default function InstallationPage() {
 
         <Block title="After it is in">
           <p>
-            There is nothing to switch on, nothing to refill and no power to it. The only ongoing job is the
-            cartridge change, and the interval gets set from your own water rather than a number on a box.
+            There is nothing to switch on and nothing to refill. The only ongoing job is the cartridge change.
+            The manufacturer recommends one every 12 months, and your own water can bring that forward.
             Aqua-Safe schedule it, so it is one less thing to remember.
           </p>
           <p>
             <Link className="doc-inline" href="/system/">
-              What is actually inside each vessel
+              What is actually inside each housing
             </Link>
             .
           </p>

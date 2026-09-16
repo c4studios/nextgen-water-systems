@@ -3,7 +3,8 @@ import { DrawingChrome } from "@/components/site/DrawingChrome";
 import { Opening } from "@/components/site/Opening";
 import { HowItWorks } from "@/components/site/HowItWorks";
 import { FloorPlan } from "@/components/site/FloorPlan";
-import { Band } from "@/components/site/Band";
+import { ConceptBand } from "@/components/site/ConceptBand";
+import { SpecSchedule } from "@/components/site/SpecSchedule";
 import { Exhibit } from "@/components/site/Exhibit";
 import { StaticStory } from "@/components/site/StaticStory";
 import { Installer } from "@/components/site/Installer";
@@ -36,15 +37,11 @@ export default function Home() {
             (display:none for everyone else — see globals.css) */}
         <StaticStory />
         <HowItWorks />
+        <SpecSchedule />
         <FloorPlan />
-        {/* Where it actually goes. Warm raking light on purpose: this is the
-            one moment in the site that is a place rather than an object. */}
-        <Band
-          src="/photos/installed.jpg"
-          alt="A three-vessel filtration unit mounted on a rendered wall beside a raised garden bed, plumbed in with copper pipework and brass isolation valves"
-          tag="NOTE 2 · WHERE IT GOES"
-          caption="On the wall where the water comes into the property, with isolation either side so it can be serviced without shutting the house down. It needs clearance underneath for the bowls to come off. Visualisation, not a photograph of a completed job."
-        />
+        {/* Where it goes, with the cover on: Aaron's brand concept beside the
+            practical notes (replaces the generated chrome wall photograph). */}
+        <ConceptBand />
         <Installer />
         <SiteSpine />
       </main>

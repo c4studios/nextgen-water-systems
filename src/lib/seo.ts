@@ -46,4 +46,4 @@ export function pageOg(path: string, title: string, description?: string) {
 /** Alt text for the share card. It is read aloud on some social clients, so it
  *  describes the card rather than repeating the headline. */
 export const OG_ALT =
-  "The NGW-01: three stainless filtration vessels on a wall bracket, beside the line \"Water that tastes of nothing.\"";
+  "The Next Gen cover, grey powder-coated steel lettered Next Gen Water Systems, beside the line \"Water that tastes of nothing.\"";

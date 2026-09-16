@@ -56,10 +56,10 @@ export const STORY_BEATS: Beat[] = [
     // The cover already introduced the machine, so this is the sheet's own
     // title and a plain word about what the scroll is about to do: nobody
     // should find themselves inside a ten-screen drawing without warning.
-    id: "hero", a: -0.05, b: 0.052, f: 0.022, pos: "pb--below",
+    id: "hero", a: -0.05, b: 0.052, f: 0.022, pos: "pb--right",
     eyebrow: "SHEET 02 · THE FIX, IN SECTION",
-    h: "Now the machine, in section.",
-    body: "Scroll and it opens, one stage at a time. Skip past it any time.",
+    h: "Take the cover off.",
+    body: "It clips on with no screws. Under it are three full-size housings on a steel frame. Scroll and each one opens in turn.",
     cta: false,
   },
   {
@@ -72,11 +72,11 @@ export const STORY_BEATS: Beat[] = [
     stat: "WHAT GOES IN · CHLORINE · SCALE · SEDIMENT · RUST",
   },
   {
-    id: "s1", a: 0.378, b: 0.462, f: 0.02, pos: "pb--right",
+    id: "s1", a: 0.378, b: 0.462, f: 0.02, pos: "pb--left",
     eyebrow: "SECTION A–A · STAGE 01",
     h: "First, the grit.",
     body: "Three layers, coarse through to fine, catch the sand and rust the pipes carry. Everything behind them stays clean and lasts longer for it.",
-    stat: "10 / 5 / 1 µm",
+    stat: "3 LAYERS · TO 1 µm",
   },
   {
     // the redox bed gets DOUBLE dwell — it's the machine's signature chemistry
@@ -99,7 +99,7 @@ export const STORY_BEATS: Beat[] = [
     id: "proof", a: 0.708, b: 0.784, f: 0.02, pos: "pb--right",
     eyebrow: "SCHEDULE 1 · WHAT EACH STAGE DOES",
     h: "What each stage actually does.",
-    body: "You will not find a percentage on this page. Independent testing is still in progress, and until it is in hand we would rather tell you the physical job each stage does than quote a number we cannot stand behind.",
+    body: "You will not find a percentage on this page. Independent testing is coming, and its report will be linked on the specification sheet. Until it is in hand, we would rather tell you the physical job each stage does than quote a number we cannot stand behind.",
     rows: [
       ["TASTE & SMELL", "Chlorine changed on contact, then carbon"],
       ["SCALE", "Minerals rinse instead of stick"],

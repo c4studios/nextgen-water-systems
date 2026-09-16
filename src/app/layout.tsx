@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { satoshi, hanken, geistMono } from "./fonts";
+import "./brand.css";
+import { satoshi, hanken, geistMono, michroma } from "./fonts";
 import { SmoothScroll } from "@/lib/providers/SmoothScroll";
 import { DirectionContract } from "@/components/site/DirectionContract";
 import { Cursor } from "@/components/Cursor";
@@ -45,8 +46,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0a0a0b",
-  colorScheme: "dark",
+  themeColor: "#eef0f1",
+  colorScheme: "light",
   // The stylesheet reads env(safe-area-inset-*) in several places, and those
   // resolve to zero unless the viewport opts into the full screen. Without this
   // that CSS was inert. Note it does NOT disable user scaling: pinch-zoom stays
@@ -56,7 +57,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en-AU" className={`${satoshi.variable} ${hanken.variable} ${geistMono.variable}`}>
+    <html lang="en-AU" className={`${satoshi.variable} ${hanken.variable} ${geistMono.variable} ${michroma.variable}`}>
       <head>
         {/* the environment is a pure in-scene Lightformer studio now — no HDR
             file, nothing to preload, nothing to race */}

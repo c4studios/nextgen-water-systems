@@ -7,6 +7,7 @@ import { navRoutes, ROUTES } from "@/content/site";
 import { MenuToggleIcon } from "@/components/ui/MenuToggleIcon";
 import { RadialMenu, type RadialItem } from "@/components/ui/RadialMenu";
 import { cn } from "@/lib/cn";
+import { Wordmark } from "@/components/site/Wordmark";
 
 /**
  * THE NAV, IN THREE STATES, AS ONE CONTINUOUS MORPH.
@@ -256,17 +257,8 @@ export function Nav() {
         <div className="nav-pane" aria-hidden="true" />
 
         <div className="wrap nav-bar">
-          <Link className="brand" href="/" data-cursor onClick={() => setSheet(false)}>
-            <svg className="mark" viewBox="0 0 40 40" fill="none" aria-hidden="true">
-              <defs>
-                <linearGradient id="ngmark" x1="20" y1="6" x2="20" y2="34" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#29c2ee" />
-                  <stop offset="1" stopColor="#0f6fb0" />
-                </linearGradient>
-              </defs>
-              <path d="M20 6s10 11 10 18a10 10 0 1 1-20 0C10 17 20 6 20 6Z" fill="url(#ngmark)" />
-            </svg>
-            Next&nbsp;Gen
+          <Link className="brand" href="/" data-cursor aria-label="Next Gen Water Systems, home" onClick={() => setSheet(false)}>
+            <Wordmark variant="compact" />
           </Link>
 
           <nav className="nav-links" aria-label="Primary">

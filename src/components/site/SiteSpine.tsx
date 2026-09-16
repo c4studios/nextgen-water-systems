@@ -107,10 +107,6 @@ function Schedule() {
             <b>PFAS, fluoride and TDS.</b> Those need reverse osmosis. This deliberately isn&rsquo;t
             that, and anyone telling you otherwise is selling you something else.
           </li>
-          <li>
-            <b>Softening.</b> It changes how scale behaves. It does not strip the minerals out, so your
-            water still tastes like water.
-          </li>
         </ul>
       </div>
     </div>
@@ -129,7 +125,7 @@ export function SiteSpine() {
         </h2>
         <p className="tail-p">
           A free, no-obligation in-home water test. A qualified technician tests your actual supply at your kitchen
-          tap and shows you exactly what the NGW-01 would change.
+          tap and talks you through what the system would change.
         </p>
 
         <BookingForm />

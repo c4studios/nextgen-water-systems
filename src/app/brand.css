@@ -1,0 +1,449 @@
+/* ===========================================================================
+   NEXT GEN — LIGHT, BRAND GREYS (15 Sep 2026)
+
+   Aaron's brief: brighter, the Next Gen enclosure brand concept, and the real
+   system inside it. The palette is sampled from the concept: a neutral grey
+   powder-coated cover, charcoal lettering, a near-black frame. The drawing set
+   stays; on light it reads the way a drawing set actually does, ink on paper.
+
+   These semantic tokens are the source of truth. The older names in
+   globals.css (--void, --ice, --steel, --muted, --line, --cyan) alias onto
+   them so nothing that still uses the old names breaks.
+   =========================================================================== */
+:root {
+  --ground: #eef0f1; /* the page */
+  --panel: #f8f9f9; /* paper: sheets, cards, fields */
+  --panel-2: #e3e6e8; /* recessed: hover, pressed, wells */
+  --ink: #1c1f22; /* primary type, from the enclosure lettering */
+  --ink-2: #40464b; /* secondary type */
+  --ink-3: #5c6369; /* tertiary type and labels (5.3:1 on --ground) */
+  --hairline: rgba(28, 31, 34, 0.13);
+  --accent: #006e9c; /* links, active states, small labels (4.9:1 on --ground) */
+  --water: #1ba6d9; /* water only: lines, fills, rings, glows. Never body text */
+  --deep: #0a4d72;
+  --enclosure: #aeb0b1; /* the cover's powder coat */
+  --frame-black: #1b1c1e;
+  --redline: #b8412c; /* the approval stamp, and visible [PLACEHOLDER] marks */
+}
+
+/* ---- the Next Gen lockup (Wordmark.tsx) ----
+   NEXT GEN sets the measure; the lines under it are spread across it letter by
+   letter, the way the concept holds three sizes to one width. */
+.wm {
+  --wm-size: 30px;
+  display: inline-grid;
+  grid-template-columns: max-content;
+  color: var(--ink);
+  line-height: 1;
+  vertical-align: middle;
+}
+.wm-a {
+  font-family: var(--font-brand), var(--font-satoshi), sans-serif;
+  font-size: var(--wm-size);
+  letter-spacing: 0.005em;
+  white-space: nowrap;
+  /* the concept's NEXT GEN is heavier than the face */
+  -webkit-text-stroke: 0.028em currentColor;
+  paint-order: stroke fill;
+}
+.wm-b,
+.wm-c {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-satoshi), sans-serif;
+  font-weight: 500;
+}
+.wm-b {
+  font-size: calc(var(--wm-size) * 0.4);
+  margin-top: calc(var(--wm-size) * 0.2);
+}
+.wm-sp { width: 0.5em; }
+.wm-rule {
+  height: max(1px, calc(var(--wm-size) * 0.035));
+  background: currentColor;
+  margin-top: calc(var(--wm-size) * 0.24);
+}
+.wm-c {
+  font-size: calc(var(--wm-size) * 0.18);
+  margin-top: calc(var(--wm-size) * 0.17);
+}
+.wm--compact { --wm-size: 17px; }
+.site-nav .brand .wm { color: var(--ink); }
+@media (max-width: 640px) {
+  .wm--compact { --wm-size: 15px; }
+}
+
+/* a visible placeholder, never a plausible stand-in */
+mark.placeholder {
+  background: rgba(184, 65, 44, 0.1);
+  color: var(--redline);
+  border: 1px dashed rgba(184, 65, 44, 0.45);
+  padding: 1px 6px;
+  border-radius: 2px;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.86em;
+}
+
+/* ---- schedule 2: specification (SpecSchedule.tsx) ---- */
+.sps {
+  position: relative;
+  z-index: 1;
+  background-color: var(--ground);
+  padding: clamp(72px, 12vh, 140px) clamp(18px, 5vw, 34px);
+}
+.sps-inner {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: clamp(28px, 5vw, 72px);
+  align-items: start;
+}
+.sps-h {
+  font-size: clamp(30px, 4.2vw, 50px);
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+  color: var(--ink);
+  text-wrap: balance;
+}
+.sps-lead {
+  margin-top: 16px;
+  max-width: 42ch;
+  font-size: clamp(16px, 1.5vw, 18px);
+  line-height: 1.65;
+  color: var(--ink-2);
+}
+.sps-table {
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--ink);
+  background: var(--panel);
+}
+.sps-row {
+  display: grid;
+  grid-template-columns: minmax(0, 190px) minmax(0, 1fr);
+  gap: 16px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--hairline);
+}
+.sps-row dt {
+  font-family: var(--font-draft, "Routed Gothic"), var(--font-mono), monospace;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  padding-top: 3px;
+}
+.sps-row dd {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.sps-report {
+  grid-column: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 190px) minmax(0, 1fr);
+  gap: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--hairline);
+  border-top: 0;
+  background: var(--panel);
+}
+.sps-report-k {
+  font-family: var(--font-draft, "Routed Gothic"), var(--font-mono), monospace;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  padding-top: 3px;
+}
+.sps-report p {
+  margin: 0;
+  display: grid;
+  gap: 8px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+.sps-report mark { justify-self: start; }
+@media (max-width: 900px) {
+  .sps-inner { grid-template-columns: 1fr; }
+  .sps-report { grid-column: 1; }
+  .sps-row,
+  .sps-report { grid-template-columns: 1fr; gap: 4px; }
+}
+
+/* ---- where it goes, with the cover on (ConceptBand.tsx) ---- */
+.cb {
+  position: relative;
+  z-index: 1;
+  background-color: var(--ground);
+  padding: clamp(72px, 12vh, 140px) clamp(18px, 5vw, 34px);
+}
+.cb-inner {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  gap: clamp(28px, 6vw, 96px);
+  align-items: center;
+}
+.cb-figure {
+  margin: 0;
+  border: 1px solid var(--hairline);
+  background: var(--panel);
+  padding: 10px 10px 0;
+  box-shadow: 0 18px 40px -24px rgba(28, 31, 34, 0.35);
+}
+.cb-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+}
+.cb-figure figcaption {
+  padding: 10px 2px 12px;
+  font-family: var(--font-draft, "Routed Gothic"), var(--font-mono), monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.cb-h {
+  font-size: clamp(30px, 4.2vw, 50px);
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+  color: var(--ink);
+  text-wrap: balance;
+}
+.cb-lead {
+  margin-top: 16px;
+  max-width: 46ch;
+  font-size: clamp(16px, 1.5vw, 18px);
+  line-height: 1.65;
+  color: var(--ink-2);
+}
+.cb-notes {
+  margin: 28px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--ink);
+}
+.cb-notes div {
+  display: grid;
+  grid-template-columns: minmax(0, 120px) minmax(0, 1fr);
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--hairline);
+}
+.cb-notes dt {
+  font-family: var(--font-draft, "Routed Gothic"), var(--font-mono), monospace;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  padding-top: 3px;
+}
+.cb-notes dd {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+@media (max-width: 900px) {
+  .cb-inner { grid-template-columns: 1fr; }
+  .cb-figure { max-width: 460px; }
+}
+
+/* the cover sheet's poster: a render of the closed cover from the live scene
+   (public/photos/cover-still.jpg). Fitted to the anchor rather than
+   registered to the old chrome photograph, and feathered into the pool. */
+.opening-still {
+  /* the box is the picture: height-fitted and centred, so the feather runs
+     along the picture's own edges. Fitted with object-fit inside a wider box,
+     the feather ran along the box and left the picture's side edges hard. */
+  left: 50%;
+  top: 50%;
+  width: auto;
+  height: 100%;
+  max-width: 100%;
+  translate: -50% -50%;
+  object-fit: contain;
+  /* an edge feather, not an ellipse: the cover fills 73% of the picture's
+     width, and an ellipse soft enough to hide the edges eats its corners */
+  -webkit-mask-image:
+    linear-gradient(to right, transparent, #000 11%, #000 89%, transparent),
+    linear-gradient(to bottom, transparent, #000 13%, #000 87%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to right, transparent, #000 11%, #000 89%, transparent),
+    linear-gradient(to bottom, transparent, #000 13%, #000 87%, transparent);
+  mask-composite: intersect;
+}
+
+/* ---- the phone menu hangs under the band ----
+   The header is a fixed-height flex row, so the sheet used to sit beside the
+   bar as a squeezed second column. It drops below the band instead, as its
+   own sheet of paper, and takes the band's width and corner as it morphs:
+   flush and square while the band is attached, a card once it floats. */
+@media (max-width: 860px) {
+  header.site-nav .nav-sheet {
+    position: absolute;
+    top: calc(100% + min(8px, var(--nt, 0px)));
+    left: 0;
+    right: 0;
+    background: var(--panel);
+    border: 0;
+    border-radius: min(16px, var(--nr, 0px));
+    transition:
+      grid-template-rows 0.46s cubic-bezier(0.22, 1.04, 0.36, 1),
+      box-shadow 0.3s var(--ease);
+  }
+  /* the hairline is an inset shadow, not a border, so the shut sheet is zero
+     tall and leaves nothing under the bar */
+  header.site-nav .nav-sheet.is-open {
+    box-shadow:
+      inset 0 0 0 1px var(--hairline),
+      0 22px 44px -22px rgba(28, 31, 34, 0.38);
+  }
+  header.site-nav .nav-sheet-in > :last-child { border-bottom: 0; }
+}
+@media (max-width: 860px) and (prefers-reduced-motion: reduce) {
+  header.site-nav .nav-sheet { transition: none; }
+}
+
+/* the links never break a label across two lines */
+header.site-nav .nav-links a { white-space: nowrap; }
+
+/* a generated photograph says so where it is shown (Sheet.tsx) */
+.doc-photo-note {
+  margin-top: 10px;
+  font-family: var(--font-draft, "Routed Gothic"), var(--font-mono), monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* ---- the journey rail at rest (desktop) ----
+   The rule this file's older comment promised was never written, so the
+   whole stop list stood at rest and ran under the right-hand stage copy at
+   1440. At rest the rail keeps its label, the current stop and the skip; a
+   hover or keyboard focus opens the full list. It is anchored at the bottom,
+   so it grows upward around the pointer and cannot flicker shut under it. */
+@media (min-width: 901px) {
+  .jrail button:not(.jskip) {
+    max-height: 32px;
+    overflow: hidden;
+    transition:
+      color 0.3s var(--ease),
+      max-height 0.34s var(--ease),
+      padding 0.34s var(--ease),
+      opacity 0.24s var(--ease);
+  }
+  .jrail:not(:hover):not(:focus-within) button:not(.jskip):not(.is-on) {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    opacity: 0;
+  }
+}
+@media (min-width: 901px) and (prefers-reduced-motion: reduce) {
+  .jrail button:not(.jskip) { transition: none; }
+}
+
+/* ---- the journey copy in the white studio ----
+   The halo and the radial scrim were built for charcoal type over a dark
+   machine. Over light housings they read as a grey smudge behind every
+   heading. The copy now relies on composition (the camera steps the machine
+   aside in a wide frame, ChromeStage.tsx), and on phones, where there is no
+   margin beside the machine, it sits on a paper caption card. */
+.plate-hud .pbeat { text-shadow: none; }
+.plate-hud .pbeat::before { background: none; }
+@media (min-width: 901px) {
+  /* the supply run crosses the upper frame, so this beat sits lower */
+  .plate-hud .pbeat[data-id="problem"] { top: 56%; }
+  /* the opening beat shares the frame with the closed cover */
+  .plate-hud .pb--hero { max-width: min(520px, 38vw); }
+}
+/* 900 is the phone cut's breakpoint (journeyMap.ts): below it the camera
+   frames for a narrow screen and does not step aside, so every beat, tablets
+   included, speaks from a card at the base */
+@media (max-width: 900px) {
+  .plate-hud .pbeat:not(.pb--hero) {
+    left: 50%;
+    right: auto;
+    top: auto;
+    translate: -50% 0;
+    width: calc(100vw - 28px);
+    max-width: 440px;
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    padding: 16px 18px 18px;
+    text-align: left;
+    text-shadow: none;
+  }
+  .plate-hud .pbeat:not(.pb--hero)::before,
+  .plate-hud .pbeat[data-id="handoff"]::before {
+    inset: 0;
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    box-shadow: 0 20px 44px -26px rgba(28, 31, 34, 0.45);
+    opacity: var(--io, 1);
+    transform: translateY(calc((1 - var(--io, 1)) * 10px));
+  }
+  .plate-hud .pbeat:not(.pb--hero) .pb-h { font-size: clamp(21px, 6vw, 26px); }
+  .plate-hud .pbeat:not(.pb--hero) .pb-ref { justify-content: flex-start; }
+  .plate-hud .pbeat:not(.pb--hero) .pb-body {
+    margin-top: 10px;
+    margin-inline: 0;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+  .plate-hud .pbeat:not(.pb--hero) .pb-rows { margin-inline: 0; }
+  .plate-hud .pbeat:not(.pb--hero) .pb-stat { margin-top: 10px; }
+}
+
+/* the 3D labels' wrapper (drei Html) keeps its box while its label is hidden,
+   and that invisible box was taking taps meant for the cover under it. Only
+   a label that is showing takes the pointer (globals.css .xlabel.on .xl-tag). */
+.xlabel-wrap { pointer-events: none; }
+
+/* the rail takes keyboard focus while it is otherwise faded out (between
+   journeys), so it shows itself for as long as it holds focus */
+.jrail:focus-within { opacity: 1; }
+/* above 1500px the corner title block opens to its full height and would sit
+   over the rail's skip row */
+@media (min-width: 1501px) {
+  .jrail { bottom: 180px; }
+}
+
+/* a lone last word is not a row value */
+.sps-row dd,
+.cb-notes dd { text-wrap: pretty; }
+
+/* a phone on its side: the cut is on (width), but the screen is short, so a
+   card at the base ran up under the stage chip, the menu hint and the rail.
+   The card stands beside the machine the way the desktop copy does, the stage
+   chip steps out (the card's own reference line names the stage), and the
+   rail moves to the corner. */
+@media (max-width: 900px) and (max-height: 500px) {
+  .plate-hud .pbeat:not(.pb--hero) {
+    width: min(46vw, 400px);
+    max-width: none;
+    top: auto;
+    bottom: 12px;
+    translate: none;
+    padding: 12px 14px 14px;
+  }
+  .plate-hud .pbeat.pb--left:not(.pb--hero),
+  .plate-hud .pbeat.pb--tl:not(.pb--hero),
+  .plate-hud .pbeat.pb--bc:not(.pb--hero) { left: 16px; right: auto; }
+  .plate-hud .pbeat.pb--right:not(.pb--hero) { left: auto; right: 16px; }
+  .plate-hud .pbeat:not(.pb--hero) .pb-h { font-size: 20px; }
+  .plate-hud .pbeat:not(.pb--hero) .pb-body { margin-top: 8px; font-size: 14px; line-height: 1.5; }
+  .jstage { display: none; }
+  .jrail { top: 12px; right: 12px; left: auto; bottom: auto; translate: none; }
+}

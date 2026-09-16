@@ -7,7 +7,7 @@ import { pageOg } from "@/lib/seo";
 export const metadata: Metadata = {
   title: "Questions",
   description:
-    "Whole-home water filtration in Perth: what it changes, what it does not remove, whether it softens water, and who fits it.",
+    "Answers on whole-home water filtration in Perth, including what it does not remove and who fits it.",
   alternates: { canonical: "/questions/" },
   openGraph: pageOg("/questions/", "Questions | Next Gen Water Systems"),
 };
@@ -23,16 +23,6 @@ const QA: { q: string; a: React.ReactNode }[] = [
         The taste and the smell go first, and that is the one people report the day it goes in. Scale takes
         longer to show, because you are noticing an absence: the kettle stops furring up as fast, the shower
         screen stops spotting, glassware comes out of the dishwasher clearer.
-      </p>
-    ),
-  },
-  {
-    q: "Does it soften the water?",
-    a: (
-      <p>
-        No, and anyone telling you a cartridge system softens water is selling you something else. Softening
-        means taking the calcium and magnesium out, which needs a salt-regenerating softener. This changes how
-        those minerals crystallise so they rinse away instead of sticking. Less scale, same hardness.
       </p>
     ),
   },
@@ -69,8 +59,8 @@ const QA: { q: string; a: React.ReactNode }[] = [
     a: (
       <p>
         Any cartridge filter costs you some pressure, and a loaded cartridge costs more than a fresh one. That
-        is what the gauge on the top plate is for: your plumber reads it and changes the cartridges before you
-        would ever notice it at a tap.
+        is what the two gauges on the top plate are for: your plumber reads them and changes the cartridges
+        before you would ever notice it at a tap.
       </p>
     ),
   },
@@ -150,6 +140,7 @@ export default function QuestionsPage() {
         lead="Filtration is a category with a lot of noise in it. Here is what this system does, what it does not, and where we would tell you to look elsewhere."
         photo="/photos/kitchen-tap.jpg"
         photoAlt="A kitchen mixer tap running clear water into a plain glass on a white benchtop, bright window light behind"
+        photoNote="Visualisation, not a photograph of a Next Gen home."
       >
         <dl className="qa">
           {QA.map(({ q, a }) => (

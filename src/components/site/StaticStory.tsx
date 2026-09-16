@@ -14,10 +14,10 @@ import { STORY_BEATS } from "@/content/journeyStory";
 export function StaticStory() {
   const beats = STORY_BEATS.filter((b) => b.id !== "hero" && b.id !== "handoff");
   return (
-    <section className="static-story" aria-label="How the NGW-01 works">
+    <section className="static-story" aria-label="How the system works">
       <div className="ss-inner">
         <p className="ss-lead">
-          Three stainless vessels at the mains, plumbed in series. Here is what each one does to your water.
+          Three housings at the mains, plumbed in series behind a clip-on cover. Here is what each one does to your water.
         </p>
         {beats.map((b) => (
           <article key={b.id} className="ss-beat">

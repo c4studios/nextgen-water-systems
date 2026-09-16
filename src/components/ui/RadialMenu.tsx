@@ -163,12 +163,14 @@ export function RadialMenu({
               <feGaussianBlur in="n" stdDeviation="1.1" result="ns" />
               <feDisplacementMap in="SourceGraphic" in2="ns" scale="7" xChannelSelector="R" yChannelSelector="G" />
             </filter>
+            {/* neutral steel, darker in the troughs than it was on the dark
+                ground, so the band still reads as metal over a pale veil */}
             <linearGradient id="rm-metal" x1="0" y1="0" x2="0.4" y2="1">
-              <stop offset="0%" stopColor="#f7fbfd" />
-              <stop offset="34%" stopColor="#cdd8de" />
-              <stop offset="52%" stopColor="#eef5f9" />
-              <stop offset="76%" stopColor="#b7c4cc" />
-              <stop offset="100%" stopColor="#e3ecf1" />
+              <stop offset="0%" stopColor="#f6f7f7" />
+              <stop offset="34%" stopColor="#b9bdc0" />
+              <stop offset="52%" stopColor="#e7e9ea" />
+              <stop offset="76%" stopColor="#9ea3a6" />
+              <stop offset="100%" stopColor="#d6d9db" />
             </linearGradient>
           </defs>
 

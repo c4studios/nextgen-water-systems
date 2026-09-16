@@ -7,7 +7,7 @@ import { pageOg } from "@/lib/seo";
 export const metadata: Metadata = {
   title: "The system",
   description:
-    "Three stainless vessels plumbed in series at the mains: graded sediment, copper-zinc and carbon, then limescale-reduction carbon. What each stage does.",
+    "Three full-size housings plumbed in series at the mains, behind a clip-on cover: sediment, copper-zinc and carbon, then limescale-reduction carbon. What each stage does.",
   alternates: { canonical: "/system/" },
   openGraph: pageOg("/system/", "The system | Next Gen Water Systems"),
 };
@@ -27,25 +27,26 @@ export default function SystemPage() {
         kicker="The system"
         title={
           <>
-            Three vessels,
+            Three housings,
             <br />
             one pass.
           </>
         }
-        lead="The NGW-01 sits where the water comes into your house. Everything downstream of it runs filtered: the kitchen tap, the shower, the washing machine, the ice maker. There is nothing to fill and nothing to plug in."
+        lead="The system sits where the water comes into your house. Everything downstream of it runs filtered: the kitchen tap, the shower, the washing machine, the ice maker. There is nothing to fill and nothing to plug in."
         photo="/photos/cartridges.jpg"
         photoAlt="The three filter cartridges laid out in order: pleated sediment, carbon, and a scale-reduction cartridge with a blue collar band"
+        photoNote="Visualisation, not a photograph of a real set."
       >
         <Block title="What it is">
           <p>
-            Three 20-inch stainless vessels hang from a powder-coated steel frame, plumbed one into the next.
-            Water goes in the first, comes out the third, and carries on into the house. Brass ports at each
-            end, a pressure gauge on the top plate so a plumber can see how the cartridges are doing without
-            opening anything.
+            Three full-size 20-inch housings hang from a steel frame, plumbed one into the next, and a steel
+            cover clips over the lot. Water goes in the first, comes out the third, and carries on into the
+            house. Brass connectors at each end, and two pressure gauges on the top plate so a plumber can see
+            how the cartridges are doing without opening anything.
           </p>
           <p>
-            Inside each vessel the water does not fall straight through. It runs down the gap between the
-            cartridge and the vessel wall, gets pushed sideways through the media, and rises up the hollow core
+            Inside each housing the water does not fall straight through. It runs down the gap between the
+            cartridge and the housing wall, gets pushed sideways through the media, and rises up the hollow core
             to the outlet. That sideways pass is where the work happens, and it is the reason a cartridge this
             size lasts as long as it does.
           </p>
@@ -58,9 +59,9 @@ export default function SystemPage() {
                 <b>01</b> Graded sediment
               </dt>
               <dd>
-                One cartridge, three densities: 10 micron at the outside, then 5, then 1 at the core. Sand,
-                rust flakes and silt stop at whichever layer matches their size, which keeps the whole
-                cartridge working instead of blinding off at the surface.
+                One cartridge with three layers, down to one micron at the core. Sand, rust flakes and silt
+                stop at whichever layer matches their size, which keeps the whole cartridge working instead of
+                blinding off at the surface.
               </dd>
             </div>
             <div>
@@ -94,20 +95,20 @@ export default function SystemPage() {
             costs.
           </p>
           <p>
-            It also reduces the scale that forms rather than removing hardness. Your water will not go
-            &ldquo;soft&rdquo; in the way a salt softener makes it soft. What changes is what the minerals do
-            once they get there.
+            Stage 3 leaves the calcium and magnesium in the water and changes what they do when they reach a
+            hot surface. They rinse away instead of baking on to the kettle element and the shower screen.
           </p>
           <p>
-            You will not find a reduction percentage anywhere on this site. Independent testing is in progress.
-            Until it is in hand, we would rather describe the mechanism than publish a number we cannot source.
+            You will not find a reduction percentage anywhere on this site. Independent testing is coming.
+            Until the report is in hand, we would rather describe the mechanism than publish a number we cannot
+            source.
           </p>
         </Block>
 
         <Block title="Living with it">
           <p>
-            Cartridges are consumable. How long a set lasts depends on your supply and how much water the house
-            gets through, so the interval is set after the test rather than guessed at now. Changing one is a
+            Cartridges are consumable. The manufacturer recommends a change every 12 months, and your
+            supply can shorten that, so the interval is confirmed after the test. Changing one is a
             small job: the bowl unscrews, the old cartridge lifts out, the new one drops in.
           </p>
           <p>

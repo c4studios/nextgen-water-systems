@@ -19,6 +19,7 @@ import {
   ASSEMBLY_CONSTRUCTION,
   ASSEMBLY_D,
   ASSEMBLY_BALLOONS,
+  PLATE_LAYOUT,
   VESSEL_BEDS,
   VESSEL_CX,
   BOM_ROWS,
@@ -340,7 +341,7 @@ export function LivingDrawing() {
       // the note and the title-block title WIPE on left to right, like a pen
       // crossing the sheet, rather than fading up
       gsap.set([noteBody, tbTitle].filter(Boolean), { clipPath: "inset(0 100% 0 0)", opacity: 1 });
-      gsap.set(inkG, { color: "#f4f9fc" }); // white ink, traced over the chrome
+      gsap.set(inkG, { color: "#1d2226" }); // charcoal ink, traced over the white housings
       revRows.forEach((r) => gsap.set(r, { opacity: 0 }));
 
       // ONE-WAY "build" timeline: chrome still → traced in white over it → paper
@@ -384,7 +385,7 @@ export function LivingDrawing() {
       if (shadowEl) tl.to(shadowEl, { opacity: 1, duration: 0.12, ease: "power1.inOut" }, 0.34);
       tl.to(furniture, { opacity: 1, duration: 0.12, ease: "power1.inOut" }, 0.38);
       if (!webgl) tl.to(shade, { opacity: 0, duration: 0.12, ease: "power1.inOut" }, 0.34);
-      tl.to(inkG, { color: "#b9cbd8", duration: 0.14, ease: "power1.inOut" }, 0.34);
+      tl.to(inkG, { color: "#20323d", duration: 0.14, ease: "power1.inOut" }, 0.34);
       // 4 — construction geometry dims once the ink carries the form
       tl.to(construct, { opacity: 0.16, duration: 0.08, ease: "power1.inOut" }, 0.5);
       // 5 — media beds hatch in, dimensions + balloons snap on
@@ -498,11 +499,15 @@ export function LivingDrawing() {
             // flick of the wheel; the mechanism was over before it registered.
             // Capped against the beat's own length so it still reaches full
             // sharpness and holds there rather than being caught mid-melt.
-            const fW = Math.min(f * 2.8, (b2 - a) * 0.4);
+            // (the hand-off's window runs to b=2 so it holds past the end; cap
+            // against the part of the window the journey can actually reach)
+            const fW = Math.min(f * 2.8, (Math.min(b2, 1) - a) * 0.4);
             const ioW = gsap.utils.clamp(0, 1, Math.min((p - a) / fW, (b2 - p) / fW));
             el.style.opacity = "1";
             el.style.transform = "";
             el.style.visibility = io <= 0.001 ? "hidden" : "visible";
+            // the phone caption card fades with the beat's own window
+            el.style.setProperty("--io", io.toFixed(3));
             // Each part rides its own slice of the same window, so the beat
             // letters in: eyebrow, heading, sentence, then the schedule. The
             // whole block fading up as one lump was the thing that read as a
@@ -561,7 +566,7 @@ export function LivingDrawing() {
           // photograph registered to the desktop dock lands on top of that copy
           // (and shows two of three vessels). The 3D at rest is the greeting
           // there. The CSS hides the layer; this keeps the canvas visible.
-          const stillOn = window.innerWidth > 760;
+          const stillOn = false; // the chrome still is retired: the machine is white now, and it has a cover
           const so = stillOn ? gsap.utils.clamp(0, 1, 1 - (p - 0.024) / 0.036) : 0;
           if (restStillRef.current) {
             restStillRef.current.style.opacity = String(so);
@@ -753,9 +758,7 @@ export function LivingDrawing() {
             <i aria-hidden="true" />
           </button>
         </nav>
-        <div className="rest-still" ref={restStillRef} aria-hidden="true">
-          <img src={asset("/photos/machine-rest.jpg")} alt="" draggable={false} />
-        </div>
+        <div className="rest-still" ref={restStillRef} aria-hidden="true" />
         <div className="plate-sheet" ref={sheetRef} data-hot={plateHot ?? undefined}>
           <div className="plate-shadow" aria-hidden="true" />
           <svg ref={svgRef} className="plate-svg" viewBox="0 0 1200 900" preserveAspectRatio="xMidYMid meet">
@@ -766,47 +769,47 @@ export function LivingDrawing() {
                   a cool dark ground, which is also how you actually read a
                   drawing off a backlit table or a CAD viewport. */}
               <radialGradient id="vellum" cx="46%" cy="40%" r="75%">
-                <stop offset="0%" stopColor="#1d242b" />
-                <stop offset="62%" stopColor="#151b21" />
-                <stop offset="100%" stopColor="#0e1216" />
+                <stop offset="0%" stopColor="#fcfcfd" />
+                <stop offset="62%" stopColor="#f6f7f8" />
+                <stop offset="100%" stopColor="#edf0f1" />
               </radialGradient>
               <linearGradient id="steel" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="#161f27" />
-                <stop offset="26%" stopColor="#56656f" />
-                <stop offset="48%" stopColor="#9aa7b0" />
-                <stop offset="60%" stopColor="#6c7a84" />
-                <stop offset="100%" stopColor="#141d24" />
+                <stop offset="0%" stopColor="#c3c8cb" />
+                <stop offset="26%" stopColor="#e7eaeb" />
+                <stop offset="48%" stopColor="#fbfcfc" />
+                <stop offset="62%" stopColor="#e4e7e9" />
+                <stop offset="100%" stopColor="#bfc4c7" />
               </linearGradient>
               <linearGradient id="steelCap" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="#2a343c" />
-                <stop offset="50%" stopColor="#aebac2" />
-                <stop offset="100%" stopColor="#222d35" />
+                <stop offset="0%" stopColor="#1b1d20" />
+                <stop offset="50%" stopColor="#4a4f54" />
+                <stop offset="100%" stopColor="#191b1d" />
               </linearGradient>
               <pattern id="h-vert" width="7" height="7" patternUnits="userSpaceOnUse">
-                <path d="M2 0V7" stroke="#28506f" strokeWidth="0.8" opacity="0.5" />
+                <path d="M2 0V7" stroke="#3d6a85" strokeWidth="0.8" opacity="0.5" />
               </pattern>
               <pattern id="h-diag" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                <path d="M2 0V8" stroke="#28506f" strokeWidth="0.8" opacity="0.45" />
+                <path d="M2 0V8" stroke="#3d6a85" strokeWidth="0.8" opacity="0.45" />
               </pattern>
               <pattern id="h-grid" width="9" height="9" patternUnits="userSpaceOnUse">
-                <path d="M9 0H0V9" fill="none" stroke="#28506f" strokeWidth="0.7" opacity="0.4" />
+                <path d="M9 0H0V9" fill="none" stroke="#3d6a85" strokeWidth="0.7" opacity="0.4" />
               </pattern>
               <pattern id="h-dots" width="10" height="10" patternUnits="userSpaceOnUse">
-                <circle cx="3" cy="3" r="1" fill="#28506f" opacity="0.5" />
+                <circle cx="3" cy="3" r="1" fill="#3d6a85" opacity="0.5" />
               </pattern>
               <pattern id="h-stipple" width="12" height="12" patternUnits="userSpaceOnUse">
-                <circle cx="2" cy="3" r="0.9" fill="#28506f" opacity="0.5" />
-                <circle cx="8" cy="7" r="0.9" fill="#28506f" opacity="0.5" />
-                <circle cx="5" cy="10" r="0.9" fill="#28506f" opacity="0.5" />
+                <circle cx="2" cy="3" r="0.9" fill="#3d6a85" opacity="0.5" />
+                <circle cx="8" cy="7" r="0.9" fill="#3d6a85" opacity="0.5" />
+                <circle cx="5" cy="10" r="0.9" fill="#3d6a85" opacity="0.5" />
               </pattern>
               <clipPath id="bodyClip">
                 <path d={ASSEMBLY_D} />
               </clipPath>
               <pattern id="grid5" width="20" height="20" patternUnits="userSpaceOnUse">
-                <path d="M20 0H0V20" fill="none" stroke="#dce8f0" strokeWidth="0.4" opacity="0.10" />
+                <path d="M20 0H0V20" fill="none" stroke="#1c2a33" strokeWidth="0.4" opacity="0.07" />
               </pattern>
               <pattern id="grid25" width="100" height="100" patternUnits="userSpaceOnUse">
-                <path d="M100 0H0V100" fill="none" stroke="#dce8f0" strokeWidth="0.7" opacity="0.16" />
+                <path d="M100 0H0V100" fill="none" stroke="#1c2a33" strokeWidth="0.7" opacity="0.1" />
               </pattern>
               <filter id="pencil" x="-5%" y="-5%" width="110%" height="110%">
                 <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="1" seed="7" result="n" />
@@ -821,15 +824,23 @@ export function LivingDrawing() {
             <rect data-paper className="jd-vellum" x="0" y="0" width="1200" height="900" fill="url(#vellum)" />
             <rect data-paper x="0" y="0" width="1200" height="900" fill="url(#grid5)" />
             <rect data-paper x="0" y="0" width="1200" height="900" fill="url(#grid25)" />
-            <rect data-paper x="22" y="22" width="1156" height="856" fill="none" stroke="#dce8f0" strokeWidth="1" opacity="0.55" />
-            <rect data-paper x="30" y="30" width="1140" height="840" fill="none" stroke="#dce8f0" strokeWidth="1.6" opacity="0.8" />
+            <rect data-paper x="22" y="22" width="1156" height="856" fill="none" stroke="#1d2226" strokeWidth="1" opacity="0.4" />
+            <rect data-paper x="30" y="30" width="1140" height="840" fill="none" stroke="#1d2226" strokeWidth="1.6" opacity="0.75" />
 
             <g className="jd-col">
               {/* shaded metal asset — what we meet before it becomes a drawing */}
               <g className="jd-shade">
                 <path d={ASSEMBLY_D} fill="url(#steel)" />
                 {VESSEL_CX.map((cx) => (
-                  <ellipse key={cx} cx={cx - 28} cy="470" rx="9" ry="130" fill="#cfd8de" opacity="0.35" />
+                  <ellipse
+                    key={cx}
+                    cx={cx - PLATE_LAYOUT.sumpW2 * 0.42}
+                    cy={(PLATE_LAYOUT.cartTop + PLATE_LAYOUT.cartBot) / 2}
+                    rx="6"
+                    ry={(PLATE_LAYOUT.cartBot - PLATE_LAYOUT.cartTop) * 0.42}
+                    fill="#ffffff"
+                    opacity="0.7"
+                  />
                 ))}
               </g>
 
@@ -842,7 +853,7 @@ export function LivingDrawing() {
                     d={c.d}
                     pathLength={1}
                     fill="none"
-                    stroke="#29c2ee"
+                    stroke="#1ba6d9"
                     strokeWidth="0.9"
                     strokeDasharray="1"
                     vectorEffect="non-scaling-stroke"
@@ -885,15 +896,16 @@ export function LivingDrawing() {
                   const L = String.fromCharCode(65 + i);
                   // each cut at its own height, so three cuts read as three
                   // lines rather than one chain line with paired letters
-                  const y = 404 + i * 46;
+                  const y = PLATE_LAYOUT.cartTop + (PLATE_LAYOUT.cartBot - PLATE_LAYOUT.cartTop) * (0.28 + i * 0.2);
+                  const half = PLATE_LAYOUT.sumpW2 + 14;
                   return (
                     <g key={L}>
-                      <path d={`M${cx - 86} ${y} H${cx + 86}`} fill="none" stroke="#8fb3c8" strokeWidth="1.1" strokeDasharray="12 4 3 4" />
-                      {[cx - 86, cx + 86].map((x) => (
+                      <path d={`M${cx - half} ${y} H${cx + half}`} fill="none" stroke="#3d6a85" strokeWidth="1.1" strokeDasharray="12 4 3 4" />
+                      {[cx - half, cx + half].map((x) => (
                         <g key={x}>
-                          <path d={`M${x} ${y - 16} V${y + 10}`} fill="none" stroke="#8fb3c8" strokeWidth="1.4" />
-                          <path d={`M${x - 4} ${y + 4} L${x} ${y + 11} L${x + 4} ${y + 4} Z`} fill="#8fb3c8" />
-                          <text x={x} y={y - 22} textAnchor="middle" fill="#dce8f0" fontSize="13" fontFamily="var(--font-draft), var(--font-mono), monospace" letterSpacing="1">
+                          <path d={`M${x} ${y - 16} V${y + 10}`} fill="none" stroke="#3d6a85" strokeWidth="1.4" />
+                          <path d={`M${x - 4} ${y + 4} L${x} ${y + 11} L${x + 4} ${y + 4} Z`} fill="#3d6a85" />
+                          <text x={x} y={y - 22} textAnchor="middle" fill="#1d2226" fontSize="13" fontFamily="var(--font-draft), var(--font-mono), monospace" letterSpacing="1">
                             {L}
                           </text>
                         </g>
@@ -908,16 +920,16 @@ export function LivingDrawing() {
                   d={DIM.d}
                   pathLength={1}
                   fill="none"
-                  stroke="#5d90ad"
+                  stroke="#3d6a85"
                   strokeWidth="1.3"
                   vectorEffect="non-scaling-stroke"
                 />
                 {/* the VALUE arrives only after its lines finish drawing —
                     a draughtsperson never letters before the dimension exists */}
                 <g className="jd-dim-label">
-                  <rect x="498" y="623" width="84" height="24" fill="url(#vellum)" />
-                  <text x="540" y="640" className="jd-dim-t" textAnchor="middle">
-                    1120 mm*
+                  <rect x={PLATE_LAYOUT.dimX - 44} y={PLATE_LAYOUT.dimY - 12} width="88" height="24" fill="url(#vellum)" />
+                  <text x={PLATE_LAYOUT.dimX} y={PLATE_LAYOUT.dimY + 5} className="jd-dim-t" textAnchor="middle">
+                    590 mm
                   </text>
                 </g>
               </g>
@@ -926,9 +938,9 @@ export function LivingDrawing() {
               <g className="jd-bom">
                 {ASSEMBLY_BALLOONS.map((b) => (
                   <g key={b.n}>
-                    <line x1={b.x} y1={b.y + 14} x2={b.x} y2={240} stroke="#5d90ad" strokeWidth="0.8" />
-                    <circle cx={b.x} cy={240} r="2" fill="#5d90ad" />
-                    <circle cx={b.x} cy={b.y} r="13" fill="url(#vellum)" stroke="#dce8f0" strokeWidth="1.2" />
+                    <line x1={b.x} y1={b.y - 14} x2={b.x} y2={PLATE_LAYOUT.sumpBot} stroke="#3d6a85" strokeWidth="0.8" />
+                    <circle cx={b.x} cy={PLATE_LAYOUT.sumpBot} r="2" fill="#3d6a85" />
+                    <circle cx={b.x} cy={b.y} r="13" fill="url(#vellum)" stroke="#1d2226" strokeWidth="1.2" />
                     <text x={b.x} y={b.y + 4} className="jd-balloon-t" textAnchor="middle">
                       {b.n}
                     </text>
@@ -948,22 +960,35 @@ export function LivingDrawing() {
                 onPointerLeave={() => setPlateHot((h) => (h === i ? null : h))}
                 onClick={() => flyToVessel(i)}
               >
-                <rect className="plate-glow" x={cx - 90} y={228} width={180} height={368} rx="12" />
-                <g className="plate-tip" transform={`translate(${cx} 680)`}>
-                  <rect x={-124} y={-21} width={248} height={30} fill="url(#vellum)" stroke="#dce8f0" strokeWidth="1.1" />
+                <rect
+                  className="plate-glow"
+                  x={cx - PLATE_LAYOUT.headW2 - 10}
+                  y={PLATE_LAYOUT.headTop - 18}
+                  width={(PLATE_LAYOUT.headW2 + 10) * 2}
+                  height={PLATE_LAYOUT.sumpBot - PLATE_LAYOUT.headTop + 36}
+                  rx="12"
+                />
+                <g className="plate-tip" transform={`translate(${cx} ${PLATE_LAYOUT.dimY + 44})`}>
+                  <rect x={-124} y={-21} width={248} height={30} fill="url(#vellum)" stroke="#1d2226" strokeWidth="1.1" />
                   <text y={1} textAnchor="middle" className="plate-tip-t">
                     {VESSEL_TIPS[i]}
                   </text>
                 </g>
-                <rect className="plate-hit" x={cx - 100} y={212} width={200} height={396} />
+                <rect
+                  className="plate-hit"
+                  x={cx - PLATE_LAYOUT.headW2}
+                  y={PLATE_LAYOUT.headTop - 30}
+                  width={PLATE_LAYOUT.headW2 * 2}
+                  height={PLATE_LAYOUT.sumpBot - PLATE_LAYOUT.headTop + 60}
+                />
               </g>
             ))}
 
             {/* establishing scan-line + pencil tip */}
-            <rect className="jd-scan" x="22" y="96" width="1156" height="2" fill="#29c2ee" filter="url(#scanblur)" opacity="0" />
+            <rect className="jd-scan" x="22" y="96" width="1156" height="2" fill="#1ba6d9" filter="url(#scanblur)" opacity="0" />
             <g className="jd-tip" opacity="0">
-              <circle r="3.4" fill="none" stroke="#29c2ee" strokeWidth="1.4" />
-              <path d="M-9 0H9 M0 -9V9" stroke="#29c2ee" strokeWidth="0.8" opacity="0.7" />
+              <circle r="3.4" fill="none" stroke="#0a86b8" strokeWidth="1.4" />
+              <path d="M-9 0H9 M0 -9V9" stroke="#0a86b8" strokeWidth="0.8" opacity="0.7" />
             </g>
           </svg>
 
@@ -997,20 +1022,20 @@ export function LivingDrawing() {
           <div className="jd-titleblock" aria-hidden="true">
             <div className="jd-tb-grid">
               <div className="jd-tb-co">NEXT GEN WATER SYSTEMS</div>
-              <div className="jd-tb-title">WHOLE-HOME FILTRATION · 3-VESSEL ASSEMBLY</div>
+              <div className="jd-tb-title">WHOLE-HOME FILTRATION · 3-HOUSING ASSEMBLY</div>
               <div className="jd-tb-cell">
                 <i>DWG NO</i>NGW-01 · 1 / 4
               </div>
               <div className="jd-tb-cell">
-                <i>SCALE</i>1:2*
+                <i>SCALE</i>NTS
               </div>
               <div className="jd-tb-cell">
-                <i>MATERIAL</i>316L*
+                <i>FRAME</i>STAINLESS
               </div>
               <div className="jd-tb-cell">
                 <i>DATE</i>26.06.26
               </div>
-              <div className="jd-tb-stamp">FOR INFORMATION · DIMS NOMINAL</div>
+              <div className="jd-tb-stamp">FOR INFORMATION · NOT TO SCALE</div>
             </div>
           </div>
 

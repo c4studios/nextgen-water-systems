@@ -17,22 +17,35 @@ export function DrawingChrome() {
   useEffect(() => {
     const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-sheet]"));
     if (!sections.length) return;
+    // The stamp names the sheet holding most of the middle band of the screen,
+    // measured in pixels. A callback reports only the sheets that crossed a
+    // threshold, so the choice is made over every sheet's last known share.
+    // The old ratio thresholds started at 20%, which the journey (ten screens
+    // tall) and the exhibit never reach, so the stamp went stale over them.
+    const share = new Map<Element, number>();
     const io = new IntersectionObserver(
       (entries) => {
-        let best: IntersectionObserverEntry | null = null;
         for (const e of entries) {
+          share.set(e.target, e.isIntersecting ? e.intersectionRect.height : 0);
           if (e.isIntersecting) {
             const id = (e.target as HTMLElement).id;
             setReached((r) => (r.includes(id) ? r : [...r, id]));
-            if (!best || e.intersectionRatio > best.intersectionRatio) best = e;
+          }
+        }
+        let best: HTMLElement | undefined;
+        let bestH = 0;
+        for (let i = 0; i < sections.length; i++) {
+          const h = share.get(sections[i]) ?? 0;
+          if (h > bestH) {
+            bestH = h;
+            best = sections[i];
           }
         }
         if (best) {
-          const t = best.target as HTMLElement;
-          setActive({ sheet: t.dataset.sheet || "01", name: t.dataset.name || "", rev: t.dataset.rev || "" });
+          setActive({ sheet: best.dataset.sheet || "01", name: best.dataset.name || "", rev: best.dataset.rev || "" });
         }
       },
-      { threshold: [0.2, 0.5, 0.8], rootMargin: "-25% 0px -25% 0px" },
+      { threshold: [0, 0.01, 0.03, 0.06, 0.1, 0.2, 0.35, 0.5, 0.65, 0.8, 1], rootMargin: "-25% 0px -25% 0px" },
     );
     sections.forEach((s) => io.observe(s));
     return () => io.disconnect();
