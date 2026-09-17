@@ -8,7 +8,7 @@ import { pageOg } from "@/lib/seo";
 export const metadata: Metadata = {
   title: "Free in-home water test",
   description:
-    "Book a free in-home water test anywhere in the Perth metro. A technician tests your own supply at your own tap. No obligation.",
+    "Book a free in-home water test anywhere in the Perth metro. A licensed plumber tests your own supply at your own tap. No obligation.",
   alternates: { canonical: "/water-test/" },
   openGraph: pageOg("/water-test/", "Book a free in-home water test | Next Gen Water Systems"),
 };
@@ -50,7 +50,7 @@ export default function WaterTestPage() {
               <b>You pick a time.</b> Leave your suburb and a number and we call to confirm a day that suits.
             </li>
             <li>
-              <b>A technician tests your supply.</b> At your kitchen tap, on the spot, so the result is your
+              <b>A licensed plumber tests your supply.</b> At your kitchen tap, on the spot, so the result is your
               water rather than a regional average.
             </li>
             <li>

@@ -1,0 +1,727 @@
+/* ===========================================================================
+   NEXT GEN — THE LAUNCH PAGE (17 Sep 2026)
+
+   A white studio with the product in it. The page is white, the studio the
+   machine stands in is a shade off white, the type is the charcoal of the
+   cover's lettering, and the one colour is the blue of the action and of
+   water. Plain-English headings, no drawing furniture. This file is loaded
+   last and owns the tokens; brand.css and globals.css alias onto them.
+   =========================================================================== */
+:root {
+  --ground: #ffffff;
+  --studio: #f2f3f3;
+  --panel: #f6f7f7;
+  --panel-2: #eaecee;
+  --ink: #17191c;
+  --ink-2: #3e4348;
+  --ink-3: #676e75;
+  --hairline: rgba(23, 25, 28, 0.12);
+  --accent: #0b62b8;
+  --water: #2ea9df;
+  --deep: #094a8a;
+  --redline: #b8412c;
+  --gutter: clamp(20px, 5vw, 40px);
+  --sec-y: clamp(84px, 12vh, 150px);
+}
+/* The scene is a fixed layer at z-index -1. A root background is painted
+   on the canvas beneath it; a body background is painted as body's own box,
+   which comes AFTER negative stacking contexts in paint order and would
+   cover the scene. So the page colour lives on html alone. */
+html {
+  background: var(--ground);
+}
+body {
+  background: transparent;
+}
+::selection {
+  background: rgba(46, 169, 223, 0.28);
+}
+
+/* ---- type: the brand's own two faces, one job each ---- */
+.hero-h,
+.jb-h,
+.sec-h,
+.hiw-h,
+.who-h,
+.tail-h,
+.sps-h,
+.cb-h,
+.doc-h {
+  font-family: var(--font-satoshi), system-ui, sans-serif;
+}
+
+/* ---- the primary action: the brushed-metal pill keeps its material and
+   takes the brand's own lettering ---- */
+.lm,
+.hero-cta,
+.tform-submit {
+  font-family: var(--font-satoshi), system-ui, sans-serif !important;
+  font-weight: 600 !important;
+  font-size: 15.5px !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+/* ===========================================================================
+   THE HERO
+   =========================================================================== */
+.hero {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 10fr) minmax(0, 10fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-height: 100svh;
+  background: transparent;
+  pointer-events: none;
+}
+.hero > *,
+.hero-copy > * {
+  pointer-events: auto;
+}
+.hero-stage {
+  pointer-events: none;
+}
+.hero-copy {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: center;
+  max-width: 44rem;
+  padding: clamp(120px, 16vh, 180px) clamp(20px, 4vw, 64px) clamp(28px, 4vh, 48px) clamp(22px, 6vw, 96px);
+}
+.hero-h {
+  margin: 0;
+  font-weight: 500;
+  font-size: clamp(42px, 5.4vw, 80px);
+  line-height: 1;
+  letter-spacing: -0.035em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+.hero-p {
+  margin: clamp(18px, 2.6vh, 28px) 0 0;
+  max-width: 42ch;
+  font-size: clamp(17px, 1.5vw, 19px);
+  line-height: 1.6;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+.hero-act {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 28px;
+  margin-top: clamp(26px, 4vh, 40px);
+}
+.hero-cta {
+  display: inline-block;
+  padding: 16px 28px;
+  border-radius: 999px;
+}
+.hero-cta > span {
+  position: relative;
+  z-index: 1;
+}
+.hero-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.hero-more i {
+  width: 9px;
+  height: 9px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  rotate: 45deg;
+  translate: 0 -2px;
+}
+.hero-more:hover,
+.hero-more:focus-visible {
+  color: var(--accent);
+}
+.hero-stage {
+  grid-column: 2;
+  grid-row: 1;
+  position: relative;
+  min-height: 66svh;
+}
+.hero-still {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: auto;
+  height: 100%;
+  max-width: 100%;
+  translate: -50% -50%;
+  object-fit: contain;
+  transition: opacity 0.9s var(--ease);
+  -webkit-mask-image:
+    linear-gradient(to right, transparent, #000 11%, #000 89%, transparent),
+    linear-gradient(to bottom, transparent, #000 13%, #000 87%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to right, transparent, #000 11%, #000 89%, transparent),
+    linear-gradient(to bottom, transparent, #000 13%, #000 87%, transparent);
+  mask-composite: intersect;
+}
+html[data-nggl="1"] .hero-still {
+  opacity: 0;
+}
+.hero-drag {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(14px, 3vh, 30px);
+  translate: -50% 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 14px;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.86);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.5s var(--ease), translate 0.5s var(--ease);
+}
+.hero-drag.is-on {
+  opacity: 1;
+  translate: -50% 0;
+}
+.hero-drag i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--water);
+}
+html:not([data-nggl="1"]) .hero-drag {
+  opacity: 0;
+}
+.hero-proof {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 32px;
+  padding: 16px clamp(22px, 6vw, 96px) 22px;
+  border-top: 1px solid var(--hairline);
+  font-size: 13.5px;
+  color: var(--ink-3);
+}
+.hero-proof .installer-link {
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(23, 25, 28, 0.35);
+}
+.hero-proof .installer-link:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    min-height: 0;
+  }
+  .hero-copy {
+    grid-column: 1;
+    grid-row: 1;
+    padding: 84px 20px 0;
+  }
+  .hero-h {
+    font-size: clamp(31px, 8.6vw, 38px);
+  }
+  .hero-p {
+    margin-top: 12px;
+    font-size: 15px;
+    line-height: 1.5;
+    max-width: 34ch;
+  }
+  .hero-act {
+    margin-top: 16px;
+  }
+  /* the cover sits under the copy from about half the screen, whole, with
+     its hint pill inside the first 844px */
+  .hero-stage {
+    grid-column: 1;
+    grid-row: 2;
+    min-height: 42svh;
+    margin: 0;
+  }
+  .hero-proof {
+    grid-row: 3;
+    gap: 6px 18px;
+    padding: 14px 22px 20px;
+    font-size: 12.5px;
+  }
+}
+
+/* ===========================================================================
+   THE JOURNEY
+   =========================================================================== */
+.stage-fixed {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--studio);
+}
+.stage-fixed .plate-canvas {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: auto;
+  will-change: opacity;
+}
+.stage-fixed .plate-canvas canvas {
+  touch-action: pan-y !important;
+}
+.journey {
+  position: relative;
+  z-index: 1;
+  height: 1050svh;
+  background: transparent;
+  pointer-events: none;
+}
+.journey-stick {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+}
+.journey .jrail,
+.journey .jb-cue {
+  pointer-events: auto;
+}
+.jhud {
+  position: absolute;
+  inset: 0;
+}
+.jbeat {
+  position: absolute;
+  max-width: 430px;
+  visibility: hidden;
+  /* the retired journey's .jbeat rules still sit in globals.css */
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+.jb--left {
+  left: clamp(24px, 6vw, 96px);
+  top: 50%;
+  translate: 0 -50%;
+}
+.jb--right {
+  right: clamp(24px, 6vw, 96px);
+  top: 50%;
+  translate: 0 -50%;
+}
+.jb-h {
+  margin: 0;
+  font-weight: 700;
+  font-size: clamp(28px, 3.3vw, 46px);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+.jb-ref {
+  display: block;
+  margin-top: 12px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink-3);
+}
+.jb-p {
+  margin: 14px 0 0;
+  font-size: 16.5px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  max-width: 40ch;
+  text-wrap: pretty;
+}
+.jb-stat {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 6px 11px;
+  border: 1px solid var(--hairline);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.75);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+.jb-cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  font-family: var(--font-satoshi), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 15.5px;
+  color: var(--accent);
+  text-decoration: none;
+}
+.jb-cue i {
+  width: 9px;
+  height: 9px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  rotate: 45deg;
+  translate: 0 -2px;
+}
+/* the marker under the nav and the rail keep their existing furniture; the
+   rail's labels take the brand face */
+.jrail button,
+.jrail::before,
+.jstage-n,
+.jstage-t {
+  font-family: var(--font-hanken), system-ui, sans-serif !important;
+  letter-spacing: 0.04em !important;
+  text-transform: none !important;
+}
+.jrail button {
+  font-size: 12.5px !important;
+  font-weight: 500;
+}
+.jstage-n {
+  font-size: 11.5px !important;
+  font-weight: 600;
+  color: var(--accent) !important;
+}
+/* 900 is the phone cut's breakpoint: every beat speaks from a card at the base */
+@media (max-width: 900px) {
+  .journey {
+    height: 620svh;
+  }
+  .jbeat {
+    left: 50%;
+    right: auto;
+    top: auto;
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    translate: -50% 0;
+    width: calc(100vw - 28px);
+    max-width: 440px;
+    padding: 16px 18px 18px;
+  }
+  .jbeat::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--ground);
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    box-shadow: 0 20px 44px -26px rgba(23, 25, 28, 0.45);
+    opacity: var(--io, 1);
+    transform: translateY(calc((1 - var(--io, 1)) * 10px));
+  }
+  .jb-h {
+    font-size: clamp(22px, 6vw, 27px);
+  }
+  .jb-p {
+    margin-top: 10px;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+  /* the rail is a row of dots under the marker (globals.css); the labels
+     above are for the desktop card, the phone keeps only "Skip" */
+  .jrail button {
+    font-size: 0 !important;
+    letter-spacing: 0 !important;
+  }
+  .jrail .jskip {
+    font-size: 11px !important;
+    letter-spacing: 0.04em !important;
+  }
+}
+@media (max-width: 900px) and (max-height: 500px) {
+  .jbeat {
+    width: min(46vw, 400px);
+    left: 16px;
+    translate: none;
+    bottom: 12px;
+    padding: 12px 14px 14px;
+  }
+  .jbeat.jb--right {
+    left: auto;
+    right: 16px;
+  }
+  .jstage {
+    display: none;
+  }
+  .jrail {
+    top: 12px;
+    right: 12px;
+    left: auto;
+    bottom: auto;
+    translate: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .journey,
+  .stage-fixed {
+    display: none;
+  }
+}
+
+/* ===========================================================================
+   THE SECTIONS: plain headings, one measure, the hairline
+   =========================================================================== */
+.hiw,
+.sps,
+.cb,
+.who,
+.tail {
+  background-color: var(--ground);
+}
+.sps {
+  background-color: var(--panel);
+}
+/* the footer index lost its sheet-number column */
+.sfoot-index a {
+  grid-template-columns: minmax(0, 1fr);
+}
+/* the drawing-set furniture is gone: no strips, no registration ticks */
+.shs,
+.sheet-edge::before,
+.sheet-edge::after,
+.ground--ruled::before,
+.chrome,
+.sched-stamp {
+  display: none !important;
+}
+.hiw-h,
+.who-h,
+.tail-h,
+.sps-h,
+.cb-h {
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+.tail-cyan {
+  color: inherit;
+}
+.tail-h {
+  font-weight: 500;
+}
+/* the taste check, now beside the booking form */
+.oc {
+  margin: 0 auto clamp(28px, 4vh, 44px);
+  max-width: 760px;
+}
+.oc-h {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.oc-h span {
+  font-weight: 400;
+  color: var(--ink-3);
+}
+.oc-chip {
+  font-family: var(--font-hanken), system-ui, sans-serif !important;
+  letter-spacing: 0.02em !important;
+  text-transform: none !important;
+  font-size: 13.5px !important;
+  border-radius: 999px !important;
+}
+.oc-answer b {
+  font-family: var(--font-hanken), system-ui, sans-serif !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  color: var(--accent) !important;
+}
+/* the booking sheet's scope list keeps its rows; its trade-document labels
+   go plain */
+.sched-t,
+.sched-c,
+.sched-m b,
+.hiw-n,
+.hiw-out b,
+.who-facts dt,
+.sps-row dt,
+.sps-report-k,
+.cb-notes dt {
+  font-family: var(--font-hanken), system-ui, sans-serif !important;
+  letter-spacing: 0.02em !important;
+  text-transform: none !important;
+  font-weight: 500;
+}
+.hiw-n {
+  color: var(--accent) !important;
+}
+/* the interior sheets: no sheet numbers, the brand face on the title */
+.doc-no {
+  display: none !important;
+}
+.doc-h {
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+
+/* ===========================================================================
+   THE FINISH REVIEW (17 Sep 2026): no drafting labels anywhere. Every label
+   set in a mono or drafting face, tracked and uppercased, takes the body face
+   in sentence case. The two variables are re-pointed so nothing in the older
+   stylesheets can bring the costume back.
+   =========================================================================== */
+:root {
+  --font-mono: var(--font-hanken), system-ui, sans-serif;
+  --font-draft: var(--font-hanken), system-ui, sans-serif;
+}
+.nav-hint-desk,
+.nav-hint-touch,
+.ss-lead,
+.ss-stat,
+.sfoot-cap,
+.doc-trail,
+.doc-trail a,
+.doc-trail span,
+.doc-photo-note,
+.cb figcaption,
+.who-facts dt,
+.who-link,
+.tform label span,
+.tform label > span,
+.tform input,
+.tform textarea,
+.tform-call,
+.tform-stamp,
+.sched-t,
+.sched-out-t,
+.hiw-n,
+.hiw-out b,
+.doc-steps li::before,
+.doc-call,
+.oc-chip {
+  font-family: var(--font-hanken), system-ui, sans-serif !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+}
+.sfoot-cap,
+.who-facts dt,
+.sched-t,
+.sched-out-t,
+.hiw-n {
+  font-size: 13.5px !important;
+  font-weight: 500;
+  color: var(--ink-3);
+}
+.doc-trail,
+.doc-trail a,
+.doc-trail span,
+.doc-photo-note,
+.cb figcaption,
+.tform label span,
+.tform-call,
+.tform-stamp,
+.nav-hint-desk,
+.nav-hint-touch {
+  font-size: 13px !important;
+}
+.tform input,
+.tform textarea {
+  font-size: 16px !important;
+}
+.hiw-n {
+  color: var(--accent);
+}
+/* the rail card: no "STAGES" label, and "Skip the section" reads as one phrase */
+.jrail::before {
+  display: none !important;
+}
+.jrail .jskip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.jrail .jskip .jskip-l {
+  display: inline;
+}
+.jrail .jskip .jskip-l span {
+  display: inline;
+}
+@media (max-width: 900px) {
+  .jrail .jskip .jskip-l span {
+    display: none;
+  }
+}
+/* the stage accordion on a phone: the toggle stays on the row */
+@media (max-width: 900px) {
+  .hiw-bar {
+    grid-template-columns: auto minmax(0, 1fr) 1.5em;
+    gap: 12px;
+    align-items: center;
+  }
+  .hiw-bar > span:nth-child(3) {
+    grid-column: 1 / 3;
+  }
+}
+/* ---- one action, one blue: the brushed-metal pill and the two other
+        button treatments give way to the accent ---- */
+.lm,
+.nav-cta,
+.doc-btn,
+.tform-submit {
+  background: var(--accent) !important;
+  color: #fff !important;
+  border: 1px solid transparent !important;
+  box-shadow: 0 8px 18px -12px rgba(11, 98, 184, 0.7) !important;
+  text-decoration: none;
+}
+.lm::before,
+.lm::after {
+  display: none !important;
+}
+.lm:hover,
+.lm:focus-visible,
+.nav-cta:hover,
+.nav-cta:focus-visible,
+.doc-btn:hover,
+.doc-btn:focus-visible,
+.tform-submit:hover,
+.tform-submit:focus-visible {
+  background: var(--deep) !important;
+  border-color: transparent !important;
+  transform: none;
+}
+.lm:focus-visible,
+.nav-cta:focus-visible,
+.doc-btn:focus-visible,
+.tform-submit:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+/* ---- the footer sat 99px below the last section on its own margin, and the
+        studio showed through the gap ---- */
+.tail {
+  padding-bottom: 150px;
+}
+footer.sfoot {
+  margin-top: 0 !important;
+}
+/* the reduced-motion story's stage stills */
+.ss-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 14px 0 12px;
+  border-radius: 6px;
+  border: 1px solid var(--hairline);
+}
+/* the numbered steps count plainly: 1. 2. 3., no leading zeros */
+.steps li::before {
+  content: counter(st) ".";
+  font-family: var(--font-hanken), system-ui, sans-serif !important;
+  font-weight: 600;
+  letter-spacing: 0 !important;
+  color: var(--accent);
+}

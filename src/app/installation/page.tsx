@@ -30,7 +30,7 @@ export default function InstallationPage() {
           <>
             A licensed plumber,
             <br />
-            for an afternoon.
+            at your mains.
           </>
         }
         lead="Nothing arrives in a box for you to work out. The system is fitted at your mains by the same licensed plumbers who service it afterwards, and the work carries a warranty."
@@ -60,7 +60,7 @@ export default function InstallationPage() {
         <Block title="What the day looks like">
           <ol className="steps">
             <li>
-              <b>The test comes first.</b> A technician tests your actual supply at your kitchen tap and talks
+              <b>The test comes first.</b> A licensed plumber tests your actual supply at your kitchen tap and talks
               you through what is in it. Free, and you owe nothing afterwards.
             </li>
             <li>
@@ -78,8 +78,8 @@ export default function InstallationPage() {
             </li>
           </ol>
           <p className="doc-note">
-            Most jobs are done in an afternoon. Awkward runs, tight meter boxes and older pipework can add
-            time, which is one of the things the visit is for.
+            How long it takes depends on the house. Awkward runs, tight meter boxes and older pipework all
+            add time, and sizing that up is one of the things the test visit is for.
           </p>
         </Block>
 

@@ -111,7 +111,7 @@ export function Nav() {
       // clamped so a stalled tab does not fling the spring across on resume
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
-      if (!plate) plate = document.getElementById("drawing");
+      if (!plate) plate = document.getElementById("journey");
       const vw = window.innerWidth;
       const vh = window.innerHeight;
       const y = window.scrollY;
@@ -196,7 +196,7 @@ export function Nav() {
   const openAt = useCallback((x: number, y: number) => setMenuAt({ x, y }), []);
   useEffect(() => {
     const onCtx = (e: MouseEvent) => {
-      const plate = document.getElementById("drawing");
+      const plate = document.getElementById("journey");
       if (!plate) return;
       const b = plate.getBoundingClientRect();
       if (b.top > window.innerHeight * 0.2 || b.bottom < window.innerHeight * 0.8) return;

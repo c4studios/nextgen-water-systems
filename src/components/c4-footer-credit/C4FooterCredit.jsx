@@ -28,9 +28,10 @@ const LOCKUP_TRANSFORM = 'translate(18 -273) scale(1.5)';
 
 const COLOURS = {
   dormant: {
-    fourBody: '#b8b9ba',
-    fourArm: '#c5c6c7',
-    cArc: '#e6e4e2',
+    // dark enough to read on a light footer (was #b8b9ba, 1.9:1)
+    fourBody: '#5d5f61',
+    fourArm: '#6e7072',
+    cArc: '#cfcdcb',
   },
   mono: {
     fourBody: '#414243',
@@ -283,13 +284,14 @@ function useFooterColours(colorScheme, rootRef) {
 }
 
 function usePrefersReducedMotion() {
-  const [reduced, setReduced] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  });
+  // Starts false on both server and client so the first render hydrates
+  // cleanly (reading the media query in the initialiser made the inline
+  // transition differ between the two), then reads the real preference.
+  const [reduced, setReduced] = useState(false);
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReduced(mq.matches);
     const handler = (e) => setReduced(e.matches);
     mq.addEventListener('change', handler);
     return () => mq.removeEventListener('change', handler);
@@ -879,7 +881,9 @@ export default function C4FooterCredit({
         <span
           style={{
             fontSize: '11px',
-            opacity: 0.5,
+            // its own ink at full opacity: the credit line has to clear 4.5:1 on the light footer
+            color: '#3e4348',
+            opacity: 1,
             lineHeight: 1.4,
             letterSpacing: '0.02em',
             whiteSpace: 'nowrap',

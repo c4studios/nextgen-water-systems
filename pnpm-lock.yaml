@@ -66,6 +66,9 @@ importers:
       autoprefixer:
         specifier: ^10.4.19
         version: 10.5.2(postcss@8.5.15)
+      opentype.js:
+        specifier: ^2.0.0
+        version: 2.0.0
       postcss:
         specifier: ^8.4.40
         version: 8.5.15
@@ -638,6 +641,10 @@ packages:
 
   ogl@1.0.11:
     resolution: {integrity: sha512-kUpC154AFfxi16pmZUK4jk3J+8zxwTWGPo03EoYA8QPbzikHoaC82n6pNTbd+oEaJonaE8aPWBlX7ad9zrqLsA==}
+
+  opentype.js@2.0.0:
+    resolution: {integrity: sha512-kCyjv6xdDY1W/jLWZ/L3QhhTlKUqDZMQ5+Jdlw12b3dXkKNpYBqqlMMj0YDQPShWFTMwgZI1hG14kN3XUDSg/A==}
+    hasBin: true
 
   path-key@3.1.1:
     resolution: {integrity: sha512-ojmeN0qd+y0jszEtoY48r0Peq5dwMEkIlCOu6Q5f41lfkswXuKtYrhgoTpLnyIcHm24Uhqx+5Tqm2InSwLhE6Q==}
@@ -1493,6 +1500,8 @@ snapshots:
   object-hash@3.0.0: {}
 
   ogl@1.0.11: {}
+
+  opentype.js@2.0.0: {}
 
   path-key@3.1.1: {}
 

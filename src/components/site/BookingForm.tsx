@@ -39,16 +39,12 @@ export function BookingForm() {
     // the site check rides along, so the technician knows what he is looking
     // for before he is on site
     if (taste) data.taste = taste;
-    const mailto = () => {
-      const said = taste ? `\nWhat I told you about my water: ${taste}` : "";
-      const body = `Hi Next Gen,\n\nI'd like to book a free in-home water test.\n\nName: ${data.name}\nSuburb: ${data.suburb}\nBest contact number: ${data.phone}\nPreferred day: ${data.day || "any"}${said}\n\nThanks.`;
-      window.location.href = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
-        "Free water test: booking request",
-      )}&body=${encodeURIComponent(body)}`;
-      setState("logged");
-    };
+    // There is no Next Gen mailbox yet, so nothing here composes an email: when
+    // the form cannot post (the static preview has no endpoint, or the endpoint
+    // cannot send), the visitor gets the phone number, which is real.
+    const handOff = () => setState("error");
     if (!FORM_ENDPOINT) {
-      mailto();
+      handOff();
       return;
     }
     try {
@@ -62,19 +58,18 @@ export function BookingForm() {
         setState("logged");
         return;
       }
-      // The endpoint exists but could not send — most likely RESEND_API_KEY is
-      // not set yet. Hand the visitor to their mail app rather than showing
-      // them an error on the one action the site is for.
-      mailto();
+      // The endpoint exists but could not send (most likely RESEND_API_KEY is
+      // not set yet): the phone number is the fallback.
+      handOff();
     } catch {
-      mailto();
+      handOff();
     }
   };
 
   if (state === "logged") {
     return (
       <div className="tform-logged" role="status">
-        <span className="tform-stamp">REQUEST LOGGED · REV E</span>
+        <span className="tform-stamp">Request logged</span>
         <p>
           {FORM_ENDPOINT
             ? "Done. We'll call to confirm a time, and there's no obligation after it."
@@ -95,19 +90,19 @@ export function BookingForm() {
       )}
       <div className="tform-grid">
         <label>
-          <span>NAME</span>
+          <span>Name</span>
           <input name="name" type="text" autoComplete="name" required placeholder="Jane Citizen" />
         </label>
         <label>
-          <span>SUBURB</span>
+          <span>Suburb</span>
           <input name="suburb" type="text" autoComplete="address-level2" required placeholder="e.g. Joondalup" />
         </label>
         <label>
-          <span>PHONE</span>
+          <span>Phone</span>
           <input name="phone" type="tel" autoComplete="tel" required placeholder="04xx xxx xxx" />
         </label>
         <label>
-          <span>PREFERRED DAY</span>
+          <span>Preferred day</span>
           <input name="day" type="text" placeholder="optional" />
         </label>
       </div>
@@ -121,7 +116,7 @@ export function BookingForm() {
       </div>
       {state === "error" && (
         <p className="tform-err" role="alert">
-          That didn&rsquo;t send. Call us instead, or try again.
+          That didn&rsquo;t send. Call {CONTACT.phone} and we&rsquo;ll book it over the phone.
         </p>
       )}
     </form>

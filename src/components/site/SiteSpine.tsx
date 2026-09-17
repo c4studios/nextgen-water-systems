@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { SheetStrip } from "@/components/site/SheetStrip";
+import { TasteCheck } from "@/components/site/TasteCheck";
 import { PROOF_ROWS } from "@/content/booking";
 import { BookingForm } from "@/components/site/BookingForm";
 
@@ -61,8 +61,7 @@ function Schedule() {
   return (
     <div className="sched">
       <div className="sched-head">
-        <span className="sched-t">SCOPE OF WORKS</span>
-        <span className="sched-stamp">NGW-01 · WHAT EACH STAGE DOES</span>
+        <span className="sched-t">What each stage does</span>
       </div>
 
       {PROOF_ROWS.map((r, i) => {
@@ -87,7 +86,7 @@ function Schedule() {
               >
                 <p>{r.d}</p>
                 <p className="sched-m">
-                  <b>METHOD</b>
+                  <b>How</b>
                   {r.m}. Your free in-home test measures this one.
                 </p>
               </div>
@@ -97,7 +96,7 @@ function Schedule() {
       })}
 
       <div className="sched-out">
-        <span className="sched-out-t">NOT IN SCOPE</span>
+        <span className="sched-out-t">What it does not do</span>
         <ul>
           <li>
             <b>Figures.</b> We don&rsquo;t publish removal percentages. Independent certification is still
@@ -115,18 +114,19 @@ function Schedule() {
 
 export function SiteSpine() {
   return (
-    <section id="plate-cta" className="tail ground ground--ruled sheet-edge" data-sheet="05" data-rev="E" data-name="BOOKING · APPROVED FOR ISSUE">
-      <SheetStrip n="05" title="Book the test" />
+    <section id="book" className="tail ground">
       <div className="tail-inner">
         <h2 className="tail-h">
           Find out what&rsquo;s
           <br />
-          in your <span className="tail-cyan">water.</span>
+          in your water.
         </h2>
         <p className="tail-p">
-          A free, no-obligation in-home water test. A qualified technician tests your actual supply at your kitchen
+          A free, no-obligation in-home water test. A licensed plumber tests your actual supply at your kitchen
           tap and talks you through what the system would change.
         </p>
+
+        <TasteCheck />
 
         <BookingForm />
 

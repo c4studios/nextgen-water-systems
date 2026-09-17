@@ -56,7 +56,7 @@ export default function SystemPage() {
           <dl className="spec">
             <div>
               <dt>
-                <b>01</b> Graded sediment
+                Graded sediment
               </dt>
               <dd>
                 One cartridge with three layers, down to one micron at the core. Sand, rust flakes and silt
@@ -66,7 +66,7 @@ export default function SystemPage() {
             </div>
             <div>
               <dt>
-                <b>02</b> Copper-zinc and coconut carbon
+                Copper-zinc and coconut carbon
               </dt>
               <dd>
                 The stage you taste. Copper-zinc granules change chlorine on contact and hold dissolved metal
@@ -76,12 +76,13 @@ export default function SystemPage() {
             </div>
             <div>
               <dt>
-                <b>03</b> Limescale-reduction carbon
+                Limescale-reduction carbon
               </dt>
               <dd>
-                The last stage changes the way calcium and magnesium crystallise, so they travel through and
-                rinse away instead of bonding to your kettle element and the shower screen. A final one-micron
-                polish on the way out.
+                The last cartridge carries what the manufacturer calls limescale-reduction media, ahead of a
+                second bed of coconut carbon, and filters to one micron on the way out. The datasheet does not
+                say how the media works, so neither do we; what it changes in your house is what the free test
+                and the coming independent report are for.
               </dd>
             </div>
           </dl>
@@ -95,8 +96,8 @@ export default function SystemPage() {
             costs.
           </p>
           <p>
-            Stage 3 leaves the calcium and magnesium in the water and changes what they do when they reach a
-            hot surface. They rinse away instead of baking on to the kettle element and the shower screen.
+            Stage 3 does not take the calcium and magnesium out of the water. The manufacturer rates its
+            limescale-reduction media by filter life, and that is the only number about it we can quote.
           </p>
           <p>
             You will not find a reduction percentage anywhere on this site. Independent testing is coming.

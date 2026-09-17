@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { SheetStrip } from "@/components/site/SheetStrip";
 import Link from "next/link";
 import { asset } from "@/lib/asset";
 import { scrollToY } from "@/lib/providers/SmoothScroll";
@@ -41,7 +40,7 @@ type Stage = {
    content/taste.ts — see the header there. */
 const STAGES: Stage[] = [
   {
-    n: "01",
+    n: "Stage 1",
     name: "Graded sediment",
     goesIn: "Sand, rust flakes and silt the pipes carry",
     happens:
@@ -49,7 +48,7 @@ const STAGES: Stage[] = [
     comesOut: "Water clear enough for the finer media behind it",
   },
   {
-    n: "02",
+    n: "Stage 2",
     name: "Copper-zinc and carbon",
     goesIn: "Chlorine, and dissolved metal picked up on the way",
     happens:
@@ -57,12 +56,12 @@ const STAGES: Stage[] = [
     comesOut: "Water that stops tasting and smelling of the supply",
   },
   {
-    n: "03",
-    name: "Limescale-reduction carbon",
-    goesIn: "The calcium and magnesium that make scale",
+    n: "Stage 3",
+    name: "Limescale reduction and carbon",
+    goesIn: "The minerals that build scale on hot surfaces",
     happens:
-      "The last stage changes the way those minerals crystallise, so they travel through and rinse away instead of bonding onto hot surfaces. A final one-micron polish on the way out.",
-    comesOut: "Water that leaves less behind on the kettle and the screen",
+      "The last cartridge carries limescale-reduction media ahead of a second bed of coconut carbon, and filters to one micron on the way out. The manufacturer rates the media at up to 18 months and recommends a change at 12.",
+    comesOut: "Water that has been through all three stages, on its way to every tap",
   },
 ];
 
@@ -113,7 +112,7 @@ export function HowItWorks() {
   // scrolling back into that pin at the right fraction.
   const [plate, setPlate] = useState<HTMLElement | null>(null);
   useEffect(() => {
-    setPlate(document.getElementById("drawing"));
+    setPlate(document.getElementById("journey"));
   }, []);
 
   const goToVessel = (i: number) => {
@@ -125,19 +124,17 @@ export function HowItWorks() {
   };
 
   return (
-    <section className="hiw ground ground--ruled sheet-edge" data-sheet="02" data-rev="B" data-name="THE FIX · SCHEDULE" ref={rootRef} aria-labelledby="hiw-h">
+    <section className="hiw ground" id="stages" ref={rootRef} aria-labelledby="hiw-h">
       <div className="hiw-inner">
-        <SheetStrip n="02" title="The fix, standing still" note="Schedule 1 · what each stage does" />
         <header className="hiw-head">
           <h2 className="hiw-h" id="hiw-h">
-            That was the machine,
+            The three stages,
             <br />
-            in section.
+            standing still.
           </h2>
           <p className="hiw-lead">
-            If you would rather read it standing still, here is the same thing: three stages, in
-            order, and what each one actually does. Open one and the drawing above will go back to
-            it.
+            The same three stages you just scrolled through, in order, and what each one does. Open
+            one and the machine above goes back to it.
           </p>
         </header>
 
@@ -182,11 +179,11 @@ export function HowItWorks() {
                     <div className="hiw-detail-pad">
                       <p>{s.happens}</p>
                       <p className="hiw-out">
-                        <b>OUT</b>
+                        <b>Out</b>
                         {s.comesOut}
                       </p>
                       <button type="button" className="hiw-jump" onClick={() => goToVessel(i)}>
-                        Watch this stage in the drawing
+                        Watch this stage open
                       </button>
                     </div>
                   </div>

@@ -20,9 +20,10 @@ const QA: { q: string; a: React.ReactNode }[] = [
     q: "What will I actually notice?",
     a: (
       <p>
-        The taste and the smell go first, and that is the one people report the day it goes in. Scale takes
-        longer to show, because you are noticing an absence: the kettle stops furring up as fast, the shower
-        screen stops spotting, glassware comes out of the dishwasher clearer.
+        That depends on what is in your water, which is why the test comes first. The carbon stages are there
+        for the chlorine taste and smell, and the third stage carries the manufacturer's limescale-reduction
+        media. We do not promise what you will notice at the tap. The free test tells you what is in your
+        supply now, and the independent report, when it exists, will say what the system does to it.
       </p>
     ),
   },

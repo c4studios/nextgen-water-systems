@@ -17,8 +17,8 @@ import { ROUTES } from "@/content/site";
  * sheet index doubles as the way back.
  */
 export const metadata: Metadata = {
-  title: "Sheet not found",
-  description: "That page is not part of this drawing set.",
+  title: "Page not found",
+  description: "There is no page at that address.",
   robots: { index: false, follow: true },
 };
 

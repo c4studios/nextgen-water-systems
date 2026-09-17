@@ -26,7 +26,7 @@ export const CONTACT = {
   // the site. Bookings are taken by the installer, Aqua-Safe, so this is
   // Aaron's real business line. If Next Gen gets its own number, change here.
   phone: "0473 072 642",
-  // ⚠️ Not verified that this mailbox exists — the domain resolves but serves
-  // nothing. The booking form's mailto fallback sends here. See the audit.
-  email: "hello@nextgenwatersystems.com.au",
+  // No email: the nextgenwatersystems.com.au mailbox does not exist yet (open
+  // with Aaron since 22 Aug 2026). Add it here when it does; nothing on the
+  // site shows an address until then.
 };

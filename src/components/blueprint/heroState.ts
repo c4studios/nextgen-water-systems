@@ -27,6 +27,9 @@ export const HERO = {
   /** yaw the visitor has dragged the machine to, radians, and where it eases to */
   yaw: 0,
   yawT: 0,
+  /** where the yaw settles when nobody is dragging: a slight three-quarter,
+   *  so the folded steel reads as a body with a side and a notch, not a flat card */
+  yawRest: -0.3,
   dragging: false,
   /** a drag happened since the last pointerdown: suppresses the click-to-fly */
   dragged: false,

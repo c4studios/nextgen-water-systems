@@ -1,5 +1,4 @@
 import { INSTALLER } from "@/lib/jsonld";
-import { SheetStrip } from "@/components/site/SheetStrip";
 
 /**
  * SHEET 04 — who fits it.
@@ -18,8 +17,7 @@ import { SheetStrip } from "@/components/site/SheetStrip";
  */
 export function Installer() {
   return (
-    <section className="who ground sheet-edge" id="installer" data-sheet="04" data-rev="D" data-name="WHO FITS IT" aria-labelledby="who-h">
-      <SheetStrip n="04" title="Who fits it" note="Note 1 · installation" />
+    <section className="who ground" id="installer" aria-labelledby="who-h">
       <div className="who-inner">
         <div className="who-main">
           <h2 className="who-h" id="who-h">
@@ -34,25 +32,25 @@ export function Installer() {
           </p>
           <dl className="who-facts">
             <div>
-              <dt>PLUMBING LICENCE</dt>
+              <dt>Plumbing licence</dt>
               <dd>PL10802</dd>
             </div>
             <div>
-              <dt>GAS FITTING LICENCE</dt>
+              <dt>Gas fitting licence</dt>
               <dd>GF22810</dd>
             </div>
             <div>
-              <dt>WORKMANSHIP</dt>
+              <dt>Workmanship</dt>
               <dd>12-month warranty</dd>
             </div>
             <div>
-              <dt>AREA</dt>
+              <dt>Area</dt>
               <dd>Perth metro</dd>
             </div>
           </dl>
           <a className="who-link" href={INSTALLER.url} target="_blank" rel="noopener">
             {INSTALLER.name}
-            <i aria-hidden="true">→</i>
+            <i aria-hidden="true" />
           </a>
         </div>
         <div className="who-notes">
@@ -64,10 +62,11 @@ export function Installer() {
             </p>
           </article>
           <article className="who-note">
-            <h3>It takes an afternoon.</h3>
+            <h3>The test comes first.</h3>
             <p>
-              A free test at your kitchen tap first, so you know what is actually in your water. Then
-              a clean fit at the mains, usually inside a few hours. No obligation after the test.
+              A free test at your kitchen tap, so you know what is actually in your water. Then a
+              clean fit at the mains, with isolation valves either side and the joints pressure-tested
+              before the water goes back on. No obligation after the test.
             </p>
           </article>
         </div>

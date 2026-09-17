@@ -5,11 +5,11 @@
  * assistive tech.
  */
 const CONTRACT = `
-THESIS: One machine at the mains, shown the way a drawing set shows a job: a cover sheet, then the sheets. Refuses the product-hero, three-cards, testimonials, form order, and refuses equally the chrome-less scroll film it replaces.
-OWN-WORLD: (reworked 15 Sep 2026: brighter, and on the owner's brand concept) pale grey ground and paper, charcoal ink taken from the concept's lettering, water blue only where water is, Routed Gothic draughting labels, sheet strips and title-block furniture; the Next Gen lockup; one photoreal machine fixed behind the page, the real three-housing unit in a white studio, closed under its grey powder-coated Next Gen cover until it is opened; a frosted nav band; one redline stamp as the approval mark.
-STORY: my water has a name (tick it); one machine at the mains answers it at every tap; licensed plumbers fit it; the free test costs nothing.
-FIRST VIEWPORT: outcome line and primary action top-left, the taste check under them; the closed Next Gen cover right, which lifts when a taste is ticked to show the housing that answers it (drag to turn, tap the cover to open); the inspector strip along the bottom edge. On phones the machine sits between the action and the taste check, so a tick opens something on screen.
-FORM: fused hand (test bench + inspection report + annotated object), surface roll b26c6803, dealt 5/6/4, code-led.
+THESIS: One machine at the mains, launched the way a premium appliance is launched: the product huge and live in the first viewport, its cover lifting the way it really lifts, each stage opened in section on the scroll. Refuses the blue water-splash hero, the three feature cards, the stats band and the testimonial carousel of the category, and refuses equally the drawing-set furniture this page replaces.
+OWN-WORLD: (17 Sep 2026, on Aaron's brief: brighter, his brand concept, the real system inside) a white page and a pale studio the machine stands in; charcoal ink from the cover's lettering; one blue for the action and for water; Satoshi headings, Hanken sentences, no drafting labels; a photoreal FHWR-3S1-20 modelled from the supplier's photographs, powder-coated steel, grey polypropylene, black heads, brass and copper, under a grey clip-on Next Gen cover with raised lettering.
+STORY: my water tastes of chlorine and furs the kettle; one system at the mains, three stages, every tap; licensed plumbers fit it; the test costs nothing.
+FIRST VIEWPORT: outcome line and the one action left, the closed cover right at two-thirds of the viewport height, live: drag turns it, a tap lifts it off; the installer strip along the bottom edge. On phones the cover sits under the copy at half the screen.
+FORM: fused hand (launch page + section drawing + installer's card), direction roll 709e77ec, pick built, code-led.
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance.
 `;
 

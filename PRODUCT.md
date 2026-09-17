@@ -32,7 +32,7 @@ The engineering is the reason it works, not the reason to buy. Everyone else in 
 - Belief ladder: not yet confirmed with the client. Working hypothesis to validate, not to build on — (1) my water actually has something in it worth removing, (2) this fixes it at every tap rather than one jug, (3) the people installing it are competent and licensed, (4) booking a test costs me nothing.
 - Proof on hand: manufacturer certification documents (NSF / WaterMark — not yet sighted); photographs of real completed installs; Aqua-Safe's genuine Google reviews, usable as *installer* credibility and never as product performance.
 
-⚠️ **Reduction percentages are not proof.** `src/content/booking.ts` carries up-to-90/95/96/98/99% figures that the page itself labels placeholders pending NATA-accredited testing. Unsubstantiated reduction claims about drinking water are misleading conduct under the Australian Consumer Law. They either become attributed manufacturer claims backed by sighted certification, or they come off and the mechanism is described instead. See `src/lib/seo.ts`.
+⚠️ **Reduction percentages are not proof.** `src/content/booking.ts` once carried up-to-90/95/96/98/99% figures labelled placeholders pending NATA-accredited testing; they came off, and the site now describes the mechanism of each stage in the datasheet's own words (FHWR-3S1-20 v1.1, 2024). Unsubstantiated reduction claims about drinking water are misleading conduct under the Australian Consumer Law. The independent test report Aaron has promised appears on the specification page as a visible `[PLACEHOLDER]` until it exists; when it does, its figures are quoted as attributed findings, never as the site's own claims. See `src/lib/seo.ts`.
 
 ## Brand Personality
 
@@ -54,4 +54,4 @@ Wellness and health-store aesthetics. No sage or blush, no rounded friendly type
 
 ## Accessibility & Inclusion
 
-WCAG 2.2 AA as the working standard — not yet confirmed with the client, so treat as default rather than requirement. The site runs heavy 3D and scroll-driven motion, so a genuine `prefers-reduced-motion` path is a hard requirement, not a nicety, and contrast must be verified against the dark palette rather than assumed.
+WCAG 2.2 AA as the working standard — not yet confirmed with the client, so treat as default rather than requirement. The site runs heavy 3D and scroll-driven motion, so a genuine `prefers-reduced-motion` path is a hard requirement, not a nicety (the journey and the scene are removed and a static story stands in). Since the 17 Sep 2026 redesign the palette is light: white page, a pale #f2f3f3 studio behind the journey copy, charcoal ink; contrast is measured against those grounds in a real browser rather than assumed (lowest measured 4.65:1, the beat eyebrows).

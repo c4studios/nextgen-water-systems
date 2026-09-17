@@ -48,10 +48,6 @@ export function Sheet({
         </nav>
 
         <header className="doc-head">
-          <span className="doc-no">
-            <i>SHEET</i>
-            {sheet}
-          </span>
           <h1 className="doc-h">{title}</h1>
           <p className="doc-lead">{lead}</p>
         </header>
@@ -68,7 +64,7 @@ export function Sheet({
         <aside className="doc-cta">
           <h2>Start with the test.</h2>
           <p>
-            A technician tests your own supply at your own tap, tells you what is in it, and leaves. It costs
+            A licensed plumber tests your own supply at your own tap, tells you what is in it, and leaves. It costs
             nothing and there is no obligation afterwards.
           </p>
           <div className="doc-cta-actions">

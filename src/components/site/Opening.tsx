@@ -1,54 +1,39 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { asset } from "@/lib/asset";
 import { INSTALLER } from "@/lib/jsonld";
-import { TASTE_OPTIONS } from "@/content/taste";
-import { HERO, HERO_HOT_EVENT, HERO_OPEN_EVENT } from "@/components/blueprint/heroState";
+import { HERO, HERO_OPEN_EVENT } from "@/components/blueprint/heroState";
 import { journeyY } from "@/components/blueprint/journeyMap";
 import { scrollToY } from "@/lib/providers/SmoothScroll";
 
 /**
- * THE COVER.
+ * THE HERO.
  *
- * The site used to open on a headline, a dim photograph of a glass and a
- * button, with the machine four screens down. The client's note was that it
- * did not feel like a site. A cover sheet does three things in one frame: it
- * says what the thing is in the visitor's own terms, it shows the thing, and
- * it tells you who stands behind it and what to do next.
+ * The product, at the scale a launch page gives it: the closed Next Gen cover
+ * fills the right half of the first viewport, live, and the outcome line and
+ * the one action sit beside it. The machine anchor is a box this section
+ * lays out; the page's one WebGL scene fits the cover into that box every
+ * frame while it is on screen (MachineStage.tsx reads HERO). Drag turns it;
+ * a tap lifts the cover the way it really comes off.
  *
- * So: the outcome line and the primary action on the left; the machine itself
- * on the right, live, the same render the journey below walks through (one
- * scene, fixed behind the page; the cover only tells it where to sit); and the
- * taste check under the headline, because the first useful question is not
- * "what is this" but "is this about my water". Tick chlorine and the second
- * vessel lights and says what it does with chlorine. The ticks ride into the
- * booking, so the technician knows before he arrives.
- *
- * Along the bottom edge, the inspector strip: the plumber, the licence
- * numbers, the warranty. No claims, no figures, nothing to substantiate.
+ * The still image is the poster until the scene is live, and the whole
+ * picture for anyone without WebGL.
  */
-
-/** where the booking form picks the answer up */
-export const TASTE_KEY = "ngw:taste";
-
 const LAST_HINT_KEY = "ngw:hero-drag-hint";
 
 export function Opening() {
   const stageRef = useRef<HTMLDivElement>(null);
-  const [picked, setPicked] = useState<string[]>([]);
-  const [latest, setLatest] = useState<string | null>(null);
   const [hintOn, setHintOn] = useState(false);
-  // the hint names what a tap does: lifts the cover while it is on, picks out
-  // a housing once it is off
   const [coverOpen, setCoverOpen] = useState(false);
+
   useEffect(() => {
     const onOpen = () => setCoverOpen(true);
     window.addEventListener(HERO_OPEN_EVENT, onOpen);
     return () => window.removeEventListener(HERO_OPEN_EVENT, onOpen);
   }, []);
 
-  // the machine anchor: the scene fits the machine to this box every frame
+  // the machine anchor: the scene fits the cover to this box every frame
   useEffect(() => {
     HERO.mixT = 1;
     const el = stageRef.current;
@@ -65,24 +50,26 @@ export function Opening() {
       HERO.ch = r.height / vh;
       HERO.cw = r.width / vw;
     };
-    const onScroll = () => {
+    const schedule = () => {
       if (!raf) raf = requestAnimationFrame(measure);
     };
     measure();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    const ro = new ResizeObserver(schedule);
+    if (el) ro.observe(el);
     return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      if (raf) cancelAnimationFrame(raf);
       HERO.visible = false;
       HERO.mixT = 0;
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+      ro.disconnect();
+      if (raf) cancelAnimationFrame(raf);
     };
   }, []);
 
-  // drag to turn. Pointer events are read at the window so the canvas
-  // underneath still gets its own hover and click on the vessels; a drag is a
-  // drag only once the pointer has actually moved, so a tap stays a tap.
+  // drag to turn, on the window: the canvas is behind the page, and a drag is
+  // a drag only once the pointer has moved, so a tap stays a tap
   useEffect(() => {
     let down = false;
     let lastX = 0;
@@ -94,11 +81,11 @@ export function Opening() {
       return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
     };
     const onDown = (e: PointerEvent) => {
+      HERO.dragged = false;
       if (e.button !== 0 || !overMachine(e)) return;
       down = true;
       moved = 0;
       lastX = e.clientX;
-      HERO.dragged = false;
     };
     const onMove = (e: PointerEvent) => {
       if (!down) return;
@@ -134,7 +121,7 @@ export function Opening() {
     };
   }, []);
 
-  // the drag hint shows once per session, and only once the live machine is up
+  // the hint shows once per session, once the live machine is up
   useEffect(() => {
     let seen = false;
     try {
@@ -147,128 +134,60 @@ export function Opening() {
     return () => window.clearTimeout(t);
   }, []);
 
-  const toggle = useCallback(
-    (id: string) => {
-      const on = picked.includes(id);
-      const next = on ? picked.filter((p) => p !== id) : [...picked, id];
-      const opt = TASTE_OPTIONS.find((o) => o.id === id)!;
-      // the machine answers the latest tick; un-ticking hands back to the
-      // previous one still ticked
-      const show = on ? TASTE_OPTIONS.find((o) => o.id === next[next.length - 1]) ?? null : opt;
-      setPicked(next);
-      setLatest(show?.id ?? null);
-      HERO.hot = show?.stage ? show.stage - 1 : null;
-      // anything ticked lifts the cover so the stage it names can be seen
-      HERO.openT = next.length > 0 ? 1 : 0;
-      setCoverOpen(next.length > 0);
-      window.dispatchEvent(new CustomEvent(HERO_HOT_EVENT, { detail: HERO.hot }));
-      const plain = TASTE_OPTIONS.filter((o) => next.includes(o.id))
-        .map((o) => o.plain)
-        .join(", ");
-      try {
-        if (plain) sessionStorage.setItem(TASTE_KEY, plain);
-        else sessionStorage.removeItem(TASTE_KEY);
-        window.dispatchEvent(new CustomEvent("ngw:taste", { detail: plain }));
-      } catch {
-        /* private mode: the check still works, the hand-over just doesn't */
-      }
-    },
-    [picked],
-  );
-
-  const shown = latest ? TASTE_OPTIONS.find((o) => o.id === latest) : null;
-
   const goSection = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
-    scrollToY(journeyY(0.268));
+    scrollToY(journeyY(0.02));
   };
 
   return (
-    <section className="opening" aria-labelledby="opening-h" data-sheet="00" data-rev="D" data-name="COVER">
-      <div className="opening-copy">
-        <h1 id="opening-h" className="opening-h">
+    <section className="hero" aria-labelledby="hero-h">
+      <div className="hero-copy">
+        <h1 id="hero-h" className="hero-h">
           Water that tastes
           <br />
           of nothing.
         </h1>
-
-        <p className="opening-body">
+        <p className="hero-p">
           Perth scheme water arrives safe. It also arrives tasting of chlorine, and it leaves scale
-          on the kettle, the glassware and the shower screen. One machine at the mains changes that
-          at every tap in the house.
+          on the kettle and the shower screen. One system at the mains changes that at every tap in
+          the house.
         </p>
-
-        <div className="opening-act">
-          <a className="opening-cta lm" href="#plate-cta">
+        <div className="hero-act">
+          <a className="lm hero-cta" href="#book">
             <span>Book a free water test</span>
           </a>
-          <a className="opening-more" href="#drawing" onClick={goSection}>
-            See it in section
+          <a className="hero-more" href="#journey" onClick={goSection}>
+            See inside it
             <i aria-hidden="true" />
           </a>
         </div>
-
-        <div className="oc" role="group" aria-labelledby="oc-h">
-          <p className="oc-h" id="oc-h">
-            What does yours taste like? <span>Tick what fits. It goes with your booking.</span>
-          </p>
-          <div className="oc-list">
-            {TASTE_OPTIONS.map((o) => {
-              const on = picked.includes(o.id);
-              return (
-                <button
-                  key={o.id}
-                  type="button"
-                  className={`oc-chip${on ? " is-on" : ""}${shown?.id === o.id ? " is-live" : ""}`}
-                  aria-pressed={on}
-                  onClick={() => toggle(o.id)}
-                >
-                  <i aria-hidden="true" />
-                  {o.label}
-                </button>
-              );
-            })}
-          </div>
-          <p className="oc-answer" aria-live="polite">
-            {shown ? (
-              <>
-                <b>{shown.stage ? `STAGE ${shown.stage}` : "THE TEST"}</b>
-                {shown.short}
-              </>
-            ) : (
-              <span className="oc-idle">Tick one and the machine shows you which stage answers it.</span>
-            )}
-          </p>
-        </div>
       </div>
 
-      {/* the machine anchor. The page's one scene fits the machine to this box
-          while it is on screen; the still is what stands in without WebGL. */}
-      <div className="opening-stage" ref={stageRef} aria-hidden="true">
+      <div className="hero-stage" ref={stageRef} aria-hidden="true">
         <img
-          className="opening-still"
+          className="hero-still"
           src={asset("/photos/cover-still.jpg")}
           alt=""
-          width={972}
-          height={1262}
+          width={1200}
+          height={1400}
           draggable={false}
           decoding="async"
           fetchPriority="high"
         />
-        <span className={`opening-drag${hintOn ? " is-on" : ""}`}>
+        <span className={`hero-drag${hintOn ? " is-on" : ""}`}>
           <i aria-hidden="true" />
           Drag to turn · {coverOpen ? "tap a housing" : "tap to open"}
         </span>
       </div>
 
-      <div className="opening-proof" aria-label="Installer">
-        <span className="opening-proof-who">
+      <div className="hero-proof" aria-label="Installer">
+        <span>
           Fitted by{" "}
           <a className="installer-link" href={INSTALLER.url} target="_blank" rel="noopener">
             {INSTALLER.name}
           </a>
         </span>
-        <span>PL10802 · GF22810</span>
+        <span>Licensed plumbers and gas fitters, PL10802 · GF22810</span>
         <span>12-month workmanship warranty</span>
         <span>Perth metro</span>
       </div>

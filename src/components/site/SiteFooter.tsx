@@ -5,8 +5,8 @@ import C4FooterCredit from "@/components/c4-footer-credit/C4FooterCredit";
 import { INSTALLER } from "@/lib/jsonld";
 
 /**
- * The footer, on every page. Set out as the drawing set's index rather than as
- * four columns of links: sheet number, title, one line of what is on it. The
+ * The footer, on every page. Set out as an index rather than as four columns
+ * of links: title, one line of what is on it. The
  * licences and the ABN are the trust block, and they are all real.
  */
 export function SiteFooter() {
@@ -14,11 +14,10 @@ export function SiteFooter() {
     <footer className="sfoot">
       <div className="sfoot-inner">
         <div className="sfoot-index">
-          <span className="sfoot-cap">Drawing set</span>
+          <span className="sfoot-cap">Pages</span>
           <ul>
             <li>
               <Link href="/">
-                <b>01</b>
                 <span>
                   <i>The machine</i>
                   Whole-home filtration, drawn from the mains in.
@@ -28,7 +27,6 @@ export function SiteFooter() {
             {ROUTES.map((r) => (
               <li key={r.href}>
                 <Link href={r.href}>
-                  <b>{r.sheet}</b>
                   <span>
                     <i>{r.label}</i>
                     {r.blurb}
@@ -43,9 +41,6 @@ export function SiteFooter() {
           <span className="sfoot-cap">Talk to someone</span>
           <a className="sfoot-phone" href={`tel:${CONTACT.phone.replace(/\s/g, "")}`}>
             {CONTACT.phone}
-          </a>
-          <a className="sfoot-mail" href={`mailto:${CONTACT.email}`}>
-            {CONTACT.email}
           </a>
           <p className="sfoot-fine">
             Installed Perth-wide by{" "}

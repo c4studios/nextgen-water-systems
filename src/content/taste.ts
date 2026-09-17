@@ -32,7 +32,7 @@ export type TasteOption = {
 export const TASTE_OPTIONS: TasteOption[] = [
   {
     id: "chlorine",
-    label: "CHLORINE",
+    label: "Chlorine",
     plain: "tastes of chlorine",
     stage: 2,
     short: "Stage 2 changes chlorine on contact. It is the stage you notice at the kitchen tap.",
@@ -41,7 +41,7 @@ export const TASTE_OPTIONS: TasteOption[] = [
   },
   {
     id: "pool",
-    label: "LIKE A POOL",
+    label: "Like a pool",
     plain: "tastes like a pool",
     stage: 2,
     short: "The same chemistry as chlorine, only stronger. Stage 2 is the one that deals with it.",
@@ -50,7 +50,7 @@ export const TASTE_OPTIONS: TasteOption[] = [
   },
   {
     id: "metallic",
-    label: "METALLIC",
+    label: "Metallic",
     plain: "tastes metallic",
     stage: 2,
     short: "Dissolved metal binds to the copper-zinc granules in Stage 2. The test says whether that is yours.",
@@ -59,7 +59,7 @@ export const TASTE_OPTIONS: TasteOption[] = [
   },
   {
     id: "flat",
-    label: "FLAT",
+    label: "Flat",
     plain: "tastes flat",
     stage: 2,
     short: "Carbon in Stage 2 changes how water carries taste. Worth testing before blaming the supply.",
@@ -68,7 +68,7 @@ export const TASTE_OPTIONS: TasteOption[] = [
   },
   {
     id: "earthy",
-    label: "EARTHY OR MUSTY",
+    label: "Earthy or musty",
     plain: "tastes earthy or musty",
     stage: 2,
     short: "Organic notes ride in with the season. The carbon in Stage 2 handles that class of taste.",
@@ -77,7 +77,7 @@ export const TASTE_OPTIONS: TasteOption[] = [
   },
   {
     id: "smell",
-    label: "IT'S THE SMELL",
+    label: "It's the smell",
     plain: "the smell is the problem",
     stage: 2,
     short: "Smell and taste are one complaint. A rotten-egg note is sulphide, which Stage 2 precipitates out.",
@@ -86,7 +86,7 @@ export const TASTE_OPTIONS: TasteOption[] = [
   },
   {
     id: "nothing",
-    label: "TASTES OF NOTHING",
+    label: "Tastes of nothing",
     plain: "no complaint about the taste",
     stage: 3,
     short: "Then taste is not your reason. Scale might be: Stage 3 changes how the minerals behave.",
@@ -95,11 +95,11 @@ export const TASTE_OPTIONS: TasteOption[] = [
   },
   {
     id: "unsure",
-    label: "NOT SURE",
+    label: "Not sure",
     plain: "not sure what it tastes of",
     stage: null,
     short: "Hard to name is normal. The free test names it, at your own tap.",
     answer:
-      "Hard to name is normal, and it is exactly what the free test is for. A technician tests your own supply at your own kitchen tap and tells you what is in it.",
+      "Hard to name is normal, and it is exactly what the free test is for. A licensed plumber tests your own supply at your own kitchen tap and tells you what is in it.",
   },
 ];

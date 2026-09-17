@@ -41,7 +41,6 @@ export const localBusinessJsonLd = {
   description:
     "Whole-home water filtration supplied and installed across the Perth metro by licensed plumbers. Three-stage systems fitted where the water enters the house, so every tap runs through one machine.",
   url: `${SITE_ORIGIN}/`,
-  email: "hello@nextgenwatersystems.com.au",
   identifier: {
     "@type": "PropertyValue",
     propertyID: "ABN",

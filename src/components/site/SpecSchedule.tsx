@@ -1,4 +1,3 @@
-import { SheetStrip } from "@/components/site/SheetStrip";
 
 /**
  * SCHEDULE 2 · SPECIFICATION — the manufacturer's numbers, standing still.
@@ -31,15 +30,7 @@ const ROWS: [string, string][] = [
 
 export function SpecSchedule() {
   return (
-    <section
-      className="sps ground sheet-edge"
-      id="specification"
-      data-sheet="02"
-      data-rev="B"
-      data-name="SPECIFICATION · SCHEDULE 2"
-      aria-labelledby="sps-h"
-    >
-      <SheetStrip n="02" title="Specification" note="Schedule 2" />
+    <section className="sps ground" id="specification" aria-labelledby="sps-h">
       <div className="sps-inner">
         <div className="sps-head">
           <h2 className="sps-h" id="sps-h">

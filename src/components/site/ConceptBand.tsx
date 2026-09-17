@@ -11,7 +11,7 @@ import { asset } from "@/lib/asset";
  */
 export function ConceptBand() {
   return (
-    <section className="cb ground sheet-edge" aria-labelledby="cb-h">
+    <section className="cb ground" id="on-the-wall" aria-labelledby="cb-h">
       <div className="cb-inner">
         <figure className="cb-figure">
           <img
@@ -31,8 +31,8 @@ export function ConceptBand() {
             with the cover on.
           </h2>
           <p className="cb-lead">
-            It goes where the water comes into the property, usually an outside wall or the garage.
-            Isolation valves either side mean it can be serviced without shutting off the house.
+            It goes where the water comes into the property, usually an outside wall or the garage,
+            with an isolation valve either side so the plumber can work on it.
           </p>
           <dl className="cb-notes">
             <div>

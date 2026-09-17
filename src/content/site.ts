@@ -41,7 +41,7 @@ export const ROUTES: Route[] = [
   {
     href: "/water-test/",
     label: "Free water test",
-    blurb: "A technician tests your own supply at your own tap. No obligation after it.",
+    blurb: "A licensed plumber tests your own supply at your own tap. No obligation after it.",
     sheet: "02",
     inNav: false,
   },
