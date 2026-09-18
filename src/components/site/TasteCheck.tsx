@@ -8,7 +8,7 @@ export const TASTE_KEY = "ngw:taste";
 /**
  * "What does yours taste like?" Sits with the booking form. Ticked answers
  * ride into the booking, so the technician knows what he is walking into,
- * and each answer names the stage that deals with it (mechanism only; the
+ * and each answer names the stage its media is for (mechanism only; the
  * copy rules are in content/taste.ts).
  */
 export function TasteCheck() {
@@ -61,7 +61,7 @@ export function TasteCheck() {
             {shown.short}
           </>
         ) : (
-          <span className="oc-idle">Tick one and we say which stage deals with it.</span>
+          <span className="oc-idle">Tick one to see which stage it relates to.</span>
         )}
       </p>
     </div>

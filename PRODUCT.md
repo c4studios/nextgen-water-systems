@@ -27,7 +27,7 @@ The engineering is the reason it works, not the reason to buy. Everyone else in 
 ## Conversion & proof
 
 - Primary CTA: book a free in-home water test.
-- Secondary CTA: not yet decided. Do not invent one — a weak fallback dilutes the primary.
+- Secondary CTA: ask for a quote. Decided by Caleb on 17 Sep 2026 when he set the buying path as test, quote, install, service; the quote follows the free test, so the two actions never compete.
 - The line a visitor remembers after 10 seconds: not yet written. It should be an outcome, not a specification.
 - Belief ladder: not yet confirmed with the client. Working hypothesis to validate, not to build on — (1) my water actually has something in it worth removing, (2) this fixes it at every tap rather than one jug, (3) the people installing it are competent and licensed, (4) booking a test costs me nothing.
 - Proof on hand: manufacturer certification documents (NSF / WaterMark — not yet sighted); photographs of real completed installs; Aqua-Safe's genuine Google reviews, usable as *installer* credibility and never as product performance.
@@ -48,10 +48,12 @@ Wellness and health-store aesthetics. No sage or blush, no rounded friendly type
 
 **Restraint is the premium signal.** Every element removed makes the remaining ones more expensive-looking. Where there is a choice between showing more and showing less, show less and make it better.
 
+**Commercially complete, finished with restraint.** Since 17 Sep 2026 the client wants the completeness of the reference sites he sent (armourwaterfiltration.com.au and the resellers of the same system): a clear buying path, real imagery, more to interact with. Restraint now governs the finish of each element, not how many there are.
+
 **Never claim what cannot be substantiated.** A number without a source is a liability, not a selling point. Describe what the machine does and how, which is true, verifiable and more interesting than a percentage.
 
 **The installer is part of the product.** Licensed plumbers, real reviews, actual completed jobs. The trust does not come from the website; it comes from Aaron, and the site's job is to make that visible.
 
 ## Accessibility & Inclusion
 
-WCAG 2.2 AA as the working standard — not yet confirmed with the client, so treat as default rather than requirement. The site runs heavy 3D and scroll-driven motion, so a genuine `prefers-reduced-motion` path is a hard requirement, not a nicety (the journey and the scene are removed and a static story stands in). Since the 17 Sep 2026 redesign the palette is light: white page, a pale #f2f3f3 studio behind the journey copy, charcoal ink; contrast is measured against those grounds in a real browser rather than assumed (lowest measured 4.65:1, the beat eyebrows).
+WCAG 2.2 AA as the working standard — not yet confirmed with the client, so treat as default rather than requirement. The site runs heavy 3D and scroll-driven motion, so a genuine `prefers-reduced-motion` path is a hard requirement, not a nicety (the journey and the scene are removed and a static story stands in). The palette is light: a white page and charcoal ink. Behind the journey copy is the studio itself, a neutral grey that runs from about #c6c6c4 in the pool of light to #6c6c6a in the frame corners, so that copy is set in full ink rather than the softer body grey. Every ground is measured from real pixels in a browser rather than assumed: after the 18 Sep 2026 look-dev rebuild the lowest measured body contrast is 5.10:1 (the "one pass, then every tap" beat), the stage chips sit at 6.3:1 or better, and the hero's ground measures #ffffff, the page's own white.

@@ -40,7 +40,7 @@ export type ProofRow = { c: string; v: string; m: string; d: string };
 export const PROOF_ROWS: ProofRow[] = [
   {
     c: "CHLORINE",
-    v: "Taste and smell gone",
+    v: "Changed on contact",
     m: "carbon + KDF redox",
     d: "Taste, odour and disinfection by-products. The everyday complaint at the tap.",
   },

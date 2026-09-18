@@ -29,6 +29,9 @@
    cover the scene. So the page colour lives on html alone. */
 html {
   background: var(--ground);
+  /* a fixed nav sits over the top of the page: an anchor jump, and the browser's
+     own scroll to a focused control, both stop clear of it */
+  scroll-padding-top: 96px;
 }
 body {
   background: transparent;
@@ -209,11 +212,28 @@ html:not([data-nggl="1"]) .hero-drag {
   grid-row: 2;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 32px;
+  gap: 10px 34px;
+  margin: 0;
   padding: 16px clamp(22px, 6vw, 96px) 22px;
   border-top: 1px solid var(--hairline);
+  list-style: none;
   font-size: 13.5px;
-  color: var(--ink-3);
+  color: var(--ink-2);
+}
+.hero-proof li {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+.hero-proof svg {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 .hero-proof .installer-link {
   color: var(--ink);
@@ -320,7 +340,8 @@ html:not([data-nggl="1"]) .hero-drag {
 }
 .jb--right {
   right: clamp(24px, 6vw, 96px);
-  top: 50%;
+  /* a touch above centre, so the rail's open list (bottom right) never reaches it */
+  top: 44%;
   translate: 0 -50%;
 }
 .jb-h {
@@ -343,7 +364,9 @@ html:not([data-nggl="1"]) .hero-drag {
   margin: 14px 0 0;
   font-size: 16.5px;
   line-height: 1.6;
-  color: var(--ink-2);
+  /* full ink: the studio behind the copy is a mid grey now, and ink-2 on it
+     would fall under 4.5:1 toward the frame edge */
+  color: var(--ink);
   max-width: 40ch;
   text-wrap: pretty;
 }
@@ -405,7 +428,8 @@ html:not([data-nggl="1"]) .hero-drag {
     left: 50%;
     right: auto;
     top: auto;
-    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    /* above the phone's action bar, which stays through the journey */
+    bottom: calc(84px + env(safe-area-inset-bottom, 0px));
     translate: -50% 0;
     width: calc(100vw - 28px);
     max-width: 440px;
@@ -725,3 +749,89 @@ footer.sfoot {
   letter-spacing: 0 !important;
   color: var(--accent);
 }
+
+/* ---- the journey heading: each word rises out of its own line ---- */
+.jb-h .jw {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding: 0.04em 0 0.14em;
+  margin: -0.04em 0 -0.14em;
+}
+.jb-h .jwi {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
+/* ---- the callouts on the machine: a dot on the part, a hairline, a paper tag ---- */
+.jcall {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.jc {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  visibility: hidden;
+  will-change: transform;
+}
+.jc-dot {
+  position: absolute;
+  left: -5px;
+  top: -5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 1.5px var(--ink), 0 2px 8px rgba(23, 25, 28, 0.35);
+  transform: scale(var(--io, 1));
+}
+.jc-line {
+  position: absolute;
+  top: -0.5px;
+  width: 64px;
+  height: 1px;
+  background: var(--ink);
+  transform: scaleX(var(--io, 1));
+}
+.jc--r .jc-line {
+  left: 6px;
+  transform-origin: left center;
+}
+.jc--l .jc-line {
+  right: 6px;
+  transform-origin: right center;
+}
+.jc-tag {
+  position: absolute;
+  top: 0;
+  translate: 0 -50%;
+  width: max-content;
+  max-width: 230px;
+  padding: 7px 11px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 0 1px rgba(23, 25, 28, 0.08), 0 12px 26px -14px rgba(23, 25, 28, 0.45);
+  font-family: var(--font-hanken), system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--ink);
+  opacity: var(--io, 1);
+}
+.jc--r .jc-tag {
+  left: 74px;
+}
+.jc--l .jc-tag {
+  right: 74px;
+}
+@media (max-width: 900px) {
+  .jcall {
+    display: none;
+  }
+}
+

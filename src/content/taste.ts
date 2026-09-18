@@ -35,18 +35,18 @@ export const TASTE_OPTIONS: TasteOption[] = [
     label: "Chlorine",
     plain: "tastes of chlorine",
     stage: 2,
-    short: "Stage 2 changes chlorine on contact. It is the stage you notice at the kitchen tap.",
+    short: "Copper-zinc granules in Stage 2 change chlorine on contact, with coconut carbon behind them.",
     answer:
-      "That is the disinfectant still doing its job by the time it reaches you. Stage two changes chlorine on contact and the coconut carbon behind it catches what is left. It is the stage you notice at the kitchen tap.",
+      "That is the disinfectant still doing its job by the time it reaches you. Stage two changes chlorine on contact and the coconut carbon behind it catches what is left.",
   },
   {
     id: "pool",
     label: "Like a pool",
     plain: "tastes like a pool",
     stage: 2,
-    short: "The same chemistry as chlorine, only stronger. Stage 2 is the one that deals with it.",
+    short: "The same chemistry as chlorine, only stronger. Stage 2 changes chlorine on contact.",
     answer:
-      "Same chemistry as chlorine, usually stronger where the water has sat in the main or you are close to a dosing point. Stage two is the one that deals with it.",
+      "Same chemistry as chlorine, usually stronger where the water has sat in the main or you are close to a dosing point. Stage two changes chlorine on contact, and the test tells you how much is in yours.",
   },
   {
     id: "metallic",
@@ -62,18 +62,18 @@ export const TASTE_OPTIONS: TasteOption[] = [
     label: "Flat",
     plain: "tastes flat",
     stage: 2,
-    short: "Carbon in Stage 2 changes how water carries taste. Worth testing before blaming the supply.",
+    short: "Flat is hard to pin down, and it is not always the water. Worth testing before blaming the supply.",
     answer:
-      "Flat is the hard one, and it is not always the water. Carbon changes how water carries taste, so this is worth testing before you assume the supply is the problem.",
+      "Flat is the hard one, and it is not always the water. It is worth testing before you assume the supply is the problem.",
   },
   {
     id: "earthy",
     label: "Earthy or musty",
     plain: "tastes earthy or musty",
     stage: 2,
-    short: "Organic notes ride in with the season. The carbon in Stage 2 handles that class of taste.",
+    short: "Organic notes ride in with the season. Coconut carbon in Stage 2 adsorbs organic compounds.",
     answer:
-      "Earthy and musty notes ride in on organic matter in the supply and tend to come and go with the season. Carbon is what handles that class of taste.",
+      "Earthy and musty notes ride in on organic matter in the supply and tend to come and go with the season. Activated carbon adsorbs organic compounds. Whether that is what yours is doing is a question for the test.",
   },
   {
     id: "smell",

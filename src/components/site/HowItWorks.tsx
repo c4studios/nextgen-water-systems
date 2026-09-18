@@ -1,216 +1,175 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import { useRef, useState, type KeyboardEvent } from "react";
 import { asset } from "@/lib/asset";
+import { VESSEL_BEAT_P } from "@/content/journeyStory";
+import { journeyY } from "@/components/blueprint/journeyMap";
 import { scrollToY } from "@/lib/providers/SmoothScroll";
 
 /**
- * HOW IT WORKS — the still version of the journey.
+ * THE THREE STAGES, STANDING STILL.
  *
- * The feedback that produced this: people don't realise the scroll animation is
- * doing the explaining. They arrive expecting sections that walk them through a
- * process, so they scroll past a pinned 3D sequence without registering that it
- * WAS the process. That is not a bug in the animation, it is a mismatch of
- * expectation, and the fix is not to make the animation louder.
+ * The journey above shows each stage open for as long as the scroll allows.
+ * Here the visitor holds it: three tabs, one render of that housing cut open,
+ * and what the stage is in the datasheet's own words. "Watch it open" goes
+ * back up into the journey at that stage.
  *
- * So the site now says both. The journey is the experience; this is the
- * explanation, in the shape people are looking for: three numbered stages you
- * can read standing still, each with what goes in, what happens, and what comes
- * out. It sits directly under the journey and opens by naming what just
- * happened, so anyone who scrolled through without following it gets a second,
- * conventional chance.
- *
- * The stages are also clickable: picking one scrolls the journey back to that
- * vessel's beat. That is the join between the two halves — the still section
- * is an index INTO the animation rather than a replacement for it.
+ * Mechanism only. No figures, no outcomes at the tap (see docs/sources.md).
  */
-
-import { VESSEL_BEAT_P } from "@/content/journeyStory";
-
 type Stage = {
   n: string;
   name: string;
   goesIn: string;
   happens: string;
   comesOut: string;
+  media: string;
+  img: string;
+  alt: string;
 };
 
-/* Mechanism only. No figures, no outcomes at the appliance. Same rules as
-   content/taste.ts — see the header there. */
 const STAGES: Stage[] = [
   {
     n: "Stage 1",
     name: "Graded sediment",
     goesIn: "Sand, rust flakes and silt the pipes carry",
     happens:
-      "One cartridge with three densities in it, coarse on the outside and fine at the core. Big particles stop at the surface, fine ones lodge deeper, so the whole cartridge works instead of blocking at the face.",
+      "One cartridge with three layers in it, coarse on the outside and fine at the core. Big particles stop at the surface and fine ones lodge deeper, so the whole cartridge works instead of blocking at the face.",
     comesOut: "Water clear enough for the finer media behind it",
+    media: "Three-layer sediment cartridge, filtration to 1 micron",
+    img: "/photos/stage-1.jpg",
+    alt: "The first housing cut open in section: a white three-layer sediment cartridge, with water rising up its core",
   },
   {
     n: "Stage 2",
     name: "Copper-zinc and carbon",
     goesIn: "Chlorine, and dissolved metal picked up on the way",
     happens:
-      "Copper-zinc granules change chlorine on contact and hold dissolved metal on their own surface. Coconut carbon behind them catches what is left. This is the stage you taste.",
-    comesOut: "Water that stops tasting and smelling of the supply",
+      "Copper-zinc granules change chlorine on contact and hold dissolved metal on their own surface. Coconut carbon behind them adsorbs what is left. The manufacturer calls it the taste improvement cartridge.",
+    comesOut: "Water off the copper-zinc and the carbon, on to the last stage",
+    media: "KDF 55 and KDF 85 granules, then coconut carbon",
+    img: "/photos/stage-2.jpg",
+    alt: "The second housing cut open in section: a bed of copper-zinc granules around a core of black coconut carbon",
   },
   {
     n: "Stage 3",
     name: "Limescale reduction and carbon",
     goesIn: "The minerals that build scale on hot surfaces",
     happens:
-      "The last cartridge carries limescale-reduction media ahead of a second bed of coconut carbon, and filters to one micron on the way out. The manufacturer rates the media at up to 18 months and recommends a change at 12.",
+      "The last cartridge carries limescale-reduction media ahead of a second bed of coconut carbon, and filters to one micron on the way out.",
     comesOut: "Water that has been through all three stages, on its way to every tap",
+    media: "Limescale-reduction media and coconut carbon, to 1 micron",
+    img: "/photos/stage-3.jpg",
+    alt: "The third housing cut open in section: white limescale-reduction media around a core of coconut carbon",
   },
 ];
 
 export function HowItWorks() {
-  const [open, setOpen] = useState(0);
-  const rootRef = useRef<HTMLElement>(null);
-  const panels = useRef<Array<HTMLDivElement | null>>([]);
+  const [active, setActive] = useState(0);
+  const tabs = useRef<Array<HTMLButtonElement | null>>([]);
 
-  /**
-   * The panels open to a MEASURED height rather than through a 0fr/1fr grid
-   * row. The grid trick is tidier to write, but an `fr` track in an
-   * auto-height container resolves against content rather than against a
-   * definite size, and it was jumping straight to full height instead of
-   * interpolating. A pixel height always interpolates.
-   *
-   * Once open the height is released back to `auto`, so a panel cannot be left
-   * clipped if the text rewraps on resize or a font loads late.
-   */
-  useEffect(() => {
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    panels.current.forEach((el, i) => {
-      if (!el) return;
-      const shouldOpen = i === open;
-      const target = shouldOpen ? el.scrollHeight : 0;
-      if (reduced) {
-        el.style.transition = "none";
-        el.style.height = shouldOpen ? "auto" : "0px";
-        return;
-      }
-      el.style.transition = "";
-      // from whatever it is now, not from auto: `auto` is not interpolable
-      const from = el.style.height === "auto" ? `${el.scrollHeight}px` : el.style.height || "0px";
-      el.style.height = from;
-      // force the browser to accept the starting value before changing it
-      void el.offsetHeight;
-      el.style.height = `${target}px`;
-      if (!shouldOpen) return;
-      const done = (e: TransitionEvent) => {
-        if (e.propertyName !== "height") return;
-        el.style.height = "auto";
-        el.removeEventListener("transitionend", done);
-      };
-      el.addEventListener("transitionend", done);
-    });
-  }, [open]);
-
-  // The journey is pinned above this section; jumping to a vessel means
-  // scrolling back into that pin at the right fraction.
-  const [plate, setPlate] = useState<HTMLElement | null>(null);
-  useEffect(() => {
-    setPlate(document.getElementById("journey"));
-  }, []);
-
-  const goToVessel = (i: number) => {
-    if (!plate) return;
-    const p = VESSEL_BEAT_P[i] ?? 0.5;
-    const y = plate.offsetTop + (plate.offsetHeight - window.innerHeight) * p;
-    // through Lenis, not window.scrollTo — see scrollToY
-    scrollToY(y);
+  const onKey = (e: KeyboardEvent<HTMLButtonElement>) => {
+    const dir = e.key === "ArrowDown" || e.key === "ArrowRight" ? 1 : e.key === "ArrowUp" || e.key === "ArrowLeft" ? -1 : 0;
+    if (!dir && e.key !== "Home" && e.key !== "End") return;
+    e.preventDefault();
+    const next = e.key === "Home" ? 0 : e.key === "End" ? STAGES.length - 1 : (active + dir + STAGES.length) % STAGES.length;
+    setActive(next);
+    tabs.current[next]?.focus();
   };
 
   return (
-    <section className="hiw ground" id="stages" ref={rootRef} aria-labelledby="hiw-h">
-      <div className="hiw-inner">
-        <header className="hiw-head">
-          <h2 className="hiw-h" id="hiw-h">
+    <section className="se" id="stages" aria-labelledby="se-h">
+      <div className="se-inner">
+        <header className="se-head">
+          <h2 className="se-h" id="se-h">
             The three stages,
             <br />
             standing still.
           </h2>
-          <p className="hiw-lead">
-            The same three stages you just scrolled through, in order, and what each one does. Open
-            one and the machine above goes back to it.
+          <p className="se-lead">
+            The same three stages you just scrolled through. Pick one to see it in section and read what it
+            does to the water on its way through.
           </p>
         </header>
 
-        <ol className="hiw-list">
-          {STAGES.map((s, i) => {
-            const on = open === i;
-            return (
-              <li key={s.n} className={`hiw-stage${on ? " is-open" : ""}`}>
-                <button
-                  type="button"
-                  className="hiw-bar"
-                  aria-expanded={on}
-                  onClick={() => setOpen(on ? -1 : i)}
-                >
-                  <span className="hiw-n">{s.n}</span>
-                  <span className="hiw-name">{s.name}</span>
-                  <span className="hiw-in">{s.goesIn}</span>
+        <div className="se-body">
+          <div className="se-tabs" role="tablist" aria-label="The three stages" aria-orientation="vertical">
+            {STAGES.map((s, i) => (
+              <button
+                key={s.n}
+                ref={(el) => {
+                  tabs.current[i] = el;
+                }}
+                type="button"
+                role="tab"
+                id={`se-tab-${i}`}
+                aria-controls={`se-panel-${i}`}
+                aria-selected={active === i}
+                tabIndex={active === i ? 0 : -1}
+                className={`se-tab${active === i ? " is-on" : ""}`}
+                onClick={() => setActive(i)}
+                onKeyDown={onKey}
+              >
+                <span className="se-name">
+                  <span className="se-num" aria-hidden="true">
+                    {i + 1}
+                  </span>
+                  <span className="sr-only">{s.n}: </span>
+                  {s.name}
+                </span>
+                <span className="se-in">{s.goesIn}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="se-view">
+            <div className="se-frame">
+              {STAGES.map((s, i) => (
+                <img
+                  key={s.img}
+                  className={`se-img${active === i ? " is-on" : ""}`}
+                  src={asset(s.img)}
+                  alt={active === i ? s.alt : ""}
+                  aria-hidden={active !== i}
+                  width={1200}
+                  height={900}
+                  loading="lazy"
+                  decoding="async"
+                />
+              ))}
+            </div>
+            {STAGES.map((s, i) => (
+              <div
+                key={s.n}
+                role="tabpanel"
+                id={`se-panel-${i}`}
+                aria-labelledby={`se-tab-${i}`}
+                className="se-panel"
+                hidden={active !== i}
+              >
+                <p className="se-happens">{s.happens}</p>
+                <dl className="se-facts">
+                  <div>
+                    <dt>In the cartridge</dt>
+                    <dd>{s.media}</dd>
+                  </div>
+                  <div>
+                    <dt>What comes out</dt>
+                    <dd>{s.comesOut}</dd>
+                  </div>
+                  <div>
+                    <dt>Cartridge change</dt>
+                    <dd>Every 12 months as the manufacturer recommends, 18 months at most</dd>
+                  </div>
+                </dl>
+                <button type="button" className="se-jump" onClick={() => scrollToY(journeyY(VESSEL_BEAT_P[i] ?? 0.5))}>
+                  Watch it open in the machine
                   <i aria-hidden="true" />
                 </button>
-                {/* `hidden` made this snap: the panel was simply not there and
-                    then it was. The height animates through a 0fr/1fr grid row
-                    instead, which is the only way to transition to CONTENT
-                    height in CSS, and the contents ride in slightly behind it
-                    so the panel reads as opening rather than as resizing.
-                    Kept in the DOM and hidden from the accessibility tree with
-                    inert, so nothing inside can take focus while closed. */}
-                <div
-                  className="hiw-detail"
-                  aria-hidden={!on}
-                  ref={(el) => {
-                    panels.current[i] = el;
-                  }}
-                >
-                  <div
-                    className="hiw-detail-in"
-                    {...({ inert: on ? undefined : "" } as Record<string, unknown>)}
-                  >
-                    {/* the padding lives here, one level below the element that
-                        collapses: min-height:0 zeroes the CONTENT box, not the
-                        padding, so a padded grid item bottoms out at its own
-                        padding and the panel never fully closes */}
-                    <div className="hiw-detail-pad">
-                      <p>{s.happens}</p>
-                      <p className="hiw-out">
-                        <b>Out</b>
-                        {s.comesOut}
-                      </p>
-                      <button type="button" className="hiw-jump" onClick={() => goToVessel(i)}>
-                        Watch this stage open
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </li>
-            );
-          })}
-        </ol>
-
-        <figure className="hiw-figure">
-          <img
-            src={asset("/photos/cartridges.jpg")}
-            width={1600}
-            height={1073}
-            alt="The three filter cartridges laid out in order on a benchtop: pleated sediment, carbon, and a scale-reduction cartridge with a blue collar"
-            loading="lazy"
-            decoding="async"
-          />
-          <figcaption>
-            The three cartridges, in the order the water meets them. They are consumables; how long
-            a set lasts depends on your supply, which is one of the things{" "}
-            <Link className="hiw-inline" href="/water-test/">
-              the free test
-            </Link>{" "}
-            settles. Visualisation, not a photograph of a real set.
-          </figcaption>
-        </figure>
+              </div>
+            ))}
+            <p className="se-cap">Renders of the system in section, not photographs.</p>
+          </div>
+        </div>
       </div>
     </section>
   );

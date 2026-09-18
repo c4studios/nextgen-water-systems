@@ -5301,10 +5301,13 @@ header.site-nav.is-light .nav-ring-btn {
   .ex-tb-c { font-size: 12px; }
   .ex-tb-c i { font-size: 10px; }
 
+  /* the retired world dimmed the credit to 0.72, and the selector hit both the
+     link and its own span, so the two compounded to 0.52 and the 12px line
+     measured 2.7:1 on the light footer. The credit carries its own ink at full
+     strength; only the size is set here. */
   .sfoot-credit *,
   .sfoot-credit span {
     font-size: 12px !important;
-    opacity: 0.72 !important;
   }
 }
 

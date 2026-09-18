@@ -21,8 +21,8 @@ import { scrollToY } from "@/lib/providers/SmoothScroll";
 import { HERO } from "@/components/blueprint/heroState";
 import { JOURNEY_ID, journeyEndY, journeyProgress, journeyY } from "@/components/blueprint/journeyMap";
 import { useReducedMotion } from "@/lib/useReducedMotion";
-import { RAIL_STOPS, STAGE_LABEL, STORY_BEATS, stageAt } from "@/content/journeyStory";
-import { WaterTextDefs } from "@/components/ui/WaterText";
+import { RAIL_STOPS, STORY_BEATS, stageAt } from "@/content/journeyStory";
+import { CALLOUTS } from "@/content/callouts";
 
 const MachineStage = dynamic(() => import("@/components/machine/MachineStage"), { ssr: false });
 
@@ -47,14 +47,10 @@ export function Journey() {
   const [webgl, setWebgl] = useState(false);
   const [glReady, setGlReady] = useState(false);
   const glReadyRef = useRef(false);
-  const stageRef = useRef<HTMLDivElement>(null);
-  const stageN = useRef<HTMLSpanElement>(null);
-  const stageT = useRef<HTMLSpanElement>(null);
-  const stageRail = useRef<HTMLElement>(null);
-  const lastStage = useRef("");
   const railRef = useRef<HTMLElement>(null);
   const railOn = useRef("");
   const dipRef = useRef(1);
+  const calloutRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef(true);
   const [active, setActive] = useState(true);
   const [warm, setWarm] = useState(false);
@@ -119,67 +115,78 @@ export function Journey() {
     const ctx = gsap.context(() => {
       const applyFrame = (p: number) => {
         u3d.current = p;
-        // the stage marker: from the reveal to the hand-off
-        if (stageRef.current) {
+        // the rail: where you are, from the reveal to the hand-off
+        if (railRef.current) {
           const on = p >= 0.19 && p < 0.985;
-          stageRef.current.style.opacity = on ? "1" : "0";
+          railRef.current.classList.toggle("is-on", on);
           const id = stageAt(p);
-          if (railRef.current) {
-            railRef.current.classList.toggle("is-on", on);
-            if (id !== railOn.current) {
-              railOn.current = id;
-              for (const b of railRef.current.querySelectorAll<HTMLButtonElement>("button[data-id]")) {
-                b.classList.toggle("is-on", b.dataset.id === id);
-              }
+          if (id !== railOn.current) {
+            railOn.current = id;
+            for (const b of railRef.current.querySelectorAll<HTMLButtonElement>("button[data-id]")) {
+              const here = b.dataset.id === id;
+              b.classList.toggle("is-on", here);
+              if (here) b.setAttribute("aria-current", "step");
+              else b.removeAttribute("aria-current");
             }
           }
-          if (on && id !== lastStage.current && STAGE_LABEL[id]) {
-            lastStage.current = id;
-            if (stageN.current) stageN.current.textContent = STAGE_LABEL[id][0];
-            if (stageT.current) stageT.current.textContent = STAGE_LABEL[id][1];
-          }
-          if (stageRail.current) {
-            const f = gsap.utils.clamp(0, 1, (p - 0.19) / (0.985 - 0.19));
-            stageRail.current.style.transform = "scaleX(" + f.toFixed(4) + ")";
-          }
         }
-        // the copy beats: each windowed on p, its parts arriving one after
-        // another, the heading forming out of water first
+        // the copy beats: each windowed on p. The heading rises into place a
+        // word at a time from behind its own line and the body follows once it
+        // has landed. On the way out the heading leaves as one line, lifting and
+        // fading whole, so a pause mid-exit never shows letters sliced by the mask
         for (const el of beats) {
           const a = parseFloat(el.dataset.a || "0");
           const b2 = parseFloat(el.dataset.b || "1");
           const f = parseFloat(el.dataset.f || "0.03");
+          const len = Math.min(b2, 1) - a;
           const io = gsap.utils.clamp(0, 1, Math.min((p - a) / f, (b2 - p) / f));
-          const fW = Math.min(f * 2.8, (Math.min(b2, 1) - a) * 0.4);
-          const ioW = gsap.utils.clamp(0, 1, Math.min((p - a) / fW, (b2 - p) / fW));
           el.style.visibility = io <= 0.001 ? "hidden" : "visible";
           el.style.setProperty("--io", io.toFixed(3));
-          const parts = el.querySelectorAll<HTMLElement>("[data-stagger]");
-          const paced = !!el.querySelector("[data-water]");
-          const gate = paced ? gsap.utils.clamp(0, 1, (ioW - 0.65) / 0.2) : 1;
-          for (const part of parts) {
-            const d = Number(part.dataset.stagger || 0) * 0.16;
-            const water = part.querySelector<HTMLElement>("[data-water]");
-            const kio = gsap.utils.clamp(0, 1, ((water ? ioW : io) - d) / (1 - d)) * (water ? 1 : gate);
-            if (water) {
-              part.style.opacity = "1";
-              part.style.transform = "";
-              const g = Math.max(kio, 0.0001);
-              const la = water.querySelector<HTMLElement>(".wt-layer");
-              const lb = water.querySelector<HTMLElement>(".wt-layer--b");
-              if (la) {
-                la.style.filter = `blur(${Math.min(9 / g - 9, 42)}px)`;
-                la.style.opacity = String(Math.pow(g, 0.42));
-              }
-              if (lb) {
-                const gb = Math.max(Math.min(kio * 1.18, 1), 0.0001);
-                lb.style.filter = `blur(${Math.min(11 / gb - 11, 48)}px)`;
-                lb.style.opacity = String(Math.pow(gb, 0.6) * 0.55);
-              }
+          const tIn = gsap.utils.clamp(0, 1, (p - a) / Math.max(0.0001, Math.min(f * 2.4, len * 0.32)));
+          const tOut = gsap.utils.clamp(0, 1, (b2 - p) / Math.max(0.0001, Math.min(f * 1.5, len * 0.16)));
+          const words = el.querySelectorAll<HTMLElement>(".jwi");
+          const n = words.length;
+          const leaving = tOut < 1 && p > (a + b2) / 2;
+          const head = el.querySelector<HTMLElement>(".jb-h");
+          if (leaving) {
+            // the whole line lifts and fades together; the words sit at home
+            const e = 1 - Math.pow(1 - tOut, 2);
+            words.forEach((w) => {
+              w.style.transform = "translate3d(0, 0, 0)";
+              w.style.opacity = "1";
+            });
+            if (head) {
+              head.style.transform = `translate3d(0, ${(-(1 - e) * 22).toFixed(1)}px, 0)`;
+              head.style.opacity = e.toFixed(3);
+            }
+          } else {
+            if (head) {
+              head.style.transform = "";
+              head.style.opacity = "";
+            }
+            words.forEach((w, k) => {
+              const at = n > 1 ? k / (n - 1) : 0;
+              const kin = gsap.utils.clamp(0, 1, (tIn - at * 0.5) / 0.5);
+              const e = 1 - Math.pow(1 - kin, 3);
+              w.style.transform = `translate3d(0, ${((1 - e) * 105).toFixed(1)}%, 0)`;
+              w.style.opacity = e >= 0.999 ? "1" : String(Math.min(1, e * 1.25));
+            });
+          }
+          const gate = gsap.utils.clamp(0, 1, (tIn - 0.55) / 0.35);
+          for (const part of el.querySelectorAll<HTMLElement>("[data-stagger]")) {
+            if (part.hasAttribute("data-words")) continue;
+            if (leaving) {
+              // the body and the chip leave with the heading, a beat ahead of it
+              const e = 1 - Math.pow(1 - gsap.utils.clamp(0, 1, tOut * 1.15 - 0.15), 2);
+              part.style.opacity = e.toFixed(3);
+              part.style.transform = `translate3d(0, ${(-(1 - e) * 16).toFixed(1)}px, 0)`;
               continue;
             }
-            part.style.opacity = String(kio);
-            part.style.transform = `translateY(${(1 - kio) * 13}px)`;
+            const d = Number(part.dataset.stagger || 0) * 0.12;
+            const kio = gsap.utils.clamp(0, 1, (io - d) / (1 - d)) * gate;
+            const e = 1 - Math.pow(1 - kio, 3);
+            part.style.opacity = String(e);
+            part.style.transform = `translate3d(0, ${((1 - e) * 14).toFixed(1)}px, 0)`;
           }
         }
       };
@@ -212,8 +219,14 @@ export function Journey() {
       const vh = window.innerHeight;
       const pr = root.getBoundingClientRect();
       const near = pr.top < vh && pr.bottom > 0;
+      // An opaque section (the kettle) stands between the hero and the journey,
+      // so the two never share the screen. The pose therefore SNAPS to its
+      // owner rather than easing: the machine is never seen travelling from
+      // the hero's box to the journey's set, least of all across the title.
       const heroOwns = HERO.visible && !near;
       HERO.mixT = heroOwns ? 1 : 0;
+      if (!heroOwns) HERO.mix = 0;
+      else if (!near) HERO.mix = 1;
       const wrap = canvasWrapRef.current;
       if (wrap) {
         const op = heroOwns ? (glReadyRef.current ? 1 : 0) : near ? dipRef.current : 0;
@@ -242,20 +255,21 @@ export function Journey() {
       <div className="stage-fixed" ref={fixedRef} aria-hidden="true">
         {webgl && (
           <div className="plate-canvas" ref={canvasWrapRef}>
-            <MachineStage progress={u3d} active={active || !warm} onReady={handleReady} />
+            <MachineStage progress={u3d} active={active || !warm} onReady={handleReady} callouts={calloutRef} />
           </div>
         )}
       </div>
       <section ref={rootRef} className="journey" id={JOURNEY_ID} aria-label="The system, opened up">
         <div className="journey-stick">
-          <WaterTextDefs />
-          {/* where you are: a marker under the nav */}
-          <div className="jstage" ref={stageRef} aria-live="polite" aria-atomic="true">
-            <span className="jstage-rail" aria-hidden="true">
-              <i ref={stageRail} />
-            </span>
-            <span className="jstage-n" ref={stageN} />
-            <span className="jstage-t" ref={stageT} />
+          {/* the callouts: tags the scene pins to parts of the machine */}
+          <div className="jcall" ref={calloutRef} aria-hidden="true">
+            {CALLOUTS.map((c) => (
+              <div key={c.id} className={`jc jc--${c.side}`} data-callout={c.id}>
+                <i className="jc-dot" />
+                <i className="jc-line" />
+                <span className="jc-tag">{c.text}</span>
+              </div>
+            ))}
           </div>
           {/* the rail: every stop, and a way past the whole section */}
           <nav className="jrail" ref={railRef} aria-label="Stops in the journey">
@@ -282,14 +296,15 @@ export function Journey() {
           <div className="jhud">
             {STORY_BEATS.map((bt) => (
               <div key={bt.id} className={`jbeat ${bt.pos}`} data-id={bt.id} data-a={bt.a} data-b={bt.b} data-f={bt.f}>
-                <h2 className="jb-h" data-stagger="0">
-                  <span className="wt" data-water>
-                    <span className="wt-stage" aria-hidden="true">
-                      <span className="wt-layer">{bt.h}</span>
-                      <span className="wt-layer wt-layer--b">{bt.h}</span>
+                <h2 className="jb-h" data-stagger="0" data-words>
+                  {bt.h.split(" ").map((word, k, all) => (
+                    <span key={k}>
+                      <span className="jw">
+                        <span className="jwi">{word}</span>
+                      </span>
+                      {k < all.length - 1 ? " " : ""}
                     </span>
-                    <span className="sr-only">{bt.h}</span>
-                  </span>
+                  ))}
                 </h2>
                 <p className="jb-p" data-stagger="2">
                   {bt.body}

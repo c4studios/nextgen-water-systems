@@ -335,7 +335,9 @@ header.site-nav .nav-links a { white-space: nowrap; }
    so it grows upward around the pointer and cannot flicker shut under it. */
 @media (min-width: 901px) {
   .jrail button:not(.jskip) {
-    max-height: 32px;
+    max-height: 26px;
+    padding-top: 3px;
+    padding-bottom: 3px;
     overflow: hidden;
     transition:
       color 0.3s var(--ease),

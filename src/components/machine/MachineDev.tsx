@@ -11,6 +11,12 @@
  * ?service=1                    bowls unscrewed and set down, cartridges hanging
  * ?yaw=<radians>                turns the whole machine (the hero's rest pose is -0.3)
  * ?pos=x,y,z&tgt=x,y,z&fov=n    camera overrides for stills
+ * ?post=1                       the page's own lens chain (AO, focus, bloom, vignette, grain), for stills
+ * ?hero=1                       the hero's palette: the white set, and the lens chain driven to nothing,
+ *                               so a still cut here drops straight onto the white page
+ *
+ * <html data-ngmedia="1"> is set once the cartridge media are drawn; a still
+ * of an open section waits for it.
  */
 import * as THREE from "three";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
@@ -18,7 +24,9 @@ import { OrbitControls } from "@react-three/drei";
 import { EffectComposer, N8AO } from "@react-three/postprocessing";
 import { useEffect, useMemo, useRef } from "react";
 import { Machine, createMachineHandle, type MachineHandle } from "./Machine";
-import { makeMachineMaterials } from "./materials";
+import { loadMachineMedia, makeMachineMaterials } from "./materials";
+import { PostChain } from "./PostChain";
+import { HERO } from "@/components/blueprint/heroState";
 import { Studio, configureStudio, STUDIO_BG } from "./Studio";
 import { BOWL, CENTRE_Y, COVER, FRAME_TOP, HOUSING_X } from "./dims";
 import { coverPose } from "./coverLift";
@@ -38,6 +46,22 @@ const VIEWS: Record<string, { pos: [number, number, number]; tgt: [number, numbe
   lock: { pos: [0, 57, 62], tgt: [0, 56, 0], fov: 30 },
   hero: { pos: [0, 41, 139], tgt: [0, 37, 0], fov: 36 }, // the page fits the cover to 82% of its anchor box
 };
+
+/** the hero's own palette, for a still that lands on the white page */
+function HeroPalette({ refs }: { refs: { vig: React.MutableRefObject<unknown>; grain: React.MutableRefObject<unknown>; bloom: React.MutableRefObject<unknown> } }) {
+  useFrame(() => {
+    HERO.mix = 1;
+    HERO.cx = 0.5;
+    HERO.cy = 0.5;
+    const vig = refs.vig.current as { darkness?: number } | null;
+    if (vig && "darkness" in vig) vig.darkness = 0;
+    const grain = refs.grain.current as { blendMode?: { opacity?: { value: number } } } | null;
+    if (grain?.blendMode?.opacity) grain.blendMode.opacity.value = 0;
+    const bloom = refs.bloom.current as { intensity?: number } | null;
+    if (bloom && "intensity" in bloom) bloom.intensity = 0;
+  });
+  return null;
+}
 
 function Driver({ h, params }: { h: MachineHandle; params: URLSearchParams }) {
   const { camera } = useThree();
@@ -98,12 +122,24 @@ export function MachineDev() {
   const mats = useMemo(() => makeMachineMaterials(1), []);
   const covered = params.get("open") !== "1";
   const ao = params.get("ao") !== "0";
+  const post = params.get("post") === "1";
+  const heroSet = params.get("hero") === "1";
+  const vig = useRef<unknown>(null);
+  const grain = useRef<unknown>(null);
+  const bloom = useRef<unknown>(null);
   const ready = useRef(false);
   useEffect(() => {
     (window as unknown as Record<string, unknown>).__mh = h;
-  }, [h]);
+    void loadMachineMedia(mats, 1024);
+  }, [h, mats]);
+  const focus = useMemo(() => {
+    const raw = params.get("tgt");
+    const v = raw ? raw.split(",").map(Number) : null;
+    const named = VIEWS[params.get("view") ?? "iso"] ?? VIEWS.iso;
+    return (v && v.length === 3 && v.every((n) => Number.isFinite(n)) ? v : named.tgt) as [number, number, number];
+  }, [params]);
   return (
-    <div style={{ position: "fixed", inset: 0, background: STUDIO_BG }}>
+    <div style={{ position: "fixed", inset: 0, background: heroSet ? "#ffffff" : STUDIO_BG }}>
       <Canvas
         shadows
         dpr={[1, 2]}
@@ -115,15 +151,20 @@ export function MachineDev() {
           document.documentElement.dataset.mdev = "1";
         }}
       >
-        <Studio />
+        <Studio soft />
         <group rotation-y={Number(params.get("yaw") ?? 0)}>
           <Machine mats={mats} handle={h} covered={covered} />
         </group>
         <Driver h={h} params={params} />
-        {ao && (
-          <EffectComposer multisampling={4}>
-            <N8AO aoRadius={9} intensity={1.6} distanceFalloff={1.2} quality="high" />
-          </EffectComposer>
+        {heroSet && <HeroPalette refs={{ vig, grain, bloom }} />}
+        {post ? (
+          <PostChain tier="high" focus={focus} refs={{ vig: vig as never, grain: grain as never, bloom: bloom as never }} />
+        ) : (
+          ao && (
+            <EffectComposer multisampling={4}>
+              <N8AO aoRadius={9} intensity={1.6} distanceFalloff={1.2} quality="high" />
+            </EffectComposer>
+          )
         )}
       </Canvas>
       <div style={{ position: "fixed", left: 12, bottom: 10, font: "12px monospace", color: "#555" }}>

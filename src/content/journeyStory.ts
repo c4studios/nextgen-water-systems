@@ -21,8 +21,6 @@ export type Beat = {
   f: number;
   /** FULL literal class name: Tailwind's scanner purges classes it can't find */
   pos: "jb--left" | "jb--right";
-  /** the line under the heading, plain words, no drawing references */
-  eyebrow: string;
   h: string;
   body: string;
   stat?: string;
@@ -38,65 +36,55 @@ export const VESSEL_BEAT_P = [0.41, 0.55, 0.69] as const;
 export const STORY_BEATS: Beat[] = [
   {
     id: "cover", a: -0.02, b: 0.06, f: 0.02, pos: "jb--right",
-    eyebrow: "The cover",
     h: "Take the cover off.",
     body: "It clips on with no screws. Under it are three full-size housings on a steel frame. Keep scrolling and each one opens in turn.",
   },
   {
     id: "reveal", a: 0.19, b: 0.268, f: 0.02, pos: "jb--left",
-    eyebrow: "The system",
     h: "Three housings. One pass.",
     body: "Water goes in on the left, comes out on the right, and every tap in the house runs through it. There is no pump, no power point and no tank.",
   },
   {
     id: "problem", a: 0.27, b: 0.338, f: 0.02, pos: "jb--left",
-    eyebrow: "What arrives",
     h: "Perth water arrives safe. It also arrives tasting of chlorine.",
-    body: "On the way to your tap it picks up grit and rust from the pipes, and the minerals in it end up on the kettle element and the shower screen. This is what the three stages deal with.",
+    body: "On the way to your tap it picks up grit and rust from the pipes, and the minerals in it end up on the kettle element and the shower screen. Each of the three stages is there for one of those.",
   },
   {
     id: "s1", a: 0.345, b: 0.455, f: 0.02, pos: "jb--left",
-    eyebrow: "Stage 1 of 3",
     h: "First, the grit.",
     body: "The first cartridge is three layers of fibre, coarse on the outside and fine in the middle, rated down to one micron. Sand, rust and silt stop here.",
     stat: "3-layer sediment · to 1 micron",
   },
   {
     id: "s2", a: 0.47, b: 0.605, f: 0.02, pos: "jb--left",
-    eyebrow: "Stage 2 of 3",
     h: "Then the taste and the smell.",
-    body: "Copper-zinc granules change the chlorine as the water passes through them, and coconut carbon behind them holds what is left. This is the stage you notice at the kitchen tap.",
+    body: "Copper-zinc granules change the chlorine as the water passes through them, and coconut carbon behind them holds what is left. The manufacturer calls it the taste improvement cartridge.",
     stat: "KDF 55 and 85 · coconut carbon",
   },
   {
     id: "s3", a: 0.62, b: 0.735, f: 0.02, pos: "jb--right",
-    eyebrow: "Stage 3 of 3",
     h: "Then the scale.",
     body: "The last cartridge carries limescale-reduction media with a second bed of coconut carbon behind it, and filters to one micron on the way out.",
     stat: "Limescale reduction · carbon · to 1 micron",
   },
   {
     id: "out", a: 0.76, b: 0.828, f: 0.02, pos: "jb--right",
-    eyebrow: "To the house",
     h: "One pass, then every tap.",
     body: "The kitchen tap, the shower, the washing machine and the ice maker all run off the same line. There is nothing to fill and nothing to switch on.",
   },
   {
     id: "cred", a: 0.838, b: 0.888, f: 0.02, pos: "jb--left",
-    eyebrow: "Who fits it",
     h: "A licensed plumber fits it.",
     body: "Aqua-Safe Plumbing and Maintenance install every system: licensed Perth plumbers and gas fitters, with a 12-month workmanship warranty on the work.",
     stat: "PL10802 · GF22810",
   },
   {
     id: "service", a: 0.895, b: 0.942, f: 0.02, pos: "jb--right",
-    eyebrow: "Servicing",
     h: "Servicing is a small job.",
     body: "Unscrew the bowl, lift the old cartridge out, drop the new one in. The manufacturer recommends a change every 12 months, and Aqua-Safe schedule it for you.",
   },
   {
     id: "handoff", a: 0.952, b: 2, f: 0.018, pos: "jb--left",
-    eyebrow: "Next",
     h: "Find out what's in your water.",
     body: "Book the free test below. A licensed plumber tests your own supply at your own tap and tells you what is in it.",
     more: "No obligation after the test.",
@@ -104,7 +92,7 @@ export const STORY_BEATS: Beat[] = [
   },
 ];
 
-/** the stage marker under the nav: one line per beat */
+/** the rail's name for each stop */
 export const STAGE_LABEL: Record<string, [string, string]> = {
   reveal: ["The system", "Three housings, one pass"],
   problem: ["The water", "What arrives at the tap"],

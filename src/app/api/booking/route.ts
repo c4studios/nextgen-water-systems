@@ -33,6 +33,8 @@ type Payload = {
   day?: unknown;
   /** what they ticked in the site check, carried through from sessionStorage */
   taste?: unknown;
+  /** "test" (the default) or "quote" */
+  kind?: unknown;
   /** honeypot — real users never see or fill this */
   company?: unknown;
 };
@@ -64,6 +66,7 @@ export async function POST(req: Request) {
   const phone = clean(body.phone, 60);
   const day = clean(body.day, 120);
   const taste = clean(body.taste, 600);
+  const quote = clean(body.kind, 12) === "quote";
 
   // Only three things are actually required to call someone back. Asking for
   // more on a free-test booking costs more enquiries than it saves.
@@ -99,10 +102,11 @@ export async function POST(req: Request) {
     ] as const
   ).filter(([, v]) => v);
 
-  const subject = `Water test booking: ${name} (${suburb})`;
+  const subject = quote ? `Quote request: ${name} (${suburb})` : `Water test booking: ${name} (${suburb})`;
+  const what = quote ? "Quote requested (the quote follows a free test)" : "Free water test requested";
 
   const html = `<div style="font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:#12242e;line-height:1.6;max-width:560px">
-    <h2 style="margin:0 0 2px;color:#0f6fb0;font-size:19px">Free water test requested</h2>
+    <h2 style="margin:0 0 2px;color:#0f6fb0;font-size:19px">${what}</h2>
     <p style="margin:0 0 18px;color:#5a6b76;font-size:14px">Sent from the nextgenwatersystems.com.au booking form.</p>
     <table style="border-collapse:collapse;margin:0 0 18px;font-size:15px">
       ${rows
@@ -125,7 +129,7 @@ export async function POST(req: Request) {
   </div>`;
 
   const text =
-    `Free water test requested\n\n` +
+    `${what}\n\n` +
     rows.map(([k, v]) => `${k}: ${v}`).join("\n") +
     (taste ? `\n\nWhat they said about their water:\n${taste}\n` : "\n");
 

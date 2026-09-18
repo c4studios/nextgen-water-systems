@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "./brand.css";
 import "./world.css";
+import "./sections.css";
 import { satoshi, hanken, geistMono, michroma } from "./fonts";
 import { SmoothScroll } from "@/lib/providers/SmoothScroll";
 import { DirectionContract } from "@/components/site/DirectionContract";
@@ -12,6 +13,7 @@ import { LAUNCHED, OG_ALT } from "@/lib/seo";
 import { localBusinessJsonLd } from "@/lib/jsonld";
 import { Nav } from "@/components/Nav";
 import { SiteFooter } from "@/components/site/SiteFooter";
+import { MobileBar } from "@/components/site/MobileBar";
 
 const DESCRIPTION =
   "Whole-home water filtration for Perth. One three-stage system at the mains, installed by licensed plumbers. Book a free in-home water test.";
@@ -96,6 +98,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <Nav />
           {children}
           <SiteFooter />
+          <MobileBar />
         </SmoothScroll>
       </body>
     </html>

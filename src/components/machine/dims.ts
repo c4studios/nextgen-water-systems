@@ -57,8 +57,6 @@ export const FRAME = {
   /** the plate's underside; the heads meet it */
   plateBottom: 60,
   plate: { h: 3.6, w: 54, d: 18.5 },
-  /** the two wall-mount ears folded up from the plate's back edge */
-  ear: { w: 6, h: 4, holeR: 0.45 },
 } as const;
 export const FRAME_TOP = FRAME.plateBottom + FRAME.plate.h; // 63.6
 export const POST_X = FRAME.w / 2 - TUBE / 2;
@@ -70,8 +68,9 @@ export const HOUSING_X = [-15.5, 0, 15.5] as const;
 export const BOWL = {
   /** outside radius: a 4.5 inch cartridge plus the wall (inferred 13 cm OD) */
   r: 6.5,
-  /** the foot the bowl stands on when set down */
-  footR: 3.9,
+  /** the foot the bowl stands on when set down: a broad, shallow dome
+   *  (installed photograph), so the cartridge sits clear of its curve */
+  footR: 4.6,
   /** world y of the foot */
   bottom: 5.2,
   /** where the straight wall ends and the collar begins */
@@ -81,12 +80,13 @@ export const BOWL = {
   /** the threaded neck that screws into the head skirt */
   neck: { r: 6.2, y0: 51.6, y1: 55.5, threads: 5 },
   wall: 0.45,
-  domeH: 4.4,
+  domeH: 3.0,
 } as const;
 export const HEAD = {
-  /** skirt that wraps the neck */
+  /** skirt that wraps the neck and comes down over the grip collar: on the
+   *  installed unit the black head meets the grey bowl with no band between */
   skirtR: 7.4,
-  skirtY0: 51.4,
+  skirtY0: 48.3,
   skirtY1: 55.6,
   /** the shoulder in to the body */
   bodyR: 7.0,
@@ -103,9 +103,10 @@ export const HEAD = {
 } as const;
 export const CARTRIDGE = {
   r: 5.72,
-  /** the cartridge sits on the bowl's inner foot and reaches the head's seat */
-  len: 50,
-  bottom: 6.0,
+  /** the cartridge stands on the bowl's centring boss, clear of the domed
+   *  foot, and reaches the head's seat */
+  len: 48.7,
+  bottom: 7.3,
   coreR: 1.35,
   capH: 1.6,
 } as const;

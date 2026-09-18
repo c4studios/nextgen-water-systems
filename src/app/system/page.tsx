@@ -69,9 +69,9 @@ export default function SystemPage() {
                 Copper-zinc and coconut carbon
               </dt>
               <dd>
-                The stage you taste. Copper-zinc granules change chlorine on contact and hold dissolved metal
-                on their surface. The coconut carbon behind them catches what is left, including the flat
-                swimming-pool note that survives the first pass.
+                The manufacturer&rsquo;s taste improvement stage. Copper-zinc granules change chlorine on
+                contact and hold dissolved metal on their surface, and the coconut carbon behind them
+                adsorbs what is left.
               </dd>
             </div>
             <div>

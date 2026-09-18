@@ -12,7 +12,9 @@ import { FORM_ENDPOINT } from "@/content/booking";
 
 type SubmitState = "idle" | "sending" | "logged" | "error";
 
-export function BookingForm() {
+export type BookingKind = "test" | "quote";
+
+export function BookingForm({ kind = "test" }: { kind?: BookingKind }) {
   const [state, setState] = useState<SubmitState>("idle");
   // What the visitor told the taste key upstream. It rides along so the
   // technician knows what he is walking into before he is on the doorstep,
@@ -36,6 +38,7 @@ export function BookingForm() {
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(e.currentTarget).entries()) as Record<string, string>;
+    data.kind = kind;
     // the site check rides along, so the technician knows what he is looking
     // for before he is on site
     if (taste) data.taste = taste;
@@ -72,7 +75,9 @@ export function BookingForm() {
         <span className="tform-stamp">Request logged</span>
         <p>
           {FORM_ENDPOINT
-            ? "Done. We'll call to confirm a time, and there's no obligation after it."
+            ? kind === "quote"
+              ? "Done. We'll call to talk through your house and book the test the quote follows."
+              : "Done. We'll call to confirm a time, and there's no obligation after it."
             : "Your email is ready to send. Fire it off and we'll call to confirm a time."}
         </p>
       </div>
@@ -83,7 +88,7 @@ export function BookingForm() {
     <form className="tform" onSubmit={onSubmit}>
       {taste && (
         <p className="tform-carried">
-          <span>WHAT YOU TOLD US</span>
+          <span>What you told us</span>
           <b>{taste}</b>
           <input type="hidden" name="taste" value={taste} />
         </p>
@@ -108,7 +113,7 @@ export function BookingForm() {
       </div>
       <div className="tform-actions">
         <button className="tform-submit lm" type="submit" disabled={state === "sending"}>
-          {state === "sending" ? "Logging…" : "Book your free water test"}
+          {state === "sending" ? "Sending…" : kind === "quote" ? "Ask for a quote" : "Book your free water test"}
         </button>
         <a className="tform-call" href={`tel:${CONTACT.phone.replace(/\s/g, "")}`}>
           or call {CONTACT.phone}

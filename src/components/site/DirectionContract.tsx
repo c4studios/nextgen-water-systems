@@ -5,11 +5,11 @@
  * assistive tech.
  */
 const CONTRACT = `
-THESIS: One machine at the mains, launched the way a premium appliance is launched: the product huge and live in the first viewport, its cover lifting the way it really lifts, each stage opened in section on the scroll. Refuses the blue water-splash hero, the three feature cards, the stats band and the testimonial carousel of the category, and refuses equally the drawing-set furniture this page replaces.
-OWN-WORLD: (17 Sep 2026, on Aaron's brief: brighter, his brand concept, the real system inside) a white page and a pale studio the machine stands in; charcoal ink from the cover's lettering; one blue for the action and for water; Satoshi headings, Hanken sentences, no drafting labels; a photoreal FHWR-3S1-20 modelled from the supplier's photographs, powder-coated steel, grey polypropylene, black heads, brass and copper, under a grey clip-on Next Gen cover with raised lettering.
-STORY: my water tastes of chlorine and furs the kettle; one system at the mains, three stages, every tap; licensed plumbers fit it; the test costs nothing.
-FIRST VIEWPORT: outcome line and the one action left, the closed cover right at two-thirds of the viewport height, live: drag turns it, a tap lifts it off; the installer strip along the bottom edge. On phones the cover sits under the copy at half the screen.
-FORM: fused hand (launch page + section drawing + installer's card), direction roll 709e77ec, pick built, code-led.
+THESIS: One machine at the mains, launched like an appliance: live in the first viewport, its cover lifting as it really lifts, each stage opened in solid section inside a photographic studio, then a plain path to buying. Refuses the water-splash hero, the stats band, the testimonial carousel and the drawing-set furniture.
+OWN-WORLD: White page (#ffffff, and the hero's set measures the same), with the quiet sections on a panel tint (#f6f7f7) so a long page keeps a rhythm; a neutral grey studio, #c6c6c4 in the pool of light to #6c6c6a at the frame corners, lit by softboxes and two rims; charcoal ink; one blue for the action; Satoshi headings, Hanken sentences; a datasheet-accurate FHWR-3S1-20 in satin grey polypropylene, satin-black heads, powder-coated frame and folded-sheet cover, brass and copper, with branded stage labels; macro-drawn media in section; paper callouts on hairline leaders.
+STORY: Chlorine taste and a scaled kettle; one system at the mains, three stages; licensed plumbers fit and service it; the test is free and the quote follows it.
+FIRST VIEWPORT: Outcome line and the blue test action left; the live closed cover right at two-thirds height (drag turns it, a tap lifts it off); the installer proof strip with drawn icons along the bottom.
+FORM: fused hand, direction roll 709e77ec, extended 17 Sep 2026 on the client's brief, look-dev rebuilt 18 Sep 2026 on the finish review's rebuild directive, code-led.
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance.
 `;
 

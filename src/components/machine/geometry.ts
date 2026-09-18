@@ -115,27 +115,82 @@ export function tubeGeometry(len: number, axis: "x" | "y" | "z"): THREE.BufferGe
 export function plateGeometry(): THREE.BufferGeometry {
   return new RoundedBoxGeometry(FRAME.plate.w, FRAME.plate.h, FRAME.plate.d, 3, 0.4);
 }
-/** a wall-mount ear with a keyhole, standing in the x-y plane */
-export function earGeometry(): THREE.BufferGeometry {
-  const { w, h, holeR } = FRAME.ear;
+/** the wall-mount upstand folded up along the plate's back edge, full width,
+ *  rounded at both ends, a keyhole near each end (installed photograph) */
+export const UPSTAND = { h: 5.8, r: 2.4, t: 0.3, holeInset: 3.4, holeR: 0.55, slot: 1.5, slotW: 0.28 } as const;
+export function upstandGeometry(): THREE.BufferGeometry {
+  const W = FRAME.plate.w;
+  const { h: H, r: R, t, holeInset, holeR, slot, slotW } = UPSTAND;
   const s = new THREE.Shape();
-  s.moveTo(-w / 2, 0);
-  s.lineTo(w / 2, 0);
-  s.lineTo(w / 2, h - 1.2);
-  s.absarc(0, h - 1.2, w / 2, 0, Math.PI, false);
-  s.lineTo(-w / 2, 0);
-  const hole = new THREE.Path();
-  hole.absarc(0, h - 1.5, holeR, 0, Math.PI * 2, true);
-  const slot = new THREE.Path();
-  slot.moveTo(-0.32, h - 1.5);
-  slot.lineTo(0.32, h - 1.5);
-  slot.lineTo(0.32, h - 3.0);
-  slot.lineTo(-0.32, h - 3.0);
-  slot.lineTo(-0.32, h - 1.5);
-  s.holes.push(hole, slot);
-  const g = new THREE.ExtrudeGeometry(s, { depth: 0.3, bevelEnabled: false });
-  g.translate(0, 0, -0.15);
+  s.moveTo(-W / 2, 0);
+  s.lineTo(W / 2, 0);
+  s.lineTo(W / 2, H - R);
+  s.absarc(W / 2 - R, H - R, R, 0, Math.PI / 2, false);
+  s.lineTo(-W / 2 + R, H);
+  s.absarc(-W / 2 + R, H - R, R, Math.PI / 2, Math.PI, false);
+  s.lineTo(-W / 2, 0);
+  for (const sx of [-1, 1]) {
+    const cx = sx * (W / 2 - holeInset);
+    const cy = H - 2.1;
+    const k = new THREE.Path();
+    const meet = Math.sqrt(holeR * holeR - slotW * slotW);
+    const a0 = Math.asin(slotW / holeR);
+    k.moveTo(cx + slotW, cy - meet);
+    k.absarc(cx, cy, holeR, -Math.PI / 2 + a0, (3 * Math.PI) / 2 - a0, false);
+    k.lineTo(cx - slotW, cy - slot);
+    k.absarc(cx, cy - slot, slotW, Math.PI, 2 * Math.PI, false);
+    k.lineTo(cx + slotW, cy - meet);
+    s.holes.push(k);
+  }
+  const g = new THREE.ExtrudeGeometry(s, { depth: t, bevelEnabled: true, bevelThickness: 0.04, bevelSize: 0.04, bevelSegments: 2, curveSegments: 18 });
+  g.translate(0, 0, -t / 2);
   return g;
+}
+/** a pan-head screw with its washer, axis along z, head toward +z */
+export function screwGeometry(): THREE.BufferGeometry {
+  const washer = new THREE.CylinderGeometry(0.62, 0.62, 0.08, 28);
+  washer.rotateX(Math.PI / 2);
+  washer.translate(0, 0, 0.04);
+  const head = new THREE.SphereGeometry(0.42, 24, 10, 0, Math.PI * 2, 0, Math.PI / 2);
+  head.scale(1, 1, 0.55);
+  head.rotateX(Math.PI / 2);
+  head.translate(0, 0, 0.08);
+  const g = mergeGeometries([washer.toNonIndexed(), head.toNonIndexed()], false);
+  return g ?? washer;
+}
+
+/** the paired moulded ribs down each bowl, following the profile over the
+ *  domed foot; two pairs, opposite each other (installed photograph) */
+export const BOWL_RIBS = { angles: [-40, 140], pairGap: 0.62, r: 0.2 } as const;
+export function bowlRibsGeometry(): THREE.BufferGeometry {
+  const parts: THREE.BufferGeometry[] = [];
+  const { r: ribR, pairGap } = BOWL_RIBS;
+  const b = BOWL.bottom + 0.14;
+  const lift = ribR * 0.45;
+  for (const deg of BOWL_RIBS.angles) {
+    const c = (deg * Math.PI) / 180;
+    const d = pairGap / 2 / BOWL.r;
+    for (const phi of [c - d, c + d]) {
+      const at = (rad: number, y: number) => new THREE.Vector3((rad + lift) * Math.sin(phi), y, (rad + lift) * Math.cos(phi));
+      const pts: THREE.Vector3[] = [];
+      const a0 = 0.34 * Math.PI;
+      for (let k = 0; k <= 8; k++) {
+        const a = a0 + ((0.5 * Math.PI - a0) * k) / 8;
+        pts.push(at(BOWL.footR + (BOWL.r - BOWL.footR) * Math.sin(a), b + BOWL.domeH * (1 - Math.cos(a))));
+      }
+      pts.push(at(BOWL.r, BOWL.shoulder - 0.9));
+      const curve = new THREE.CatmullRomCurve3(pts, false, "centripetal");
+      parts.push(new THREE.TubeGeometry(curve, 72, ribR, 10, false).toNonIndexed());
+      for (const end of [pts[0], pts[pts.length - 1]]) {
+        const cap = new THREE.SphereGeometry(ribR, 10, 8);
+        cap.translate(end.x, end.y, end.z);
+        parts.push(cap.toNonIndexed());
+      }
+    }
+  }
+  // drop the uv sets that differ between tubes and spheres
+  for (const p of parts) p.deleteAttribute("uv");
+  return mergeGeometries(parts, false) ?? parts[0];
 }
 
 /* ---- the gauges ---- */
@@ -222,94 +277,243 @@ export function makeDialTexture(): THREE.CanvasTexture | null {
   return t;
 }
 
-/* ---- the cover: a folded sheet-steel shell, open at the back ---- */
-type Pt = [number, number]; // (z, y) in the side-profile plane
-export function coverGeometries() {
-  const { w, h, d, t, chamferTop, crease, notch } = COVER;
+/* ---- the cover: ONE folded sheet ----
+   A pressed steel cover is a single sheet bent over a brake: every edge the
+   eye reads is a bend with a radius, and a bend catches a line of light that
+   a butt joint never does. So the shell is generated as one surface: the side
+   profile (the leaning foot, the front, the chamfer, the lid) filleted at each
+   fold, swept across the width with its two ends rolled round onto the side
+   panels; the side panels fill the inset profile; the port notches are pressed
+   pockets; and the open edges at the back and the foot are hemmed inward so
+   the sheet has an edge with some substance to it. The same surface drawn a
+   second time from behind is the inside of the cover. */
+type ProfilePt = { z: number; y: number; nz: number; ny: number; s: number };
+/** the outer bend radius of the folds: 1.6 mm sheet on a 3 mm tool */
+export const COVER_BEND = 0.46;
+
+function coverProfile(R: number): ProfilePt[] {
+  const { h, d, chamferTop, crease, notch } = COVER;
   const zf = d / 2;
   const zb = -d / 2;
   const nb = notch.top - notch.h;
   const nt = notch.top;
-
-  // side panel outline, with the port notch bitten out of the top front corner
-  const side = new THREE.Shape();
-  const sp: Pt[] = [
-    [zb, 0],
+  const P: [number, number][] = [
     [zf - crease.in, 0],
     [zf, crease.y],
     [zf, nb],
-    [zf - notch.d, nb],
-    [zf - notch.d, nt],
     [zf, nt],
     [zf, h - chamferTop.drop],
     [zf - chamferTop.back, h],
     [zb, h],
   ];
-  side.moveTo(sp[0][0], sp[0][1]);
-  for (let i = 1; i < sp.length; i++) side.lineTo(sp[i][0], sp[i][1]);
-  side.closePath();
-  const sideGeo = new THREE.ExtrudeGeometry(side, { depth: t, bevelEnabled: false });
-  // ExtrudeGeometry lays the shape in x-y and extrudes along z; the shape is
-  // (z, y), so turn it so its first axis becomes world z and the extrusion
-  // becomes world x
-  sideGeo.rotateY(-Math.PI / 2);
-
-  // the front-and-lid band: the outer polyline and its inner offset, closed
-  const band = (outer: Pt[], inner: Pt[]) => {
-    const s = new THREE.Shape();
-    s.moveTo(outer[0][0], outer[0][1]);
-    for (let i = 1; i < outer.length; i++) s.lineTo(outer[i][0], outer[i][1]);
-    for (let i = inner.length - 1; i >= 0; i--) s.lineTo(inner[i][0], inner[i][1]);
-    s.closePath();
-    return s;
+  const radius = [0, R * 2.2, 0, 0, R, R, 0];
+  const unit = (dz: number, dy: number): [number, number] => {
+    const l = Math.hypot(dz, dy);
+    return [dz / l, dy / l];
   };
-  const outerFull: Pt[] = [
-    [zf - crease.in, 0],
-    [zf, crease.y],
-    [zf, h - chamferTop.drop],
-    [zf - chamferTop.back, h],
-    [zb, h],
-  ];
-  const innerFull: Pt[] = [
-    [zf - crease.in - t, 0],
-    [zf - t, crease.y + 0.1],
-    [zf - t, h - chamferTop.drop - 0.05],
-    [zf - chamferTop.back - t * 0.4, h - t],
-    [zb, h - t],
-  ];
-  const mid = new THREE.ExtrudeGeometry(band(outerFull, innerFull), { depth: w - 2 * t - 2 * notch.w, bevelEnabled: false });
-  mid.rotateY(-Math.PI / 2);
-  // the two edge strips beside the notches: below it, and the lid above it
-  const outerLow: Pt[] = [
-    [zf - crease.in, 0],
-    [zf, crease.y],
-    [zf, nb],
-  ];
-  const innerLow: Pt[] = [
-    [zf - crease.in - t, 0],
-    [zf - t, crease.y + 0.1],
-    [zf - t, nb],
-  ];
-  const outerHigh: Pt[] = [
-    [zf, nt],
-    [zf, h - chamferTop.drop],
-    [zf - chamferTop.back, h],
-    [zb, h],
-  ];
-  const innerHigh: Pt[] = [
-    [zf - t, nt],
-    [zf - t, h - chamferTop.drop - 0.05],
-    [zf - chamferTop.back - t * 0.4, h - t],
-    [zb, h - t],
-  ];
-  const edgeLow = new THREE.ExtrudeGeometry(band(outerLow, innerLow), { depth: notch.w, bevelEnabled: false });
-  edgeLow.rotateY(-Math.PI / 2);
-  const edgeHigh = new THREE.ExtrudeGeometry(band(outerHigh, innerHigh), { depth: notch.w, bevelEnabled: false });
-  edgeHigh.rotateY(-Math.PI / 2);
-  // the notch's inner return: a small sheet closing the notch's inner wall so
-  // the cut reads as a pressed pocket rather than a missing corner
-  const pocket = new THREE.BoxGeometry(t, notch.h, notch.d);
-  return { sideGeo, mid, edgeLow, edgeHigh, pocket };
+  // travelling up the profile, the outside is to the right
+  const outward = (u: [number, number]): [number, number] => [u[1], -u[0]];
+  const pts: [number, number, number, number][] = [];
+  for (let i = 0; i < P.length; i++) {
+    const [pz, py] = P[i];
+    const prev = i > 0 ? unit(pz - P[i - 1][0], py - P[i - 1][1]) : null;
+    const next = i < P.length - 1 ? unit(P[i + 1][0] - pz, P[i + 1][1] - py) : null;
+    if (!prev || !next || radius[i] === 0) {
+      const u = prev && next ? unit(prev[0] + next[0], prev[1] + next[1]) : (prev ?? next)!;
+      const n = outward(u);
+      pts.push([pz, py, n[0], n[1]]);
+      continue;
+    }
+    const turn = Math.acos(THREE.MathUtils.clamp(prev[0] * next[0] + prev[1] * next[1], -1, 1));
+    const n1 = outward(prev);
+    const n2 = outward(next);
+    const r = radius[i];
+    const dt = r * Math.tan(turn / 2);
+    const cz = pz - prev[0] * dt - n1[0] * r;
+    const cy = py - prev[1] * dt - n1[1] * r;
+    const a1 = Math.atan2(n1[1], n1[0]);
+    let da = Math.atan2(n2[1], n2[0]) - a1;
+    while (da > Math.PI) da -= 2 * Math.PI;
+    while (da < -Math.PI) da += 2 * Math.PI;
+    const segs = Math.max(3, Math.ceil(Math.abs(da) / 0.12));
+    for (let k = 0; k <= segs; k++) {
+      const a = a1 + (da * k) / segs;
+      pts.push([cz + Math.cos(a) * r, cy + Math.sin(a) * r, Math.cos(a), Math.sin(a)]);
+    }
+  }
+  let s = 0;
+  return pts.map(([z, y, nz, ny], i) => {
+    if (i > 0) s += Math.hypot(z - pts[i - 1][0], y - pts[i - 1][1]);
+    return { z, y, nz, ny, s };
+  });
+}
+
+class Sheet {
+  pos: number[] = [];
+  nor: number[] = [];
+  uv: number[] = [];
+  idx: number[] = [];
+  vert(x: number, y: number, z: number, nx: number, ny: number, nz: number, u: number, v: number) {
+    this.pos.push(x, y, z);
+    this.nor.push(nx, ny, nz);
+    this.uv.push(u, v);
+    return this.pos.length / 3 - 1;
+  }
+  /** a quad whose winding is chosen so it faces along `want` */
+  quad(a: number, b: number, c: number, d: number, want: [number, number, number]) {
+    this.tri(a, b, c, want);
+    this.tri(a, c, d, want);
+  }
+  tri(a: number, b: number, c: number, want: [number, number, number]) {
+    const P = this.pos;
+    const ax = P[b * 3] - P[a * 3], ay = P[b * 3 + 1] - P[a * 3 + 1], az = P[b * 3 + 2] - P[a * 3 + 2];
+    const bx = P[c * 3] - P[a * 3], by = P[c * 3 + 1] - P[a * 3 + 1], bz = P[c * 3 + 2] - P[a * 3 + 2];
+    const nx = ay * bz - az * by, ny = az * bx - ax * bz, nz = ax * by - ay * bx;
+    if (nx * want[0] + ny * want[1] + nz * want[2] >= 0) this.idx.push(a, b, c);
+    else this.idx.push(a, c, b);
+  }
+  /** a flat polygon (possibly concave) in a plane, triangulated */
+  poly(outline: [number, number][], place: (p: [number, number]) => [number, number, number], n: [number, number, number], uvOf: (p: [number, number]) => [number, number]) {
+    const tris = THREE.ShapeUtils.triangulateShape(outline.map(([a, b]) => new THREE.Vector2(a, b)), []);
+    const base = outline.map((p) => {
+      const [x, y, z] = place(p);
+      const [u, v] = uvOf(p);
+      return this.vert(x, y, z, n[0], n[1], n[2], u, v);
+    });
+    for (const [a, b, c] of tris) this.tri(base[a], base[b], base[c], n);
+  }
+  geometry() {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(this.pos, 3));
+    g.setAttribute("normal", new THREE.Float32BufferAttribute(this.nor, 3));
+    g.setAttribute("uv", new THREE.Float32BufferAttribute(this.uv, 2));
+    g.setIndex(this.idx);
+    g.computeBoundingSphere();
+    return g;
+  }
+}
+
+export function coverShellGeometry(): THREE.BufferGeometry {
+  const { w, h, d, notch } = COVER;
+  const R = COVER_BEND;
+  const W2 = w / 2;
+  const zf = d / 2;
+  const zb = -d / 2;
+  const nb = notch.top - notch.h;
+  const nt = notch.top;
+  const xn = W2 - notch.w;
+  const prof = coverProfile(R);
+  const iNb = prof.findIndex((p) => Math.abs(p.y - nb) < 1e-6 && Math.abs(p.z - zf) < 1e-6);
+  const iNt = prof.findIndex((p) => Math.abs(p.y - nt) < 1e-6 && Math.abs(p.z - zf) < 1e-6);
+  const S = new Sheet();
+
+  /* the band: the profile swept across the width. Columns: the left roll
+     (onto the side panel), the two notch lines, the right roll. */
+  type Col = { kind: "roll"; sgn: number; th: number } | { kind: "flat"; x: number };
+  const ROLL = 8;
+  const full: Col[] = [];
+  for (let k = 0; k <= ROLL; k++) full.push({ kind: "roll", sgn: -1, th: (Math.PI / 2) * (1 - k / ROLL) });
+  full.push({ kind: "flat", x: -xn }, { kind: "flat", x: xn });
+  for (let k = 0; k <= ROLL; k++) full.push({ kind: "roll", sgn: 1, th: (Math.PI / 2) * (k / ROLL) });
+  const inner: Col[] = [{ kind: "flat", x: -xn }, { kind: "flat", x: xn }];
+  const rowVerts = (p: ProfilePt, cols: Col[]) =>
+    cols.map((c) => {
+      if (c.kind === "flat") return S.vert(c.x, p.y, p.z, 0, p.ny, p.nz, c.x, p.s);
+      const sin = Math.sin(c.th);
+      const cos = Math.cos(c.th);
+      const x = c.sgn * (W2 - R) + c.sgn * R * sin;
+      const k = R * (cos - 1);
+      return S.vert(x, p.y + k * p.ny, p.z + k * p.nz, c.sgn * sin, cos * p.ny, cos * p.nz, x, p.s);
+    });
+  const sweep = (from: number, to: number, cols: Col[]) => {
+    let prev = rowVerts(prof[from], cols);
+    for (let j = from + 1; j <= to; j++) {
+      const row = rowVerts(prof[j], cols);
+      const pm = prof[j - 1];
+      const pj = prof[j];
+      for (let c = 0; c < cols.length - 1; c++) {
+        const col = cols[c];
+        const col2 = cols[c + 1];
+        // the outward direction of this quad, from its middle
+        let nx = 0;
+        let ny = (pm.ny + pj.ny) / 2;
+        let nz = (pm.nz + pj.nz) / 2;
+        if (col.kind === "roll" && col2.kind === "roll") {
+          const th = (col.th + col2.th) / 2;
+          nx = col.sgn * Math.sin(th);
+          ny *= Math.cos(th);
+          nz *= Math.cos(th);
+        }
+        S.quad(prev[c], prev[c + 1], row[c + 1], row[c], [nx, ny, nz]);
+      }
+      prev = row;
+    }
+  };
+  sweep(0, iNb, full);
+  sweep(iNb, iNt, inner);
+  sweep(iNt, prof.length - 1, full);
+
+  /* the side panels: the profile inset by the bend, down to the foot and back
+     to the wall, with the notch bitten out of the top front corner */
+  const inset = (p: ProfilePt): [number, number] => [p.z - R * p.nz, p.y - R * p.ny];
+  const foot = (() => {
+    // where the inset foot line meets the floor
+    const a = inset(prof[0]);
+    const b = inset(prof[1]);
+    const t = a[1] / (a[1] - b[1]);
+    return [a[0] + (b[0] - a[0]) * t, 0] as [number, number];
+  })();
+  const outline: [number, number][] = [[zb, 0], foot];
+  for (let j = 1; j <= iNb; j++) outline.push(inset(prof[j]));
+  outline.push([zf - notch.d, nb], [zf - notch.d, nt]);
+  for (let j = iNt; j < prof.length; j++) outline.push(inset(prof[j]));
+  // drop any point that doubles its neighbour
+  const clean = outline.filter((p, i) => i === 0 || Math.hypot(p[0] - outline[i - 1][0], p[1] - outline[i - 1][1]) > 1e-4);
+  for (const sgn of [-1, 1]) {
+    S.poly(clean, ([z, y]) => [sgn * W2, y, z], [sgn, 0, 0], ([z, y]) => [z, y]);
+  }
+
+  /* the notch pockets: a floor, a ceiling, a back wall and an inner wall,
+     pressed in from the outer sheet; the floor and ceiling follow the roll */
+  for (const sgn of [-1, 1]) {
+    const cornerArc: [number, number][] = [];
+    for (let k = 0; k <= ROLL; k++) {
+      const th = (Math.PI / 2) * (k / ROLL);
+      cornerArc.push([W2 - R + R * Math.sin(th), zf - R + R * Math.cos(th)]);
+    }
+    const plan: [number, number][] = [[xn, zf - notch.d], [W2, zf - notch.d], ...cornerArc.slice().reverse(), [xn, zf]];
+    const planX = (p: [number, number]): [number, number] => [sgn * p[0], p[1]];
+    S.poly(plan.map(planX), ([x, z]) => [x, nb, z], [0, 1, 0], ([x, z]) => [x, z]);
+    S.poly(plan.map(planX), ([x, z]) => [x, nt, z], [0, -1, 0], ([x, z]) => [x, z]);
+    S.poly(
+      [[xn, nb], [W2, nb], [W2, nt], [xn, nt]].map(([x, y]) => [sgn * x, y] as [number, number]),
+      ([x, y]) => [x, y, zf - notch.d],
+      [0, 0, 1],
+      ([x, y]) => [x, y],
+    );
+    S.poly(
+      [[zf - notch.d, nb], [zf, nb], [zf, nt], [zf - notch.d, nt]],
+      ([z, y]) => [sgn * xn, y, z],
+      [sgn, 0, 0],
+      ([z, y]) => [z, y],
+    );
+  }
+
+  /* the hems: the open edges folded inward, so an edge has substance */
+  const HEM = 1.4;
+  for (const sgn of [-1, 1]) {
+    // down the back edge of each side
+    S.poly([[W2 - HEM, 0], [W2, 0], [W2, h - R], [W2 - HEM, h - R]].map(([x, y]) => [sgn * x, y] as [number, number]), ([x, y]) => [x, y, zb], [0, 0, -1], ([x, y]) => [x, y]);
+    // along the foot of each side
+    S.poly([[W2 - HEM, zb], [W2, zb], [W2, foot[0]], [W2 - HEM, foot[0] - 0.3]].map(([x, z]) => [sgn * x, z] as [number, number]), ([x, z]) => [x, 0, z], [0, -1, 0], ([x, z]) => [x, z]);
+  }
+  // under the back edge of the lid
+  S.poly([[-(W2 - R), h - HEM], [W2 - R, h - HEM], [W2 - R, h], [-(W2 - R), h]], ([x, y]) => [x, y, zb], [0, 0, -1], ([x, y]) => [x, y]);
+  // along the front foot
+  const fz = prof[0].z;
+  S.poly([[-(W2 - R), fz - HEM], [W2 - R, fz - HEM], [W2 - R, fz], [-(W2 - R), fz]], ([x, z]) => [x, 0, z], [0, -1, 0], ([x, z]) => [x, z]);
+
+  return S.geometry();
 }
 
 /* ---- the cartridges ---- */

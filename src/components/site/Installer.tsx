@@ -64,9 +64,8 @@ export function Installer() {
           <article className="who-note">
             <h3>The test comes first.</h3>
             <p>
-              A free test at your kitchen tap, so you know what is actually in your water. Then a
-              clean fit at the mains, with isolation valves either side and the joints pressure-tested
-              before the water goes back on. No obligation after the test.
+              A free test at your kitchen tap, so you know what is actually in your water. Then the
+              fit at the mains, with an isolation valve either side. No obligation after the test.
             </p>
           </article>
         </div>

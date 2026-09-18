@@ -57,6 +57,8 @@ export type Quality = {
   relief: number;
   /** geometric extras: thread ridges, hex nuts, weld beads */
   hardware: boolean;
+  /** the studio floor reflects the machine (renders the scene a second time) */
+  reflect: boolean;
 };
 
 export const QUALITY: Record<Tier, Quality> = {
@@ -71,6 +73,7 @@ export const QUALITY: Record<Tier, Quality> = {
     droplets: 130,
     relief: 1,
     hardware: true,
+    reflect: true,
   },
   medium: {
     dpr: [1, 1.5],
@@ -83,6 +86,7 @@ export const QUALITY: Record<Tier, Quality> = {
     droplets: 70,
     relief: 0.8,
     hardware: true,
+    reflect: false,
   },
   low: {
     dpr: [1, 1],
@@ -95,5 +99,6 @@ export const QUALITY: Record<Tier, Quality> = {
     droplets: 0,
     relief: 0.6,
     hardware: false,
+    reflect: false,
   },
 };

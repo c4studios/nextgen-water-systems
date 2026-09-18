@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { TasteCheck } from "@/components/site/TasteCheck";
 import { PROOF_ROWS } from "@/content/booking";
-import { BookingForm } from "@/components/site/BookingForm";
+import { BookingForm, type BookingKind } from "@/components/site/BookingForm";
 
 /*
   THE TAIL (Slice 2) — the journey sells; this closes. One compact section in
@@ -113,22 +113,66 @@ function Schedule() {
 }
 
 export function SiteSpine() {
+  const [kind, setKind] = useState<BookingKind>("test");
+
+  // "#quote" anywhere on the page opens this section on the quote tab
+  useEffect(() => {
+    const read = () => {
+      if (window.location.hash === "#quote") setKind("quote");
+    };
+    const onClick = (e: MouseEvent) => {
+      const a = (e.target as HTMLElement | null)?.closest?.("a[href]") as HTMLAnchorElement | null;
+      if (!a) return;
+      const href = a.getAttribute("href") || "";
+      if (href === "#quote") setKind("quote");
+      else if (href === "#book") setKind("test");
+    };
+    read();
+    window.addEventListener("hashchange", read);
+    document.addEventListener("click", onClick, true);
+    return () => {
+      window.removeEventListener("hashchange", read);
+      document.removeEventListener("click", onClick, true);
+    };
+  }, []);
+
+  const quote = kind === "quote";
   return (
     <section id="book" className="tail ground">
+      <span id="quote" className="tail-anchor" aria-hidden="true" />
       <div className="tail-inner">
+        <div className="tail-tabs" role="tablist" aria-label="What would you like">
+          <button type="button" role="tab" aria-selected={!quote} className={`tail-tab${!quote ? " is-on" : ""}`} onClick={() => setKind("test")}>
+            Free water test
+          </button>
+          <button type="button" role="tab" aria-selected={quote} className={`tail-tab${quote ? " is-on" : ""}`} onClick={() => setKind("quote")}>
+            A quote
+          </button>
+        </div>
         <h2 className="tail-h">
-          Find out what&rsquo;s
-          <br />
-          in your water.
+          {quote ? (
+            <>
+              A quote for
+              <br />
+              your house.
+            </>
+          ) : (
+            <>
+              Find out what&rsquo;s
+              <br />
+              in your water.
+            </>
+          )}
         </h2>
         <p className="tail-p">
-          A free, no-obligation in-home water test. A licensed plumber tests your actual supply at your kitchen
-          tap and talks you through what the system would change.
+          {quote
+            ? "Tell us where you are and we'll call to talk it through. The price depends on your house, so the quote follows a free test at your kitchen tap."
+            : "A free, no-obligation in-home water test. A licensed plumber tests your actual supply at your kitchen tap and talks you through what the system would change."}
         </p>
 
         <TasteCheck />
 
-        <BookingForm />
+        <BookingForm kind={kind} />
 
         <Schedule />
 

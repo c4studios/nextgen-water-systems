@@ -1,184 +1,294 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-17T07:17:52+08:00",
+  "generatedAt": "2026-09-18T00:00:00.000Z",
   "title": "Design System: Next Gen Water Systems",
   "extensions": {
     "colorMeta": {
-      "ground": { "role": "neutral", "displayName": "Page White", "canonical": "#ffffff", "tonalRamp": ["oklch(15% 0 0)", "oklch(26% 0 0)", "oklch(38% 0 0)", "oklch(49% 0 0)", "oklch(61% 0 0)", "oklch(72% 0 0)", "oklch(84% 0 0)", "oklch(95% 0 0)"] },
-      "studio": { "role": "neutral", "displayName": "Studio Grey", "canonical": "#f2f3f3", "tonalRamp": ["oklch(15% 0.002 200)", "oklch(26% 0.002 200)", "oklch(38% 0.002 200)", "oklch(49% 0.002 200)", "oklch(61% 0.002 200)", "oklch(72% 0.002 200)", "oklch(84% 0.002 200)", "oklch(95% 0.002 200)"] },
-      "panel": { "role": "neutral", "displayName": "Paper", "canonical": "#f6f7f7", "tonalRamp": ["oklch(15% 0.001 200)", "oklch(26% 0.001 200)", "oklch(38% 0.001 200)", "oklch(49% 0.001 200)", "oklch(61% 0.001 200)", "oklch(72% 0.001 200)", "oklch(84% 0.001 200)", "oklch(95% 0.001 200)"] },
-      "panel-2": { "role": "neutral", "displayName": "Recessed Paper", "canonical": "#eaecee", "tonalRamp": ["oklch(15% 0.004 240)", "oklch(26% 0.004 240)", "oklch(38% 0.004 240)", "oklch(49% 0.004 240)", "oklch(61% 0.004 240)", "oklch(72% 0.004 240)", "oklch(84% 0.004 240)", "oklch(95% 0.004 240)"] },
-      "ink": { "role": "neutral", "displayName": "Cover Ink", "canonical": "#17191c", "tonalRamp": ["oklch(15% 0.008 255)", "oklch(26% 0.008 255)", "oklch(38% 0.008 255)", "oklch(49% 0.008 255)", "oklch(61% 0.008 255)", "oklch(72% 0.008 255)", "oklch(84% 0.008 255)", "oklch(95% 0.008 255)"] },
-      "ink-2": { "role": "neutral", "displayName": "Second Ink", "canonical": "#3e4348", "tonalRamp": ["oklch(15% 0.008 250)", "oklch(26% 0.008 250)", "oklch(38% 0.008 250)", "oklch(49% 0.008 250)", "oklch(61% 0.008 250)", "oklch(72% 0.008 250)", "oklch(84% 0.008 250)", "oklch(95% 0.008 250)"] },
-      "ink-3": { "role": "neutral", "displayName": "Third Ink", "canonical": "#676e75", "tonalRamp": ["oklch(15% 0.012 245)", "oklch(26% 0.012 245)", "oklch(38% 0.012 245)", "oklch(49% 0.012 245)", "oklch(61% 0.012 245)", "oklch(72% 0.012 245)", "oklch(84% 0.012 245)", "oklch(95% 0.012 245)"] },
-      "hairline": { "role": "neutral", "displayName": "Hairline (12% ink)", "canonical": "rgba(23, 25, 28, 0.12)", "tonalRamp": ["rgba(23, 25, 28, 0.04)", "rgba(23, 25, 28, 0.08)", "rgba(23, 25, 28, 0.12)", "rgba(23, 25, 28, 0.2)", "rgba(23, 25, 28, 0.3)", "rgba(23, 25, 28, 0.5)", "rgba(23, 25, 28, 0.75)", "rgba(23, 25, 28, 1)"] },
-      "accent": { "role": "primary", "displayName": "Action Blue", "canonical": "#0b62b8", "tonalRamp": ["oklch(15% 0.06 256)", "oklch(26% 0.1 256)", "oklch(38% 0.13 256)", "oklch(49% 0.15 256)", "oklch(61% 0.15 256)", "oklch(72% 0.12 256)", "oklch(84% 0.08 256)", "oklch(95% 0.03 256)"] },
-      "deep": { "role": "primary", "displayName": "Deep Blue (hover)", "canonical": "#094a8a", "tonalRamp": ["oklch(15% 0.05 258)", "oklch(26% 0.09 258)", "oklch(38% 0.12 258)", "oklch(49% 0.13 258)", "oklch(61% 0.13 258)", "oklch(72% 0.11 258)", "oklch(84% 0.07 258)", "oklch(95% 0.03 258)"] },
-      "water": { "role": "secondary", "displayName": "Water", "canonical": "#2ea9df", "tonalRamp": ["oklch(15% 0.05 232)", "oklch(26% 0.08 232)", "oklch(38% 0.11 232)", "oklch(49% 0.13 232)", "oklch(61% 0.13 232)", "oklch(72% 0.13 232)", "oklch(84% 0.09 232)", "oklch(95% 0.03 232)"] },
-      "redline": { "role": "tertiary", "displayName": "Redline", "canonical": "#b8412c", "tonalRamp": ["oklch(15% 0.06 32)", "oklch(26% 0.1 32)", "oklch(38% 0.13 32)", "oklch(49% 0.15 32)", "oklch(61% 0.15 32)", "oklch(72% 0.12 32)", "oklch(84% 0.08 32)", "oklch(95% 0.03 32)"] }
+      "ground": {
+        "role": "neutral",
+        "displayName": "Page White",
+        "canonical": "#ffffff",
+        "note": "Painted on html, never on body: the fixed scene sits at z-index -1 between the two in paint order. Measured at #ffffff on 18 Sep 2026, and the hero's own WebGL set measures #ffffff with it.",
+        "tonalRamp": ["oklch(15% 0 0)", "oklch(26% 0 0)", "oklch(38% 0 0)", "oklch(50% 0 0)", "oklch(64% 0 0)", "oklch(78% 0 0)", "oklch(90% 0 0)", "oklch(100% 0 0)"]
+      },
+      "panel": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "#f6f7f7",
+        "note": "The ground of the quiet sections that alternate with white, plus the spec table, form fields, the footer, the booking tab track and the system panel. Measured at #f6f7f7.",
+        "tonalRamp": ["oklch(15% 0.002 210)", "oklch(26% 0.002 210)", "oklch(38% 0.002 210)", "oklch(51% 0.002 210)", "oklch(64% 0.002 210)", "oklch(78% 0.002 210)", "oklch(90% 0.002 210)", "oklch(97% 0.002 210)"]
+      },
+      "panel-2": {
+        "role": "neutral",
+        "displayName": "Recessed Paper",
+        "canonical": "#eaecee",
+        "note": "Wells, pressed surfaces, and the ground a path photograph sits on before it loads. Rare.",
+        "tonalRamp": ["oklch(15% 0.004 235)", "oklch(26% 0.004 235)", "oklch(38% 0.004 235)", "oklch(51% 0.004 235)", "oklch(64% 0.004 235)", "oklch(78% 0.004 235)", "oklch(88% 0.004 235)", "oklch(95% 0.004 235)"]
+      },
+      "studio": {
+        "role": "neutral",
+        "displayName": "Pre-canvas Grey",
+        "canonical": "#f2f3f3",
+        "note": "A FALLBACK, not the studio. It is the CSS ground of the fixed stage layer, painted under the canvas and visible only while the canvas is faded out. The set you actually see is set-pool to set-corner.",
+        "tonalRamp": ["oklch(15% 0.002 210)", "oklch(26% 0.002 210)", "oklch(38% 0.002 210)", "oklch(51% 0.002 210)", "oklch(64% 0.002 210)", "oklch(78% 0.002 210)", "oklch(89% 0.002 210)", "oklch(96% 0.002 210)"]
+      },
+      "set-pool": {
+        "role": "neutral",
+        "displayName": "Set Grey, In The Light",
+        "canonical": "#c6c6c4",
+        "note": "The journey backdrop at the centre of the pool of light, sampled from real pixels on 18 Sep 2026. Neutral by measurement: red equals green, blue two levels under. The scene's source stop is a linear #c8c8c6; this is what the Neutral tone mapper puts on screen.",
+        "tonalRamp": ["oklch(15% 0.002 100)", "oklch(26% 0.002 100)", "oklch(38% 0.002 100)", "oklch(50% 0.002 100)", "oklch(62% 0.002 100)", "oklch(72% 0.002 100)", "oklch(81% 0.002 100)", "oklch(93% 0.002 100)"]
+      },
+      "set-corner": {
+        "role": "neutral",
+        "displayName": "Set Grey, At The Frame",
+        "canonical": "#6c6c6a",
+        "note": "The same backdrop at the frame corners. Second Ink over this falls under 4.5:1, which is why journey copy takes full Cover Ink.",
+        "tonalRamp": ["oklch(15% 0.003 100)", "oklch(24% 0.003 100)", "oklch(34% 0.003 100)", "oklch(43% 0.003 100)", "oklch(53% 0.003 100)", "oklch(66% 0.003 100)", "oklch(80% 0.003 100)", "oklch(93% 0.003 100)"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Cover Ink",
+        "canonical": "#17191c",
+        "note": "Sampled from the cover's own lettering. Headings, journey body copy, row values, the booking tab's selected fill, the focus ring on a filled button, the top rule of a data table, every callout leader and mark ring. Journey copy measures 5.10:1 over the set, which is the system's floor.",
+        "tonalRamp": ["oklch(21% 0.006 250)", "oklch(30% 0.006 250)", "oklch(40% 0.006 250)", "oklch(50% 0.006 250)", "oklch(61% 0.006 250)", "oklch(73% 0.006 250)", "oklch(85% 0.006 250)", "oklch(95% 0.006 250)"]
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Second Ink",
+        "canonical": "#3e4348",
+        "note": "Leads, section prose, row copy, the quiet link and the quiet button at rest. About 10:1 on white. Never used over the set.",
+        "tonalRamp": ["oklch(18% 0.008 240)", "oklch(27% 0.008 240)", "oklch(37% 0.008 240)", "oklch(47% 0.008 240)", "oklch(59% 0.008 240)", "oklch(71% 0.008 240)", "oklch(84% 0.008 240)", "oklch(95% 0.008 240)"]
+      },
+      "ink-3": {
+        "role": "neutral",
+        "displayName": "Third Ink",
+        "canonical": "#676e75",
+        "note": "Labels, captions, the note beside a figure, a stage number inside a tab title, a path dot before it lights, field placeholders. 5.2:1 on white.",
+        "tonalRamp": ["oklch(18% 0.011 240)", "oklch(27% 0.011 240)", "oklch(37% 0.011 240)", "oklch(45% 0.011 240)", "oklch(53% 0.011 240)", "oklch(67% 0.011 240)", "oklch(82% 0.011 240)", "oklch(94% 0.011 240)"]
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "rgba(23, 25, 28, 0.12)",
+        "note": "Every rule, border and row divider, and the one-pixel ring that replaces a border on a 12px or 16px corner. Darkens to 0.26 on a tab hover and 0.32 on a tab chosen.",
+        "tonalRamp": ["rgba(23, 25, 28, 0.04)", "rgba(23, 25, 28, 0.08)", "rgba(23, 25, 28, 0.12)", "rgba(23, 25, 28, 0.2)", "rgba(23, 25, 28, 0.26)", "rgba(23, 25, 28, 0.32)", "rgba(23, 25, 28, 0.45)", "rgba(23, 25, 28, 0.5)"]
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Action Blue",
+        "canonical": "#0b62b8",
+        "note": "Deliberately singular. One filled pill per surface, inline links, sequence counters, and every focus ring that is not on a filled button. About 6.1:1 on white. There is no blue-100, no blue border token and no second accent.",
+        "tonalRamp": ["oklch(20% 0.09 255)", "oklch(29% 0.11 255)", "oklch(37% 0.13 255)", "oklch(45% 0.14 255)", "oklch(56% 0.14 255)", "oklch(68% 0.11 255)", "oklch(82% 0.06 255)", "oklch(94% 0.02 255)"]
+      },
+      "deep": {
+        "role": "primary",
+        "displayName": "Deep Blue",
+        "canonical": "#094a8a",
+        "note": "The action's hover and focus fill. It has no other job.",
+        "tonalRamp": ["oklch(19% 0.08 255)", "oklch(27% 0.1 255)", "oklch(37% 0.12 255)", "oklch(46% 0.13 255)", "oklch(57% 0.13 255)", "oklch(69% 0.1 255)", "oklch(83% 0.05 255)", "oklch(94% 0.02 255)"]
+      },
+      "water": {
+        "role": "secondary",
+        "displayName": "Water",
+        "canonical": "#2ea9df",
+        "note": "Water itself: selection at 28% alpha, the live dot in the hint pill, the fill under a freshly ticked chip, the journey heading forming out of water. 2.7:1 on white and never a word.",
+        "tonalRamp": ["oklch(25% 0.06 231)", "oklch(35% 0.08 231)", "oklch(45% 0.1 231)", "oklch(55% 0.11 231)", "oklch(70% 0.11 231)", "oklch(80% 0.08 231)", "oklch(89% 0.05 231)", "oklch(96% 0.02 231)"]
+      },
+      "redline": {
+        "role": "tertiary",
+        "displayName": "Redline",
+        "canonical": "#b8412c",
+        "note": "The honesty colour. The [PLACEHOLDER] mark, the form's error line, the 'Request logged' stamp. Never decoration, never a heading.",
+        "tonalRamp": ["oklch(22% 0.08 33)", "oklch(31% 0.11 33)", "oklch(40% 0.13 33)", "oklch(50% 0.15 33)", "oklch(62% 0.14 33)", "oklch(74% 0.11 33)", "oklch(86% 0.06 33)", "oklch(95% 0.02 33)"]
+      }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "The hero line and the booking headline. Satoshi Medium, tight, balanced wrap; the biggest line on the page carries the lightest weight." },
-      "headline": { "displayName": "Headline", "purpose": "Section headings, two lines with a hard break. Medium weight at -0.03em." },
-      "beat": { "displayName": "Beat", "purpose": "The journey's copy beats, forming out of water as each stage opens. The one bold headline tier." },
-      "title": { "displayName": "Title", "purpose": "Stage names, spec keys, block headings on the sheets, note headings, footer index titles. Satoshi Bold at reading sizes." },
-      "lead": { "displayName": "Lead", "purpose": "The one sentence under a headline, in Second Ink, on a 42 to 52ch measure." },
-      "body": { "displayName": "Body", "purpose": "Prose on the interior sheets at 66ch. Row values and panel copy sit at 16px and 15.5px." },
-      "label": { "displayName": "Label", "purpose": "Caption heads and keys: Hanken 500, sentence case, zero tracking, Third Ink. Stage numbers take Action Blue." },
-      "caption": { "displayName": "Caption", "purpose": "Breadcrumbs, photo notes, form field labels, 'or call', the nav hint. Hanken 400 at 13px." },
-      "action": { "displayName": "Action", "purpose": "The pill's label. Satoshi 600 resolves to the Bold file; the nav pill is 14px." }
+      "display": { "displayName": "Display", "purpose": "The hero line only, plus the booking headline and an interior sheet's title at their own clamps. Balanced wrap, two lines." },
+      "headline": { "displayName": "Headline", "purpose": "Every section heading on every page. One ramp step for all of them; sections do not compete on size." },
+      "beat": { "displayName": "Beat", "purpose": "The journey's copy beats, each word rising out of its own overflow-clipped line. The one bold headline tier." },
+      "title": { "displayName": "Title", "purpose": "A stage tab's name, a path step's title. Siblings: a package title at 21px, a figure note's heading at 17px, a question at 19px in 600." },
+      "lead": { "displayName": "Lead", "purpose": "The one sentence under a headline, in Second Ink on a 42 to 44ch measure." },
+      "body": { "displayName": "Body", "purpose": "A journey beat's paragraph in full Cover Ink on 40ch, a question's answer on 62ch, interior-sheet prose at 1.72 on 66ch." },
+      "row": { "displayName": "Row", "purpose": "The value side of a hairline row, a package list item, a path step's paragraph. The tier that carries the commercial half of the page." },
+      "label": { "displayName": "Label", "purpose": "Caption heads and the key side of a hairline row, in Third Ink, sentence case. Tracking 0, or 0.02em on a table key and a chip; the journey rail is the one exception at 0.04em." },
+      "caption": { "displayName": "Caption", "purpose": "Breadcrumbs, the note under a generated photograph, form field labels, the note beside an action, the nav hint." },
+      "action": { "displayName": "Action", "purpose": "The pill's label. Satoshi ships 400, 500 and 700, so 600 resolves to the Bold file. The nav pill is 14px." }
     },
     "shadows": [
-      { "name": "action", "value": "0 8px 18px -12px rgba(11, 98, 184, 0.7)", "purpose": "Under the blue pill, tinted with its own colour. The only coloured shadow." },
-      { "name": "floating-card", "value": "0 20px 44px -26px rgba(23, 25, 28, 0.45)", "purpose": "The phone journey card; the phone menu sheet uses 0 22px 44px -22px rgba(28, 31, 34, 0.38) with an inset hairline." },
-      { "name": "framed-figure", "value": "0 18px 40px -24px rgba(28, 31, 34, 0.35)", "purpose": "The concept photograph's paper frame." },
-      { "name": "chrome-rail", "value": "0 8px 20px -12px rgba(28, 31, 34, 0.3)", "purpose": "The journey rail card over the studio, with backdrop-filter: blur(6px)." },
-      { "name": "chrome-hint", "value": "0 6px 16px -10px rgba(28, 31, 34, 0.3)", "purpose": "The nav hint over the studio, with backdrop-filter: blur(8px)." },
-      { "name": "nav-seat", "value": "0 1px 0 0 rgba(28, 31, 34, 0.12)", "purpose": "The header's frosted pane (backdrop-filter: blur(16px) saturate(140%) brightness(1.03)) while attached; cross-fades to 0 14px 30px -16px rgba(28, 31, 34, 0.32) once detached." }
+      { "name": "ring", "value": "0 0 0 1px var(--hairline)", "purpose": "The border of a rounded panel, a package card, the booking tab track. Flat; it is a border, not a lift, and it shares the arc of a 12px or 16px corner in a way a 1px border does not." },
+      { "name": "action", "value": "0 8px 18px -12px rgba(11, 98, 184, 0.7)", "purpose": "Under the blue pill, tinted with the pill's own colour. The only coloured shadow in the system." },
+      { "name": "plate", "value": "0 30px 70px -40px rgba(23, 25, 28, 0.5), 0 0 0 1px var(--hairline)", "purpose": "A photograph presented as a plate (the kettle figure). The deepest shadow in the system." },
+      { "name": "plate-frame", "value": "0 30px 70px -44px rgba(23, 25, 28, 0.55)", "purpose": "The stage explorer's 4:3 photograph frame." },
+      { "name": "tile-selected", "value": "0 18px 34px -26px rgba(23, 25, 28, 0.5)", "purpose": "A stage tab once chosen. The only case where a shadow marks state." },
+      { "name": "note", "value": "0 0 0 1px rgba(23, 25, 28, 0.08), 0 18px 38px -22px rgba(23, 25, 28, 0.55)", "purpose": "A note floating over a photographic plate." },
+      { "name": "tag", "value": "0 0 0 1px rgba(23, 25, 28, 0.08), 0 12px 26px -14px rgba(23, 25, 28, 0.45)", "purpose": "A callout tag over the WebGL set. The note's shape, lighter." },
+      { "name": "floating-card", "value": "0 20px 44px -26px rgba(23, 25, 28, 0.45)", "purpose": "The phone journey card at the base of the screen." },
+      { "name": "action-bar", "value": "0 0 0 1px var(--hairline), 0 18px 40px -18px rgba(23, 25, 28, 0.55)", "purpose": "The phone's fixed call-and-book bar." },
+      { "name": "mark-ring", "value": "0 0 0 1.5px var(--ink), 0 8px 18px -8px rgba(23, 25, 28, 0.55)", "purpose": "A numbered hotspot on a photograph. A 1.5px ink ring is how a mark reads on any ground." },
+      { "name": "dot-ring", "value": "0 0 0 1.5px var(--ink), 0 2px 8px rgba(23, 25, 28, 0.35)", "purpose": "A 10px callout dot on a part in the scene." },
+      { "name": "dot-ring-unlit", "value": "0 0 0 1.5px rgba(23, 25, 28, 0.25)", "purpose": "A numbered path dot before its step lights." },
+      { "name": "nav-seat", "value": "0 1px 0 0 rgba(28, 31, 34, 0.12)", "purpose": "The header's one-pixel seat while it is attached at the top of the page." },
+      { "name": "nav-detached", "value": "0 14px 30px -16px rgba(28, 31, 34, 0.32), 0 2px 6px -2px rgba(28, 31, 34, 0.1)", "purpose": "The header once it has detached into a floating pill. Cross-faded against nav-seat by the scroll scalar." }
     ],
     "motion": [
-      { "name": "ease-fluid", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "--ease. Default easing for fills, borders, opacity and the skip link." },
-      { "name": "ease-open", "value": "cubic-bezier(0.33, 0.02, 0.2, 1) 0.46s", "purpose": "Accordion panels (stages, schedule) opening to a measured pixel height, then released to auto." },
-      { "name": "ease-sheet", "value": "cubic-bezier(0.22, 1.04, 0.36, 1) 0.46s", "purpose": "The phone menu sheet dropping under the bar." },
-      { "name": "fill-change", "value": "0.22s", "purpose": "Button and chip state changes; fill and border only, no transform." },
-      { "name": "nav-detach", "value": "260px", "purpose": "Scroll distance over which the header bar becomes the floating pill; the morph is interpolated per frame." },
-      { "name": "nav-spring", "value": "stiffness 120, damping 18", "purpose": "The journey scalar's spring, integrated against real time, so entering and leaving the journey overshoots slightly and settles in about half a second." },
-      { "name": "journey-scrub", "value": "0.6", "purpose": "ScrollTrigger scrub on the pinned journey." },
-      { "name": "hero-hint-delay", "value": "2600ms", "purpose": "The drag hint appears once per session, this long after the live machine is up." },
-      { "name": "reduced-motion", "value": "journey and scene display: none; StaticStory display: block", "purpose": "Under prefers-reduced-motion the pinned journey and the fixed scene are removed and the same story renders as a document with a still per stage." }
+      { "name": "ease", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "The only easing curve in the system (--ease). Quick to leave, slow to land." },
+      { "name": "colour", "value": "0.2s var(--ease)", "purpose": "A link or a glyph changing colour." },
+      { "name": "fill", "value": "0.22s var(--ease)", "purpose": "A button changing fill, border or shadow. A hover is a fill change and nothing else." },
+      { "name": "tile", "value": "0.25s var(--ease)", "purpose": "A stage tab's background, border and shadow settling into its chosen state." },
+      { "name": "mark-in", "value": "0.35s opacity / 0.45s scale var(--ease)", "purpose": "A numbered hotspot arriving from scale 0.6. An arrival, never a hover." },
+      { "name": "note-in", "value": "0.45s var(--ease)", "purpose": "A note rising 10px into place beside a plate, and the phone action bar sliding up from translateY(160%)." },
+      { "name": "crossfade", "value": "0.55s opacity / 0.9s scale var(--ease)", "purpose": "A stage photograph cross-fading in from scale 1.02." },
+      { "name": "lit", "value": "0.6s var(--ease)", "purpose": "A path photograph coming up from 0.5 opacity and 0.6 saturation as its step lights." },
+      { "name": "still", "value": "0.9s var(--ease)", "purpose": "The hero's rendered still fading out once WebGL is live." },
+      { "name": "nav-morph", "value": "none", "purpose": "Width, height, radius and inset are written every frame from the scroll scalar over 260px. Deliberately untransitioned: the scroll is the timeline, and a transition on top of it reintroduces the lag that read as rigid." },
+      { "name": "reduced-motion", "value": "display: none on .journey and .stage-fixed; transition: none on the stage and path photographs and the phone bar", "purpose": "Under prefers-reduced-motion the pinned journey and the whole scene are removed and a static story carries the same beats with a still per stage." }
     ],
     "breakpoints": [
-      { "name": "phone-cut", "value": "900px" },
-      { "name": "nav-sheet", "value": "860px" },
-      { "name": "nav-links", "value": "820px" },
-      { "name": "lockup-compact", "value": "640px" },
-      { "name": "landscape-short", "value": "max-height 500px (with max-width 900px)" },
-      { "name": "wide", "value": "1501px" }
+      { "name": "rail-clear", "value": "1500px", "purpose": "The journey rail moves up to clear the stage marker." },
+      { "name": "tel-glyph", "value": "1180px", "purpose": "The nav's phone number drops its digits and keeps its glyph." },
+      { "name": "cut", "value": "900px", "purpose": "The cut. A shorter journey timeline for a narrow camera, every multi-column grid stacks, beats become cards, callouts go, the phone action bar appears." },
+      { "name": "landscape", "value": "900px and max-height 500px", "purpose": "The beat card stands beside the machine at min(46vw, 400px) and the rail moves to the top right." },
+      { "name": "burger", "value": "860px", "purpose": "The nav links and the quick-menu button hide behind the burger; the kettle plate unsticks and its hotspots become a tappable key list." },
+      { "name": "lockup", "value": "640px", "purpose": "The compact lockup shrinks to 15px and the taste question left-aligns." }
     ]
   },
   "components": [
     {
-      "name": "Primary action",
+      "name": "Primary Action",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "The one filled pill per surface: hero, booking submit, the sheets' closing card. Action Blue, Satoshi 600, Deep Blue on hover, Cover Ink focus ring.",
-      "html": "<a class='ds-btn-primary' href='#book'><span>Book a free water test</span></a>",
-      "css": ".ds-btn-primary { display: inline-block; padding: 16px 28px; border: 1px solid transparent; border-radius: 999px; background: var(--accent, #0b62b8); color: #fff; font-family: 'Satoshi', ui-sans-serif, system-ui, sans-serif; font-weight: 600; font-size: 15.5px; letter-spacing: 0; text-decoration: none; box-shadow: 0 8px 18px -12px rgba(11, 98, 184, 0.7); transition: background 0.22s cubic-bezier(0.16, 1, 0.3, 1); cursor: pointer; } .ds-btn-primary:hover, .ds-btn-primary:focus-visible { background: var(--deep, #094a8a); } .ds-btn-primary:focus-visible { outline: 2px solid var(--ink, #17191c); outline-offset: 3px; }"
+      "description": "The one filled pill on a surface. Book the free water test.",
+      "html": "<a class=\"ds-action\" href=\"#book\"><span>Book your free water test</span></a>",
+      "css": ".ds-action { display: inline-block; padding: 16px 28px; border: 1px solid transparent; border-radius: 999px; background: var(--accent, #0b62b8); color: #fff; font-family: var(--font-satoshi), ui-sans-serif, system-ui, sans-serif; font-weight: 600; font-size: 15.5px; letter-spacing: 0; text-decoration: none; box-shadow: 0 8px 18px -12px rgba(11, 98, 184, 0.7); transition: background 0.22s cubic-bezier(0.16, 1, 0.3, 1); } .ds-action:hover, .ds-action:focus-visible { background: var(--deep, #094a8a); transform: none; } .ds-action:focus-visible { outline: 2px solid var(--ink, #17191c); outline-offset: 3px; }"
     },
     {
-      "name": "Nav action",
+      "name": "Quiet Link",
       "kind": "button",
-      "refersTo": "button-nav",
-      "description": "The same treatment at the header's scale: 9px 16px, 14px, Satoshi 600.",
-      "html": "<a class='ds-btn-nav' href='/water-test/'>Book water test</a>",
-      "css": ".ds-btn-nav { display: inline-block; padding: 9px 16px; border: 1px solid transparent; border-radius: 999px; background: var(--accent, #0b62b8); color: #fff; font-family: 'Satoshi', ui-sans-serif, system-ui, sans-serif; font-weight: 600; font-size: 14px; letter-spacing: 0.01em; white-space: nowrap; text-decoration: none; box-shadow: 0 8px 18px -12px rgba(11, 98, 184, 0.7); transition: background 0.22s cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-nav:hover, .ds-btn-nav:focus-visible { background: var(--deep, #094a8a); } .ds-btn-nav:focus-visible { outline: 2px solid var(--ink, #17191c); outline-offset: 3px; }"
-    },
-    {
-      "name": "Quiet outline",
-      "kind": "button",
-      "refersTo": "button-quiet",
-      "description": "A hairline pill for the second action on a surface: 'Watch this stage open', the breadcrumb's Home. Fills 5% ink on hover.",
-      "html": "<button class='ds-btn-quiet' type='button'>Watch this stage open</button>",
-      "css": ".ds-btn-quiet { display: inline-flex; align-items: center; min-height: 38px; padding: 0 16px; border: 1px solid var(--hairline, rgba(23, 25, 28, 0.12)); border-radius: 999px; background: none; color: var(--ink-2, #3e4348); font-family: 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif; font-size: 14px; cursor: pointer; transition: background 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.22s cubic-bezier(0.16, 1, 0.3, 1), color 0.22s cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-quiet:hover, .ds-btn-quiet:focus-visible { background: rgba(28, 31, 34, 0.05); border-color: rgba(28, 31, 34, 0.34); color: var(--ink, #17191c); } .ds-btn-quiet:focus-visible { outline: 2px solid var(--accent, #0b62b8); outline-offset: 3px; }"
-    },
-    {
-      "name": "Quiet link",
-      "kind": "custom",
       "refersTo": "link-more",
-      "description": "'See inside it': Hanken 500 in Second Ink with a drawn chevron, Action Blue on hover.",
-      "html": "<a class='ds-link-more' href='#journey'>See inside it<i aria-hidden='true'></i></a>",
-      "css": ".ds-link-more { display: inline-flex; align-items: center; gap: 10px; font-family: 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif; font-size: 15.5px; font-weight: 500; color: var(--ink-2, #3e4348); text-decoration: none; transition: color 0.2s; } .ds-link-more i { width: 9px; height: 9px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; rotate: 45deg; translate: 0 -2px; } .ds-link-more:hover, .ds-link-more:focus-visible { color: var(--accent, #0b62b8); } .ds-link-more:focus-visible { outline: 2px solid var(--accent, #0b62b8); outline-offset: 3px; border-radius: 3px; }"
+      "description": "The second action beside every primary pill, so a section never carries two filled buttons.",
+      "html": "<a class=\"ds-quiet\" href=\"#how\">See inside it<i></i></a>",
+      "css": ".ds-quiet { display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-hanken), ui-sans-serif, system-ui, sans-serif; font-size: 15.5px; font-weight: 500; color: var(--ink-2, #3e4348); text-decoration: none; transition: color 0.2s cubic-bezier(0.16, 1, 0.3, 1); } .ds-quiet i { width: 9px; height: 9px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; rotate: 45deg; translate: 0 -2px; } .ds-quiet:hover, .ds-quiet:focus-visible { color: var(--accent, #0b62b8); }"
     },
     {
-      "name": "Taste chip",
+      "name": "Stage Tab",
       "kind": "chip",
-      "refersTo": "chip-taste",
-      "description": "A pill on 72% paper with a drawn tick-box. Ticked: Cover Ink text, accent border, the box fills; the latest tick takes a 12% Water fill.",
-      "html": "<div class='ds-chips'><button class='ds-chip' type='button' aria-pressed='false'><i aria-hidden='true'></i>Chlorine</button><button class='ds-chip is-on is-live' type='button' aria-pressed='true'><i aria-hidden='true'></i>Like a pool</button><button class='ds-chip' type='button' aria-pressed='false'><i aria-hidden='true'></i>Not sure</button></div>",
-      "css": ".ds-chips { display: flex; flex-wrap: wrap; gap: 8px; } .ds-chip { display: inline-flex; align-items: center; gap: 9px; padding: 9px 13px 9px 11px; border: 1px solid var(--hairline, rgba(23, 25, 28, 0.12)); border-radius: 999px; background: rgba(248, 249, 249, 0.72); font-family: 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif; font-size: 13.5px; letter-spacing: 0.02em; color: var(--ink-2, #3e4348); cursor: pointer; transition: border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s cubic-bezier(0.16, 1, 0.3, 1); } .ds-chip i { position: relative; width: 12px; height: 12px; border: 1px solid var(--ink-3, #676e75); border-radius: 1px; transition: border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1); } .ds-chip i::after { content: ''; position: absolute; inset: 2px; background: var(--accent, #0b62b8); transform: scale(0); transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1); } .ds-chip:hover { border-color: rgba(28, 31, 34, 0.32); color: var(--ink, #17191c); } .ds-chip.is-on { color: var(--ink, #17191c); border-color: rgba(0, 110, 156, 0.55); } .ds-chip.is-on i { border-color: var(--accent, #0b62b8); } .ds-chip.is-on i::after { transform: scale(1); } .ds-chip.is-live { background: rgba(27, 166, 217, 0.12); } .ds-chip:focus-visible { outline: 2px solid var(--accent, #0b62b8); outline-offset: 3px; }"
+      "refersTo": "tab-stage",
+      "description": "One of three sticky tiles that drive the stage explorer's photograph. Shown at rest and chosen.",
+      "html": "<div class=\"ds-tabs\"><button class=\"ds-tab is-on\"><span class=\"ds-tab-name\"><span class=\"ds-tab-num\">1</span>Sediment</span><span class=\"ds-tab-in\">Grit, rust and sand, down to 1 micron</span></button><button class=\"ds-tab\"><span class=\"ds-tab-name\"><span class=\"ds-tab-num\">2</span>Taste and odour</span><span class=\"ds-tab-in\">KDF and coconut carbon</span></button></div>",
+      "css": ".ds-tabs { display: grid; gap: 10px; max-width: 360px; } .ds-tab { display: grid; gap: 5px; width: 100%; padding: 18px 20px 19px; border: 1px solid var(--hairline, rgba(23, 25, 28, 0.12)); border-radius: 12px; background: var(--ground, #fff); text-align: left; font: inherit; cursor: pointer; transition: background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1); } .ds-tab:hover { border-color: rgba(23, 25, 28, 0.26); } .ds-tab.is-on { background: var(--panel, #f6f7f7); border-color: rgba(23, 25, 28, 0.32); box-shadow: 0 18px 34px -26px rgba(23, 25, 28, 0.5); } .ds-tab:focus-visible { outline: 2px solid var(--accent, #0b62b8); outline-offset: 3px; } .ds-tab-name { font-family: var(--font-satoshi), ui-sans-serif, system-ui, sans-serif; font-size: 19px; font-weight: 700; letter-spacing: -0.01em; color: var(--ink, #17191c); } .ds-tab-num { display: inline-block; min-width: 1.15em; margin-right: 0.35em; font-variant-numeric: tabular-nums; color: var(--ink-3, #676e75); } .ds-tab-in { font-family: var(--font-hanken), ui-sans-serif, system-ui, sans-serif; font-size: 14.5px; line-height: 1.45; color: var(--ink-3, #676e75); }"
     },
     {
-      "name": "Text field",
+      "name": "Booking Tabs",
+      "kind": "chip",
+      "refersTo": "tab-booking",
+      "description": "A centred pill track over the booking form. The one place a solid ink fill marks selection.",
+      "html": "<div class=\"ds-track\"><button class=\"ds-track-tab is-on\">Free water test</button><button class=\"ds-track-tab\">Quote for the system</button></div>",
+      "css": ".ds-track { display: flex; width: max-content; padding: 4px; border-radius: 999px; background: var(--panel, #f6f7f7); box-shadow: 0 0 0 1px var(--hairline, rgba(23, 25, 28, 0.12)); } .ds-track-tab { height: 38px; padding: 0 18px; border: 0; border-radius: 999px; background: transparent; font-family: var(--font-hanken), ui-sans-serif, system-ui, sans-serif; font-size: 14.5px; font-weight: 500; color: var(--ink-2, #3e4348); cursor: pointer; transition: background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s cubic-bezier(0.16, 1, 0.3, 1); } .ds-track-tab.is-on { background: var(--ink, #17191c); color: #fff; } .ds-track-tab:focus-visible { outline: 2px solid var(--accent, #0b62b8); outline-offset: 2px; }"
+    },
+    {
+      "name": "Package Card",
+      "kind": "card",
+      "refersTo": "card-package",
+      "description": "The one rounded-panel family: a picture and its hairline-row list as a single object.",
+      "html": "<div class=\"ds-pk\"><figure class=\"ds-pk-photo\"><img alt=\"\" src=\"data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='140'%3E%3Crect width='320' height='140' fill='%23eaecee'/%3E%3C/svg%3E\"></figure><h3 class=\"ds-pk-t\">The installation</h3><ul class=\"ds-pk-list\"><li>Licensed plumber, half a day on site</li><li>Mounted at the mains, no power point</li><li>Certificate of compliance</li></ul></div>",
+      "css": ".ds-pk { display: grid; grid-template-rows: auto auto 1fr; align-content: start; max-width: 380px; padding: 12px 12px 14px; border-radius: 16px; background: var(--ground, #fff); box-shadow: 0 0 0 1px var(--hairline, rgba(23, 25, 28, 0.12)); } .ds-pk-photo { margin: 0; border-radius: 10px; overflow: hidden; aspect-ratio: 16 / 7; } .ds-pk-photo img { display: block; width: 100%; height: 100%; object-fit: cover; } .ds-pk-t { margin: 18px 0 0; padding: 0 12px; font-family: var(--font-satoshi), ui-sans-serif, system-ui, sans-serif; font-size: 21px; font-weight: 700; letter-spacing: -0.015em; color: var(--ink, #17191c); } .ds-pk-list { margin: 12px 0 0; padding: 0 12px; list-style: none; } .ds-pk-list li { padding: 9px 0; border-top: 1px solid var(--hairline, rgba(23, 25, 28, 0.12)); font-family: var(--font-hanken), ui-sans-serif, system-ui, sans-serif; font-size: 15px; line-height: 1.5; color: var(--ink-2, #3e4348); }"
+    },
+    {
+      "name": "Hairline Row",
+      "kind": "custom",
+      "description": "The system's fact carrier: a solid ink top rule, keys left in Label, values right in Row with tabular figures.",
+      "html": "<dl class=\"ds-rows\"><div><dt>Flow rate</dt><dd>Per the datasheet</dd></div><div><dt>Cartridge size</dt><dd>20 inch, three off</dd></div><div><dt>Independent test report</dt><dd><mark class=\"ds-ph\">[PLACEHOLDER]</mark></dd></div></dl>",
+      "css": ".ds-rows { margin: 0; max-width: 520px; border-top: 1px solid var(--ink, #17191c); font-family: var(--font-hanken), ui-sans-serif, system-ui, sans-serif; } .ds-rows div { display: grid; grid-template-columns: minmax(0, 170px) minmax(0, 1fr); gap: 16px; padding: 12px 0; border-top: 1px solid var(--hairline, rgba(23, 25, 28, 0.12)); } .ds-rows div:first-child { border-top: 0; } .ds-rows dt { font-size: 13.5px; font-weight: 500; color: var(--ink-3, #676e75); } .ds-rows dd { margin: 0; font-size: 15.5px; line-height: 1.5; color: var(--ink, #17191c); font-variant-numeric: tabular-nums; } .ds-ph { background: rgba(184, 65, 44, 0.1); color: var(--redline, #b8412c); border: 1px dashed rgba(184, 65, 44, 0.45); border-radius: 2px; padding: 1px 6px; font-size: 0.86em; }"
+    },
+    {
+      "name": "Callout Tag",
+      "kind": "custom",
+      "refersTo": "tag-callout",
+      "description": "A dot on the part, a hairline leader and a paper tag, drawn as HTML over the WebGL canvas so the type stays crisp while the leader stays attached.",
+      "html": "<div class=\"ds-call\"><span class=\"ds-call-dot\"></span><span class=\"ds-call-line\"></span><span class=\"ds-call-tag\">KDF 55 and KDF 85 granules</span></div>",
+      "css": ".ds-call { position: relative; height: 40px; margin-left: 12px; } .ds-call-dot { position: absolute; left: 0; top: 20px; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1.5px var(--ink, #17191c), 0 2px 8px rgba(23, 25, 28, 0.35); } .ds-call-line { position: absolute; left: 6px; top: 20px; width: 64px; height: 1px; background: var(--ink, #17191c); } .ds-call-tag { position: absolute; left: 74px; top: 20px; translate: 0 -50%; width: max-content; max-width: 230px; padding: 7px 11px 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.95); box-shadow: 0 0 0 1px rgba(23, 25, 28, 0.08), 0 12px 26px -14px rgba(23, 25, 28, 0.45); font-family: var(--font-hanken), ui-sans-serif, system-ui, sans-serif; font-size: 14px; font-weight: 500; line-height: 1.3; color: var(--ink, #17191c); }"
+    },
+    {
+      "name": "Numbered Hotspot",
+      "kind": "custom",
+      "refersTo": "mark-step",
+      "description": "A 36px mark on a photographic plate. A 1.5px ink ring is how a mark reads on any ground, and it scales in from 0.6 rather than reacting to a hover.",
+      "html": "<div class=\"ds-marks\"><button class=\"ds-mark\">1</button><button class=\"ds-mark is-held\">2</button><button class=\"ds-mark\">3</button></div>",
+      "css": ".ds-marks { display: flex; gap: 14px; } .ds-mark { width: 36px; height: 36px; display: grid; place-items: center; border: 0; border-radius: 50%; background: #fff; color: var(--ink, #17191c); font-family: var(--font-satoshi), ui-sans-serif, system-ui, sans-serif; font-size: 15px; font-weight: 700; box-shadow: 0 0 0 1.5px var(--ink, #17191c), 0 8px 18px -8px rgba(23, 25, 28, 0.55); cursor: pointer; transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1); } .ds-mark.is-held, .ds-mark:hover, .ds-mark:focus-visible { background: var(--ink, #17191c); color: #fff; } .ds-mark:focus-visible { outline: 2px solid var(--accent, #0b62b8); outline-offset: 3px; }"
+    },
+    {
+      "name": "Form Field",
       "kind": "input",
       "refersTo": "input-field",
-      "description": "Paper fill, half-ink edge, square corners, a 13px sentence-case caption above. Focus turns the edge and a 1px ring Action Blue.",
-      "html": "<label class='ds-field'><span>Suburb</span><input type='text' placeholder='e.g. Joondalup' /></label>",
-      "css": ".ds-field { display: block; max-width: 320px; } .ds-field span { display: block; margin-bottom: 7px; font-family: 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif; font-size: 13px; letter-spacing: 0; color: var(--ink-3, #676e75); } .ds-field input { width: 100%; padding: 12px 13px; border: 1px solid rgba(28, 31, 34, 0.5); border-radius: 0; background: var(--panel, #f6f7f7); color: var(--ink, #17191c); caret-color: var(--accent, #0b62b8); font-family: 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif; font-size: 16px; transition: border-color 0.2s, box-shadow 0.2s; } .ds-field input::placeholder { color: var(--ink-3, #676e75); } .ds-field input:focus-visible { outline: none; border-color: var(--accent, #0b62b8); box-shadow: 0 0 0 1px var(--accent, #0b62b8); }"
+      "description": "Square, on Paper, with a half-ink edge that holds 3:1 by itself and goes Action Blue on focus.",
+      "html": "<label class=\"ds-field\"><span>Your suburb</span><input type=\"text\" placeholder=\"Wanneroo\"></label>",
+      "css": ".ds-field { display: grid; gap: 7px; max-width: 320px; font-family: var(--font-hanken), ui-sans-serif, system-ui, sans-serif; } .ds-field > span { font-size: 13px; color: var(--ink-3, #676e75); } .ds-field input { padding: 12px 13px; border: 1px solid rgba(23, 25, 28, 0.5); border-radius: 0; background: var(--panel, #f6f7f7); font: inherit; font-size: 16px; color: var(--ink, #17191c); caret-color: var(--accent, #0b62b8); } .ds-field input::placeholder { color: var(--ink-3, #676e75); } .ds-field input:focus { outline: none; border-color: var(--accent, #0b62b8); box-shadow: 0 0 0 1px var(--accent, #0b62b8); }"
     },
     {
-      "name": "Hint pill",
-      "kind": "custom",
-      "refersTo": "hint-pill",
-      "description": "The small floating pill over the studio: 'Drag to turn · tap to open', the stage marker, the nav hint. 86% white, hairline, a 7px Water dot.",
-      "html": "<span class='ds-hint'><i aria-hidden='true'></i>Drag to turn · tap to open</span>",
-      "css": ".ds-hint { display: inline-flex; align-items: center; gap: 9px; padding: 8px 14px; border: 1px solid var(--hairline, rgba(23, 25, 28, 0.12)); border-radius: 999px; background: rgba(255, 255, 255, 0.86); font-family: 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif; font-size: 12.5px; font-weight: 500; color: var(--ink-2, #3e4348); white-space: nowrap; box-shadow: 0 6px 16px -10px rgba(28, 31, 34, 0.3); } .ds-hint i { width: 7px; height: 7px; border-radius: 50%; background: var(--water, #2ea9df); }"
-    },
-    {
-      "name": "Placeholder mark",
-      "kind": "custom",
-      "refersTo": "placeholder-mark",
-      "description": "The visible red placeholder for any figure without a source. Redline on a 10% tint with a dashed edge; never a plausible number.",
-      "html": "<p class='ds-ph-line'>Test report <mark class='ds-placeholder'>[PLACEHOLDER: independent test report, linked here once it is issued]</mark></p>",
-      "css": ".ds-ph-line { font-family: 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif; font-size: 15px; line-height: 1.55; color: var(--ink-2, #3e4348); } .ds-placeholder { display: inline-block; padding: 1px 6px; border: 1px dashed rgba(184, 65, 44, 0.45); border-radius: 2px; background: rgba(184, 65, 44, 0.1); color: var(--redline, #b8412c); font-family: 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif; font-size: 0.86em; }"
-    },
-    {
-      "name": "Hairline row",
-      "kind": "card",
-      "refersTo": "note-paper",
-      "description": "The definition list every fact lives in: a solid Cover Ink top rule, hairline rows, keys in Label, values in Cover Ink with tabular figures.",
-      "html": "<dl class='ds-rows'><div class='ds-row'><dt>Flow</dt><dd>50 to 60 litres a minute</dd></div><div class='ds-row'><dt>Working pressure</dt><dd>100 to 600 kPa</dd></div><div class='ds-row'><dt>Cover</dt><dd>Steel, clips on with no screws</dd></div></dl>",
-      "css": ".ds-rows { margin: 0; padding: 0; max-width: 560px; border-top: 1px solid var(--ink, #17191c); background: var(--panel, #f6f7f7); } .ds-row { display: grid; grid-template-columns: minmax(0, 190px) minmax(0, 1fr); gap: 16px; padding: 13px 16px; border-bottom: 1px solid var(--hairline, rgba(23, 25, 28, 0.12)); } .ds-row dt { padding-top: 3px; font-family: 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif; font-size: 12px; font-weight: 500; letter-spacing: 0.02em; color: var(--ink-3, #676e75); } .ds-row dd { margin: 0; font-family: 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif; font-size: 16px; line-height: 1.5; color: var(--ink, #17191c); font-variant-numeric: tabular-nums; }"
-    },
-    {
-      "name": "Stage bar",
-      "kind": "custom",
-      "refersTo": "note-paper",
-      "description": "One row of the stages list: the stage number in Action Blue Label, the name in Title, what goes in, and a drawn plus that turns to a minus when open.",
-      "html": "<button class='ds-stage' type='button' aria-expanded='false'><span class='ds-stage-n'>Stage 2</span><span class='ds-stage-name'>Copper-zinc and carbon</span><span class='ds-stage-in'>Chlorine, and dissolved metal picked up on the way</span><i aria-hidden='true'></i></button>",
-      "css": ".ds-stage { width: 100%; max-width: 760px; display: grid; grid-template-columns: 4em minmax(0, 13em) minmax(0, 1fr) 1.5em; align-items: baseline; gap: 18px; padding: 20px 20px 20px 2px; border: 0; border-top: 1px solid var(--hairline, rgba(23, 25, 28, 0.12)); border-bottom: 1px solid var(--hairline, rgba(23, 25, 28, 0.12)); background: none; text-align: left; cursor: pointer; font-family: 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif; } .ds-stage-n { font-size: 13.5px; font-weight: 500; letter-spacing: 0; color: var(--accent, #0b62b8); } .ds-stage-name { font-family: 'Satoshi', ui-sans-serif, system-ui, sans-serif; font-weight: 700; font-size: clamp(17px, 2vw, 21px); letter-spacing: -0.02em; color: var(--ink, #17191c); } .ds-stage-in { font-size: 15px; line-height: 1.5; color: var(--ink-3, #676e75); } .ds-stage i { position: relative; justify-self: end; align-self: center; width: 13px; height: 13px; } .ds-stage i::before, .ds-stage i::after { content: ''; position: absolute; inset: 50% 0 auto; height: 1.5px; background: var(--accent, #0b62b8); transform: translateY(-50%); } .ds-stage i::after { inset: 0 auto auto 50%; width: 1.5px; height: 100%; transform: translateX(-50%); } .ds-stage:hover .ds-stage-name, .ds-stage:focus-visible .ds-stage-name { color: var(--accent, #0b62b8); } .ds-stage:focus-visible { outline: 2px solid var(--accent, #0b62b8); outline-offset: 3px; border-radius: 3px; }"
+      "name": "Phone Action Bar",
+      "kind": "nav",
+      "refersTo": "button-book-phone",
+      "description": "Fixed at the foot of a phone screen below 900px: call the installer, or book the test. It hides itself while the booking form is on screen.",
+      "html": "<div class=\"ds-mbar\"><a class=\"ds-mbar-call\" href=\"tel:\"><svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" aria-hidden=\"true\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5.5 3.5h3l1.6 4.4-2.2 1.4a11 11 0 0 0 6.8 6.8l1.4-2.2 4.4 1.6v3a2 2 0 0 1-2.2 2A17.5 17.5 0 0 1 3.5 5.7a2 2 0 0 1 2-2.2Z\"/></svg>Call</a><a class=\"ds-mbar-book\" href=\"#book\">Book your free water test</a></div>",
+      "css": ".ds-mbar { display: flex; gap: 8px; max-width: 420px; padding: 7px; border-radius: 999px; background: rgba(255, 255, 255, 0.97); box-shadow: 0 0 0 1px var(--hairline, rgba(23, 25, 28, 0.12)), 0 18px 40px -18px rgba(23, 25, 28, 0.55); } .ds-mbar-call { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px; height: 46px; padding: 0 18px; border-radius: 999px; box-shadow: inset 0 0 0 1px rgba(23, 25, 28, 0.22); font-family: var(--font-hanken), ui-sans-serif, system-ui, sans-serif; font-size: 15px; font-weight: 600; color: var(--ink, #17191c); text-decoration: none; } .ds-mbar-book { flex: 1 1 auto; display: grid; place-items: center; height: 46px; border-radius: 999px; background: var(--accent, #0b62b8); font-family: var(--font-satoshi), ui-sans-serif, system-ui, sans-serif; font-size: 15.5px; font-weight: 600; color: #fff; text-decoration: none; } .ds-mbar-book:hover, .ds-mbar-book:focus-visible { background: var(--deep, #094a8a); }"
     }
   ],
   "narrative": {
     "northStar": "The White Studio",
-    "overview": "A product photography studio with the page as its backdrop. The page is white. The machine stands in a pale grey field that one fixed WebGL scene paints behind the whole document, and the hero and the journey are the two windows onto it. The type is the charcoal of the cover's own lettering. There is one blue, and it is spent on the action. Everything else is a hairline or a sheet of paper.\n\nThe register is premium restraint (PRODUCT.md): closer to an appliance launch than to a plumbing site. Density is low. Each screen owns one idea, set in a big medium-weight line with a short sentence under it, and the proof sits in hairline rows rather than cards. Motion belongs to the machine. The cover turns under a drag and lifts under a tap; each stage opens in section on the scroll. The chrome around it stays still.\n\nConfirmed rejections, from the 17 Sep 2026 direction contract and PRODUCT.md: the blue water-splash hero, the three feature cards, the stats band and the testimonial carousel of the category; the drawing-set furniture of the world this page replaced (sheet strips, sheet numbers, registration ticks, drafting labels); and the wellness aesthetic (sage, blush, rounded friendly type, droplets as decoration). Three rules from the previous world survive in changed form and are marked below as carried over.",
+    "overview": "A product-photography studio with the page as its backdrop. The page is white. One WebGL scene is fixed behind the whole document, and the page opens two windows onto it: the hero, where the set is driven to white so the machine stands on the page itself, and the journey, where the set becomes a lit neutral-grey seamless backdrop with a pool of light in it. Every other section is an opaque sheet over that scene. The type is the charcoal of the cover's own lettering. There is one blue and it is spent on the action.\n\nThe register is premium restraint (PRODUCT.md): closer to an appliance launch than to a plumbing site. Density is low at the top of the page and rises as a visitor gets closer to buying. The hero and the journey give one idea a whole screen; the commercial half of the page (the stage explorer, the numbered path, the package panels, the questions, the booking tabs) is denser, because by then the visitor is comparing rather than being introduced. Motion belongs to the machine. The cover turns under a drag and lifts under a tap; each housing opens in section on the scroll; the chrome around it changes fill and nothing else.\n\nConfirmed rejections, from the direction contract and PRODUCT.md: the blue water-splash hero, the three feature cards, the stats band and the testimonial carousel of the category; the drawing-set furniture of the world this page replaced (sheet strips, sheet numbers, registration ticks, tracked-out drafting labels); and the wellness aesthetic (sage, blush, rounded friendly type, droplets as decoration).",
     "keyCharacteristics": [
-      "White page, pale studio, charcoal ink, one blue.",
+      "White page, a lit grey set behind two windows, charcoal ink, one blue.",
       "The product is live in the first viewport and is the only picture that matters.",
       "Satoshi Medium for the big lines; Hanken for sentences and for every label, in sentence case.",
-      "Hairline rows instead of cards.",
-      "Flat paper: a shadow only where something floats over the page.",
+      "Hairline rows for facts; a rounded panel only where a picture and its list are one object.",
+      "Flat paper: a shadow only where something floats over the page or over the set.",
       "A visible red placeholder wherever a figure has no source."
     ],
     "rules": [
-      { "name": "The One Blue Rule", "body": "Action Blue is spent on the action and on what leads to it: one pill per surface, inline links, the stage numbers that index the journey. It never tints a background, a heading or a decoration. Two blue pills on one screen means one of them is wrong.", "section": "colors" },
-      { "name": "The Water Is Never Text Rule", "body": "Carried over from the previous world. Water marks water: a selection, a live dot, the fill under a live chip, a heading forming out of water. At 2.7:1 on white it is never a word.", "section": "colors" },
-      { "name": "The Red Means Unsourced Rule", "body": "A figure without a source is set as a red dashed `[PLACEHOLDER]` mark. It is never replaced with a plausible number and never softened to grey.", "section": "colors" },
-      { "name": "The Two Faces Rule", "body": "Satoshi sets headings and the action. Hanken sets everything else, every label included. No third face appears on a text surface: Geist Mono is loaded, and the build points `--font-mono` and `--font-draft` at Hanken so that it cannot be used.", "section": "typography" },
-      { "name": "The Sentence Case Rule", "body": "Labels and keys are sentence case with zero tracking. No uppercase, no tracked small caps, no monospace for keys or numbers. Tabular figures are the only numeric treatment.", "section": "typography" },
-      { "name": "The Medium Weight Rule", "body": "The bigger the line, the lighter the weight. Display and headline sit at 500 with tight tracking; 700 belongs to the title tier and to the journey beats.", "section": "typography" },
-      { "name": "The One Scene Rule", "body": "The machine is one WebGL scene fixed behind the page. The hero and the journey are windows onto it and paint nothing; every other section is opaque. A new section that lets the studio show through is a bug.", "section": "layout" },
-      { "name": "The Hairline Row Rule", "body": "Carried over from the previous world's Hairline Rule. Facts go in rows: key on the left, value on the right, a hairline between rows, one solid Cover Ink rule at the top of a table. Cards are not used for facts.", "section": "layout" },
-      { "name": "The Floating Paper Rule", "body": "Carried over from the previous world's Paper-and-Glass Rule. A shadow says the element is off the page. It says nothing about importance. Rows, tables, fields and notes are flat; only the action, a floating card, a framed figure and the chrome over the studio cast one.", "section": "elevation" }
+      { "name": "The One Blue Rule", "body": "Action Blue is spent on the action and on what leads to it: one filled pill per surface, inline links, the counters that index a sequence. It never tints a background, a heading or a decoration. Two filled blue pills on one screen means one of them is wrong. The blue is deliberately singular: there is no blue-100, no blue border token, no second accent.", "section": "colors" },
+      { "name": "The Water Is Never Text Rule", "body": "Carried over. Water marks water: a selection, a live dot, the fill under a live chip, a heading forming out of water. At 2.7:1 on white it is never a word.", "section": "colors" },
+      { "name": "The Set Is Lit, The Page Is Not Rule", "body": "The grey behind the machine is a gradient because it is a lit backdrop, and its falloff is produced by a shader, not by a CSS gradient. A gradient on the page itself is allowed in exactly two places, and both simulate a physical material rather than decorate: the nav's frosted pane (a 180-degree wash over a 16px backdrop blur) and the water-bead cursor (three radial gradients, a rim and one specular). No flat surface, no button and no heading carries a gradient fill, and no type sits on one except over the set, where it is placed on the pool of light and measured.", "section": "colors" },
+      { "name": "The Machine Keeps Its Own Colours Rule", "body": "The palette above is the page's. The machine is a manufactured object and carries the colours it is made in: a blue valve handle (#1f5fb0), blue cartridge caps (#2c48c9), a red gauge needle (#c8281e), brass, copper, stainless. Those live in materials.ts, they are not tokens, and they are not counted against the one-blue rule. Do not 'correct' them toward the palette.", "section": "colors" },
+      { "name": "The Red Means Unsourced Rule", "body": "A figure without a source is set as a red dashed [PLACEHOLDER] mark. It is never replaced with a plausible number and never softened to grey.", "section": "colors" },
+      { "name": "The Contrast Floor Rule", "body": "Every measured text-on-background pair on the shipping surface clears 4.5:1, and the floor is the journey's body copy over the set at 5.10:1, with the stage chips at 6.34:1 or better and the footer credit at 9.3:1. Copy over the set takes full Cover Ink, never Second Ink, because Second Ink falls under the floor toward the frame corners.", "section": "colors" },
+      { "name": "The Two Faces Rule", "body": "Satoshi sets headings, titles and the action. Hanken sets everything else, every label and every number included. No third face appears on a text surface. Enforcement is by override rather than by absence: the build re-points --font-mono and --font-draft at Hanken, and names Hanken directly with !important on the label selectors the retired stylesheets used to set in a drafting face.", "section": "typography" },
+      { "name": "The Sentence Case Rule", "body": "Labels and keys are sentence case. No uppercase, no tracked small caps, no monospace for keys or numbers. Tabular figures are the only numeric treatment.", "section": "typography" },
+      { "name": "The Medium Weight Rule", "body": "The bigger the line, the lighter the weight. Display and headline sit at 500 with tight tracking; 700 belongs to the title tier and to the journey beats; 600 to the action and to a control that reads as a heading.", "section": "typography" },
+      { "name": "The Counter Is Not A Kicker Rule", "body": "Numbers that index the product are allowed: three stages, four steps in the path, three marks on the kettle photograph. They sit inside the thing they number and count plainly, 1 2 3, with no leading zero. A number floating above a section as a 01 marker is furniture and is not used.", "section": "typography" },
+      { "name": "The One Scene Rule", "body": "The machine is one WebGL scene fixed behind the page. The hero and the journey are windows onto it and paint nothing; every other section is opaque, and an opaque section taller than a screen sits between the two windows so the scene changes hands unseen. A new section that lets the set show through is a bug.", "section": "layout" },
+      { "name": "The Alternating Ground Rule", "body": "Sections alternate Page White and Paper down the page. White carries the sections with a picture or a live object in them; Paper carries the sections that are mostly words. Two Paper sections must not touch.", "section": "layout" },
+      { "name": "The Hairline Row Rule", "body": "Carried over from the previous world's Hairline Rule. Facts go in rows: key on the left, value on the right, a hairline between rows, one solid Cover Ink rule at the top of a table. A rounded panel is used only when a picture and its list are one object, never to hold a fact on its own.", "section": "layout" },
+      { "name": "The Floating Paper Rule", "body": "Carried over from the previous world's Paper-and-Glass Rule. A shadow says the element is off the page. It says nothing about importance. Rows, tables, fields, tabs at rest and notes on the page are flat; the action, a floating card, a plate, a note over a plate, the phone bar and the chrome over the set cast one.", "section": "elevation" },
+      { "name": "The Ring Not Border Rule", "body": "Anything with a 12px or 16px corner takes 0 0 0 1px var(--hairline) instead of a border, so the inner fill and the edge share the same arc and a photograph inside it can bleed to the corner.", "section": "elevation" }
     ],
     "dos": [
-      "Do give every surface one filled pill in Action Blue, and make everything else on it a hairline or a text link.",
-      "Do set the big line in Satoshi Medium (500) at -0.03em or tighter, wrapped to two lines with a hard break, with one Hanken sentence under it in Second Ink.",
-      "Do set labels and keys in Hanken 500 at 13.5px, sentence case, zero tracking, Third Ink.",
+      "Do give every surface one filled pill in Action Blue and make its second action a quiet link or a hairline outline.",
+      "Do set the big line in Satoshi Medium (500) at -0.03em or tighter, wrapped to two lines with a hard break, with one Hanken sentence under it in Second Ink on a 42 to 44ch measure.",
+      "Do set labels and keys in Hanken 500 at 13.5px, sentence case, Third Ink, tracking 0 to 0.02em.",
       "Do put facts in hairline rows with a solid ink top rule, key left and value right, tabular figures.",
+      "Do alternate Page White and Paper down the page, and paint an opaque ground on every new section so the set shows only through the hero and the journey.",
+      "Do measure copy that sits over the set, place it in the pool of light, and give it full Cover Ink; 5.10:1 is the floor the build holds.",
+      "Do give a rounded panel a one-pixel hairline ring instead of a border.",
       "Do keep the machine live: the scene is the picture, and a raster stands in only until WebGL is up or when motion is reduced.",
-      "Do mark any unsourced figure with the red dashed `[PLACEHOLDER]`, and caption a generated image as a visualisation where it is shown.",
-      "Do paint an opaque ground on every new section, so the studio shows only through the hero and the journey.",
-      "Do keep the reduced-motion path whole: no pinned journey, no scene, the same story as a document with a still per stage."
+      "Do mark any unsourced figure with the red dashed [PLACEHOLDER], caption a generated image as a visualisation on the page it appears on, and add a row to public/photos/PROVENANCE.md for any raster that ships.",
+      "Do cut every still through the same lens chain the page uses, so a still never looks like a different camera.",
+      "Do keep the reduced-motion path whole: no pinned journey, no scene, the same story as a document with a still per stage.",
+      "Do leave the nav's four morph properties untransitioned; the scroll is the timeline and a transition on top of it reintroduces the lag."
     ],
     "donts": [
-      "Don't introduce a third blue, a gradient or a blue background; Action Blue fills the action and colours links, Water marks water.",
-      "Don't set type in Water; it is 2.7:1 on white.",
-      "Don't use a monospace or drafting face, tracked uppercase, sheet numbers, sheet strips or registration ticks; the drawing set is retired.",
-      "Don't put a scrim, a halo or a text shadow behind copy over the studio; move the copy or step the camera aside.",
-      "Don't build a feature-card grid, a stats band or a testimonial carousel; the direction contract refuses the category's furniture.",
+      "Don't introduce a third blue, a blue background or a blue border token; Action Blue fills the action and colours links, Deep Blue is its hover, Water marks water.",
+      "Don't set type in Water, or in Second Ink over the set; both fall under the floor.",
+      "Don't paint a gradient on a flat surface, a button or a heading. The set's falloff is a lit backdrop produced by a shader; the nav pane and the cursor are materials. Nothing else gets one.",
+      "Don't use a monospace or a drafting face on a text surface, tracked uppercase, sheet numbers, sheet strips or registration ticks; the drawing set is retired and the two face variables are re-pointed so it cannot come back.",
+      "Don't float a number above a section as an 01 marker. A counter belongs inside the thing it counts.",
+      "Don't put a scrim, a halo or a text shadow behind copy over the set; move the copy or step the camera aside.",
+      "Don't build a feature-card grid, a stats band or a testimonial carousel; the direction contract refuses the category's furniture. A rounded panel is for a picture and its list together, not for three parallel claims.",
       "Don't drift toward wellness: no sage or blush, no rounded friendly type, no droplets or leaves as decoration.",
-      "Don't quote a reduction percentage or any figure without a source document; describe the mechanism instead.",
-      "Don't let a button lift, scale or shimmer; state changes are fill changes."
+      "Don't quote a reduction percentage or any figure without a source document; describe the mechanism instead, in the datasheet's own terms.",
+      "Don't let a hover state move anything. A hover is a fill change, a border darkening or a colour change. A press may compress (the quick-menu button at 0.94) and a mark may scale in as it arrives; neither is a hover.",
+      "Don't let a sticky column release over the next section; give it a runway inside its own.",
+      "Don't add to globals.css or brand.css. They are the retired world's stylesheets, kept only until they are pruned; new rules go in world.css or sections.css."
     ]
   }
 }

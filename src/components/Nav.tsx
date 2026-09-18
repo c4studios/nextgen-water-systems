@@ -4,43 +4,30 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { navRoutes, ROUTES } from "@/content/site";
+import { CONTACT } from "@/content/plates";
 import { MenuToggleIcon } from "@/components/ui/MenuToggleIcon";
 import { RadialMenu, type RadialItem } from "@/components/ui/RadialMenu";
 import { cn } from "@/lib/cn";
 import { Wordmark } from "@/components/site/Wordmark";
 
 /**
- * THE NAV, IN THREE STATES, AS ONE CONTINUOUS MORPH.
+ * THE NAV, AS ONE CONTINUOUS MORPH.
  *
  *   A  at the top of the page      a full-width bar of glass, attached
  *   B  once you start scrolling    detached, a floating pill
- *   C  inside the scroll journey   a single orb: the drawing wants the screen,
- *                                  so the nav gets out of the way and becomes
- *                                  an affordance instead of a menu
  *
- * The previous version flipped a class at a scroll threshold, which is exactly
- * the rigidity being reported: two fixed states with a transition bolted
- * between them. Here width, height, radius, inset and the opacity of every part
- * are INTERPOLATED every frame from two continuous scalars — `t` for the detach and
- * `j` for the journey — so there is no moment where the nav is "in" a state. It
- * is always somewhere on the way between them, and it follows the scroll rather
- * than reacting to it.
+ * Width, height, radius and inset are INTERPOLATED every frame from the scroll,
+ * so there is no moment where the nav is "in" a state.
  *
- * `j` additionally runs through a spring rather than being read directly, so
- * entering and leaving the journey overshoots and settles instead of snapping.
- *
- * In state C the orb is the menu trigger: click it, or right-click anywhere in
- * the journey, and the radial menu opens at the pointer.
+ * The pill stays through the scroll journey. It used to collapse there to a
+ * single orb with a right-click hint; on 17 Sep 2026 the finish review asked
+ * for the phone number and the test action to stay one tap away the whole
+ * way down, since the journey is where a visitor decides. The quick menu is
+ * the round button inside the pill.
  */
 
 /** scroll distance over which the bar detaches into the pill */
 const DETACH = 260;
-/** Spring on the journey scalar, integrated against real time rather than per
- *  frame. A per-frame spring runs at half speed on a 30fps device and double on
- *  a 120Hz one; this behaves the same everywhere. Zeta ~0.82, so it overshoots
- *  slightly and settles in about half a second. */
-const STIFF = 120;
-const DAMP = 18;
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
@@ -87,125 +74,39 @@ const RADIAL_ITEMS: RadialItem[] = ROUTES.map((r) => ({
 export function Nav() {
   const [sheet, setSheet] = useState(false);
   const [menuAt, setMenuAt] = useState<{ x: number; y: number } | null>(null);
-  const [hintSpent, setHintSpent] = useState(true);
   const pathname = usePathname();
   const here = (href: string) => pathname === href || pathname === href.replace(/\/$/, "");
 
   const headRef = useRef<HTMLElement>(null);
-  const orbRef = useRef<HTMLButtonElement>(null);
   const ringBtnRef = useRef<HTMLButtonElement>(null);
-  const jRef = useRef(0);
-  const vRef = useRef(0);
-  const [inJourney, setInJourney] = useState(false);
 
   /* ---- the morph ---- */
   useEffect(() => {
     const head = headRef.current;
     if (!head) return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let raf = 0;
-    let plate: HTMLElement | null = null;
-    let last = performance.now();
-
-    const frame = (now: number) => {
-      // clamped so a stalled tab does not fling the spring across on resume
-      const dt = Math.min((now - last) / 1000, 0.05);
-      last = now;
-      if (!plate) plate = document.getElementById("journey");
+    const frame = () => {
       const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const y = window.scrollY;
-
-      const t = clamp01(y / DETACH);
-
-      // the journey owns the screen once its pin is engaged and the plate has
-      // not yet handed back
-      let target = 0;
-      if (plate) {
-        const b = plate.getBoundingClientRect();
-        target = b.top <= vh * 0.12 && b.bottom > vh * 0.9 ? 1 : 0;
-      }
-      if (reduced) {
-        jRef.current = target;
-      } else {
-        vRef.current += (STIFF * (target - jRef.current) - DAMP * vRef.current) * dt;
-        jRef.current += vRef.current * dt;
-        if (Math.abs(target - jRef.current) < 0.0004 && Math.abs(vRef.current) < 0.004) {
-          jRef.current = target;
-          vRef.current = 0;
-        }
-      }
-      const j = clamp01(jRef.current);
-
+      const t = clamp01(window.scrollY / DETACH);
       const full = Math.min(vw, 1240);
-      const pill = Math.min(760, vw - 28);
-      const orb = 62;
-
-      const w = lerp(lerp(full, pill, t), orb, j);
-      const h = lerp(lerp(72, 56, t), orb, j);
-      const r = lerp(lerp(0, 999, t), 999, j);
-      const top = lerp(lerp(0, 10, t), 16, j);
-
-      head.style.setProperty("--nw", `${w}px`);
-      head.style.setProperty("--nh", `${h}px`);
-      head.style.setProperty("--nr", `${r}px`);
-      head.style.setProperty("--nt", `${top}px`);
-      // the bar's contents fade out as the orb takes over, and the orb fades in
-      head.style.setProperty("--bar-o", String(clamp01(1 - j * 2.1)));
-      head.style.setProperty("--orb-o", String(clamp01((j - 0.55) * 2.6)));
+      // wide enough for the links, the phone number, the test action and the
+      // quick-menu button, so nothing in the pill is ever squeezed
+      const pill = Math.min(920, vw - 28);
+      head.style.setProperty("--nw", `${lerp(full, pill, t)}px`);
+      head.style.setProperty("--nh", `${lerp(72, 56, t)}px`);
+      head.style.setProperty("--nr", `${lerp(0, 999, t)}px`);
+      head.style.setProperty("--nt", `${lerp(0, 10, t)}px`);
+      head.style.setProperty("--bar-o", "1");
+      head.style.setProperty("--orb-o", "0");
       head.style.setProperty("--edge-o", String(1 - t));
-      head.dataset.j = j > 0.5 ? "1" : "0";
-
-      const nowIn = j > 0.5;
-      setInJourney((prev) => (prev === nowIn ? prev : nowIn));
+      head.dataset.j = "0";
       raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
   }, []);
 
-  /* ---- the hint is a teaching aid, not furniture ----
-     It says its piece once. It shows the first time the nav becomes an orb,
-     retires after seven seconds, and never comes back once the menu has
-     actually been opened. A permanent label sitting over the drawing would be
-     the same nagging tooltip the orb exists to avoid. */
-  useEffect(() => {
-    try {
-      if (sessionStorage.getItem("ngw:ring") === "1") return;
-    } catch {
-      /* private mode: just show it */
-    }
-    setHintSpent(false);
-  }, []);
-  useEffect(() => {
-    if (!inJourney || hintSpent) return;
-    const id = window.setTimeout(() => setHintSpent(true), 7000);
-    return () => window.clearTimeout(id);
-  }, [inJourney, hintSpent]);
-  useEffect(() => {
-    if (!menuAt) return;
-    setHintSpent(true);
-    try {
-      sessionStorage.setItem("ngw:ring", "1");
-    } catch {
-      /* nothing to remember it with; the timeout still retires it */
-    }
-  }, [menuAt]);
-
-  /* ---- right-click anywhere in the journey opens the ring ---- */
   const openAt = useCallback((x: number, y: number) => setMenuAt({ x, y }), []);
-  useEffect(() => {
-    const onCtx = (e: MouseEvent) => {
-      const plate = document.getElementById("journey");
-      if (!plate) return;
-      const b = plate.getBoundingClientRect();
-      if (b.top > window.innerHeight * 0.2 || b.bottom < window.innerHeight * 0.8) return;
-      e.preventDefault();
-      openAt(e.clientX, e.clientY);
-    };
-    window.addEventListener("contextmenu", onCtx);
-    return () => window.removeEventListener("contextmenu", onCtx);
-  }, [openAt]);
 
   /* Opens the ring under the trigger on a pointer device, and in the thumb
      arc on a phone, same rule as the orb. */
@@ -220,24 +121,6 @@ export function Nav() {
     openAt(
       touch ? window.innerWidth / 2 : b.left + b.width / 2,
       touch ? window.innerHeight * 0.58 : b.bottom + 150,
-    );
-  };
-
-  const orbClick = () => {
-    if (menuAt) {
-      setMenuAt(null);
-      return;
-    }
-    const b = orbRef.current?.getBoundingClientRect();
-    if (!b) return;
-    // On a phone the orb sits at the top of the screen, and a ring opened just
-    // below it lands where no thumb reaches. So on narrow viewports the ring
-    // opens low, in the thumb arc, rather than under the button that summoned
-    // it. On desktop the pointer is already at the orb, so it opens there.
-    const touch = window.innerWidth < 768;
-    openAt(
-      b.left + b.width / 2,
-      touch ? window.innerHeight * 0.58 : b.top + b.height / 2 + 150,
     );
   };
 
@@ -273,6 +156,12 @@ export function Nav() {
                 {r.label}
               </Link>
             ))}
+            <a className="nav-tel" href={`tel:${CONTACT.phone.replace(/\s/g, "")}`} data-cursor aria-label={`Call ${CONTACT.phone}`}>
+              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5.5 3.5h3l1.6 4.4-2.2 1.4a11 11 0 0 0 6.8 6.8l1.4-2.2 4.4 1.6v3a2 2 0 0 1-2.2 2A17.5 17.5 0 0 1 3.5 5.7a2 2 0 0 1 2-2.2Z" />
+              </svg>
+              <span>{CONTACT.phone}</span>
+            </a>
             <Link className="nav-cta" href="/water-test/" data-cursor>
               Book water test
             </Link>
@@ -306,23 +195,10 @@ export function Nav() {
           </button>
         </div>
 
-        {/* state C: the whole nav has become this */}
-        <button
-          ref={orbRef}
-          className="nav-orb"
-          onClick={orbClick}
-          aria-label="Open menu"
-          aria-expanded={!!menuAt}
-          tabIndex={inJourney ? 0 : -1}
-        >
-          <MenuToggleIcon open={!!menuAt} />
-        </button>
-
         <nav id="ng-menu" className={cn("nav-sheet", sheet && "is-open")} aria-label="Menu">
           <div className="nav-sheet-in" {...({ inert: sheet ? undefined : "" } as Record<string, unknown>)}>
             {navRoutes.map((r) => (
               <Link key={r.href} href={r.href} onClick={() => setSheet(false)}>
-                <b>{r.sheet}</b>
                 {r.label}
               </Link>
             ))}
@@ -332,13 +208,6 @@ export function Nav() {
           </div>
         </nav>
       </header>
-
-      {/* the hint, only while the nav is an orb and only until it is used */}
-      <span className={cn("nav-hint", inJourney && !menuAt && !hintSpent && "is-on")} aria-hidden="true">
-        <i />
-        <span className="nav-hint-desk">Right-click anywhere for the menu</span>
-        <span className="nav-hint-touch">Tap for the menu</span>
-      </span>
 
       <RadialMenu items={RADIAL_ITEMS} open={!!menuAt} at={menuAt} onClose={() => setMenuAt(null)} />
     </>

@@ -23,14 +23,15 @@ import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { LOCKUP } from "./lockupPaths";
+import { makeStageLabel } from "./labels";
 import { BOWL, CARTRIDGE, COVER, COVER_Y, COVER_Z, FRAME, FRAME_TOP, GAUGE, HEAD, HOUSING_X, PIPE, POST_X, POST_Z, TUBE } from "./dims";
 import {
   bowlGeometry,
+  bowlRibsGeometry,
   capGeometry,
   collarRibsGeometry,
   coreGeometry,
-  coverGeometries,
-  earGeometry,
+  coverShellGeometry,
   elbowGeometry,
   gaugeBezelGeometry,
   gaugeCaseGeometry,
@@ -42,8 +43,11 @@ import {
   pipeGeometry,
   plateGeometry,
   portGeometry,
+  screwGeometry,
   threadsGeometry,
   tubeGeometry,
+  upstandGeometry,
+  UPSTAND,
 } from "./geometry";
 import type { MachineMaterials } from "./materials";
 
@@ -65,6 +69,10 @@ export type MachineHandle = {
   lit: number[];
   /** the bowl material per housing, for the highlight */
   bowlMats: THREE.MeshPhysicalMaterial[];
+  /** frames left in which every part the journey reveals (section faces, the
+   *  water) is drawn once, unseen inside the closed machine, so its shaders
+   *  compile at load and not in the middle of the scroll */
+  warm: number;
 };
 
 export function createMachineHandle(): MachineHandle {
@@ -81,6 +89,7 @@ export function createMachineHandle(): MachineHandle {
     flow: [0, 0, 0],
     lit: [0, 0, 0],
     bowlMats: [],
+    warm: 2,
   };
 }
 
@@ -105,7 +114,9 @@ function useGeometries() {
       button: new THREE.CylinderGeometry(HEAD.button.r, HEAD.button.r * 0.92, HEAD.button.h, 32),
       bolt: new THREE.CylinderGeometry(HEAD.bolt.r, HEAD.bolt.r, HEAD.bolt.h, 6),
       plate: plateGeometry(),
-      ear: earGeometry(),
+      upstand: upstandGeometry(),
+      screw: screwGeometry(),
+      bowlRibs: bowlRibsGeometry(),
       post: tubeGeometry(FRAME.plateBottom - TUBE, "y"),
       railX: tubeGeometry(FRAME.w, "x"),
       railZ: tubeGeometry(FRAME.d - 2 * TUBE, "z"),
@@ -134,39 +145,18 @@ function useGeometries() {
         return g;
       })(),
       particle: new THREE.SphereGeometry(0.3, 10, 8),
-      cover: coverGeometries(),
+      waterBody: (() => {
+        // open-ended and no taller than the beds: a closed end showed through the cut as a white disc
+        const g = new THREE.CylinderGeometry(BOWL.r - BOWL.wall - 0.08, BOWL.r - BOWL.wall - 0.08, cartY1 - cartY0, 64, 1, true);
+        g.translate(0, (cartY0 + cartY1) / 2, 0);
+        return g;
+      })(),
+      cover: coverShellGeometry(),
       dial: makeDialTexture(),
     };
   }, []);
 }
 type Geos = ReturnType<typeof useGeometries>;
-
-/** a printed label with nothing readable on it: a white patch, a bar of grey
- *  lines and a small block, the way the real housings are labelled */
-function makeLabelTexture(): THREE.CanvasTexture | null {
-  if (typeof document === "undefined") return null;
-  const cv = document.createElement("canvas");
-  cv.width = 256;
-  cv.height = 384;
-  const g = cv.getContext("2d");
-  if (!g) return null;
-  g.fillStyle = "#f4f4f2";
-  g.fillRect(0, 0, 256, 384);
-  g.fillStyle = "#c9cbcc";
-  g.fillRect(28, 40, 120, 14);
-  g.fillRect(28, 66, 180, 7);
-  g.fillRect(28, 80, 150, 7);
-  g.fillRect(28, 94, 166, 7);
-  g.fillStyle = "#b8babb";
-  for (let i = 0; i < 9; i++) g.fillRect(28, 140 + i * 16, 60 + ((i * 37) % 120), 5);
-  g.fillStyle = "#9a9c9e";
-  g.fillRect(150, 280, 78, 78);
-  g.fillStyle = "#f4f4f2";
-  for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) if ((x * 7 + y * 3) % 5 < 2) g.fillRect(154 + x * 9, 284 + y * 9, 8, 8);
-  const t = new THREE.CanvasTexture(cv);
-  t.colorSpace = THREE.SRGBColorSpace;
-  return t;
-}
 
 /* ---- one housing: head fixed to the plate, bowl hung from it, cartridge inside ---- */
 const STAGE_LAYERS = (m: MachineMaterials, i: number): [number, THREE.Material][] =>
@@ -188,7 +178,8 @@ const STAGE_LAYERS = (m: MachineMaterials, i: number): [number, THREE.Material][
           [3.6, m.gac],
         ];
 
-const DIRTY = ["#a4825a", "#b7c66d", "#d9d9cf"];
+/* what the water carries in, per stage: silt, a pale cloud, a milky trace */
+const DIRTY = ["#8c7456", "#aeb8bd", "#d4d8d2"];
 
 type Pointer = {
   onCover?: (e: ThreeEvent<MouseEvent>) => void;
@@ -216,32 +207,103 @@ function Housing({ i, mats, geos, h, label, pointer }: { i: number; mats: Machin
       bowl,
       collar: clone(mats.collar),
       layers: STAGE_LAYERS(mats, i).map(([r, m]) => [r, clone(m)] as [number, THREE.Material]),
-      cap: clone(i === 2 ? mats.capWhite : mats.capPink),
+      cap: clone(mats.capPlain),
       core: clone(mats.core),
+      waterBody: clone(mats.waterBody),
       blue: clone(mats.capBlue),
-      label: new THREE.MeshStandardMaterial({ map: label ?? undefined, color: label ? "#ffffff" : "#f0f0ee", roughness: 0.7, clippingPlanes: h.planes[i], clipIntersection: true, side: THREE.DoubleSide, transparent: true, opacity: 0.98 }),
+      label: new THREE.MeshPhysicalMaterial({ map: label ?? undefined, color: label ? "#ffffff" : "#f0f0ee", roughness: 0.62, clearcoat: 0.25, clearcoatRoughness: 0.35, clippingPlanes: h.planes[i], clipIntersection: true, side: THREE.DoubleSide, transparent: true, opacity: 1, polygonOffset: true, polygonOffsetFactor: -2 }),
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mats, i, h, label]);
   const layerGeos = useMemo(() => cutMats.layers.map(([r]) => geos.layer(r)), [cutMats, geos]);
+
+  /* THE SECTION FACES. A clipped shell is hollow: where the wedge cuts the
+     bowl and the cartridge, the cut would show nothing but the inside of a
+     tube. A real cutaway is solid, so each cut face gets a flat cap in the
+     material that was cut: the bowl wall, each bed of media, the end caps.
+     They stand in the planes of the wedge and turn with it. */
+  const caps = useMemo(() => {
+    const plane = (r0: number, r1: number, y0: number, y1: number, su: number) => {
+      const w = r1 - r0;
+      const hh = y1 - y0;
+      const g = new THREE.PlaneGeometry(w, hh);
+      g.translate(r0 + w / 2, y0 + hh / 2, 0);
+      const uv = g.attributes.uv as THREE.BufferAttribute;
+      for (let k = 0; k < uv.count; k++) uv.setX(k, uv.getX(k) * su);
+      return g;
+    };
+    const unclip = (m: THREE.Material) => {
+      const c = m.clone();
+      c.clippingPlanes = null;
+      c.side = THREE.DoubleSide;
+      return c;
+    };
+    const layers = STAGE_LAYERS(mats, i);
+    const rCore = CARTRIDGE.coreR + 0.15;
+    const items: { geo: THREE.BufferGeometry; mat: THREE.Material }[] = [];
+    layers.forEach(([rOut, mat], k) => {
+      const rIn = layers[k + 1]?.[0] ?? rCore;
+      // each bed's face runs edge to edge with the next (a gap would show the
+      // dark inside of the shell as a sliver); the u scale keeps the texel
+      // density of the cylinder the bed is drawn on
+      items.push({ geo: plane(rIn, rOut, geos.cartY0, geos.cartY1, (rOut - rIn) / (2 * Math.PI * rOut)), mat: unclip(mat) });
+    });
+    const capMat = unclip(mats.capPlain);
+    items.push({ geo: plane(rCore, CARTRIDGE.r + 0.04, CARTRIDGE.bottom, geos.cartY0, 1), mat: capMat });
+    items.push({ geo: plane(rCore, CARTRIDGE.r + 0.04, geos.cartY1, geos.cartY1 + CARTRIDGE.capH, 1), mat: capMat });
+    items.push({ geo: plane(BOWL.r - BOWL.wall, BOWL.r, BOWL.bottom + BOWL.domeH + 0.3, BOWL.shoulder - 0.6, 1), mat: mats.wallCut });
+    return items;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mats, i, geos]);
+  const capA = useRef<THREE.Group>(null);
+  const capB = useRef<THREE.Group>(null);
+  const capTmp = useMemo(() => ({ q: new THREE.Quaternion(), e: new THREE.Euler() }), []);
 
   // the water: particles on the real path
   const inst = useRef<THREE.InstancedMesh>(null);
   const N = 150;
   const seeds = useMemo(() => {
     const s = [];
-    for (let k = 0; k < N; k++) s.push({ phase: (k / N + Math.random() * 0.02) % 1, ang: (Math.random() - 0.5) * 2.2, yIn: 11 + Math.random() * 36, rr: 0.15 + Math.random() * 0.7, speed: 0.85 + Math.random() * 0.3 });
+    for (let k = 0; k < N; k++) s.push({ phase: (k / N + Math.random() * 0.02) % 1, ang: (Math.random() - 0.5) * 2.2, yIn: 11 + Math.random() * 36, rr: 0.15 + Math.random() * 0.7, speed: 0.85 + Math.random() * 0.3, size: 0.3 + Math.pow(Math.random(), 2.2) * 0.85 });
     return s;
   }, []);
   const dirty = useMemo(() => new THREE.Color(DIRTY[i]), [i]);
   const clean = useMemo(() => new THREE.Color("#2ea9df"), []);
   const tmp = useMemo(() => ({ m: new THREE.Matrix4(), p: new THREE.Vector3(), c: new THREE.Color(), q: new THREE.Quaternion(), s: new THREE.Vector3() }), []);
   const clock = useRef(0);
+  const waterRef = useRef<THREE.Mesh>(null);
   useFrame((_, dt) => {
+    // the section faces follow the wedge
+    const th = h.cut[i];
+    const open = th > 0.002;
+    const warm = h.warm > 0;
+    if (capA.current && capB.current) {
+      capA.current.visible = open || warm;
+      capB.current.visible = open || warm;
+      if (open) {
+        let yaw = 0;
+        const parent = h.housings[i]?.parent;
+        if (parent) {
+          parent.getWorldQuaternion(capTmp.q);
+          capTmp.e.setFromQuaternion(capTmp.q, "YXZ");
+          yaw = capTmp.e.y;
+        }
+        capA.current.rotation.y = th - Math.PI / 2 - yaw;
+        capB.current.rotation.y = -th - Math.PI / 2 - yaw;
+      }
+    }
     const mesh = inst.current;
     if (!mesh) return;
     const f = h.flow[i];
-    mesh.visible = f > 0.01;
+    mesh.visible = f > 0.01 || warm;
+    const wb = waterRef.current;
+    if (wb) {
+      wb.visible = f > 0.01 || warm;
+      (wb.material as THREE.MeshPhysicalMaterial).opacity = 0.62 * f;
+    }
+    // the core glows while the water runs: the clean water, rising
+    const core = cutMats.core as THREE.MeshStandardMaterial;
+    if (core.emissive) core.emissiveIntensity = 1.6 * f;
     if (!mesh.visible) return;
     clock.current += dt * 0.11 * f;
     const R_OUT = BOWL.r - BOWL.wall - 0.35;
@@ -283,8 +345,11 @@ function Housing({ i, mats, geos, h, label, pointer }: { i: number; mats: Machin
         cleanMix = 1;
       }
       tmp.p.set(px, py, pz);
-      const sc = f * (0.75 + 0.25 * Math.sin(k * 3.1));
-      tmp.s.set(sc, sc, sc);
+      // no two drops alike: a spread of sizes, and a drop moving along the
+      // bowl or up the core draws out a little along its path
+      const sc = f * sd.size;
+      const vertical = (t > 0.06 && t < 0.42) || (t > 0.58 && t < 0.92);
+      tmp.s.set(sc, sc * (vertical ? 1.9 : 1), sc);
       tmp.m.compose(tmp.p, tmp.q, tmp.s);
       mesh.setMatrixAt(k, tmp.m);
       tmp.c.copy(dirty).lerp(clean, cleanMix);
@@ -319,6 +384,7 @@ function Housing({ i, mats, geos, h, label, pointer }: { i: number; mats: Machin
       {/* the bowl: hangs from the head; unscrews and sets down in service */}
       <group ref={(el) => { h.bowls[i] = el; }}>
         <mesh geometry={geos.bowl} material={cutMats.bowl} castShadow receiveShadow />
+        <mesh geometry={geos.bowlRibs} material={cutMats.bowl} castShadow receiveShadow />
         <mesh geometry={geos.ribs} material={cutMats.collar} castShadow />
         <mesh geometry={geos.threads} material={cutMats.collar} />
         <mesh geometry={geos.label} material={cutMats.label} />
@@ -333,8 +399,22 @@ function Housing({ i, mats, geos, h, label, pointer }: { i: number; mats: Machin
         <mesh geometry={geos.capTop} material={cutMats.cap} castShadow />
         {i === 2 && <mesh geometry={geos.collarBlue} material={cutMats.blue} castShadow />}
         <mesh geometry={geos.core} material={cutMats.core} />
-        {/* the water */}
+        {/* the water: a translucent body filling the bowl around the cartridge,
+            only ever seen through the cut, and the particles on their path */}
+        <mesh geometry={geos.waterBody} material={cutMats.waterBody} ref={waterRef} visible={false} renderOrder={2} />
         <instancedMesh ref={inst} args={[geos.particle, mats.water, N]} frustumCulled={false} visible={false} />
+      </group>
+
+      {/* the section faces, one set per side of the wedge */}
+      <group ref={capA} visible={false}>
+        {caps.map((c, k) => (
+          <mesh key={k} geometry={c.geo} material={c.mat} receiveShadow />
+        ))}
+      </group>
+      <group ref={capB} visible={false}>
+        {caps.map((c, k) => (
+          <mesh key={k} geometry={c.geo} material={c.mat} receiveShadow />
+        ))}
       </group>
     </group>
   );
@@ -358,9 +438,16 @@ function Frame({ mats, geos }: { mats: MachineMaterials; geos: Geos }) {
       ))}
       {/* the plate the heads hang from */}
       <mesh geometry={geos.plate} material={mats.plate} position={[0, FRAME.plateBottom + FRAME.plate.h / 2, 0]} castShadow receiveShadow />
-      {/* the wall-mount ears */}
+      {/* the wall-mount upstand along the back edge, and a screw in each keyhole */}
+      <mesh geometry={geos.upstand} material={mats.plate} position={[0, FRAME_TOP - 0.3, -FRAME.plate.d / 2 + UPSTAND.t / 2]} castShadow receiveShadow />
       {[-1, 1].map((sx) => (
-        <mesh key={`ear${sx}`} geometry={geos.ear} material={mats.plate} position={[sx * (FRAME.w / 2 - 5), FRAME_TOP - 0.2, -FRAME.plate.d / 2 + 0.2]} castShadow />
+        <mesh
+          key={`screw${sx}`}
+          geometry={geos.screw}
+          material={mats.screw}
+          position={[sx * (FRAME.plate.w / 2 - UPSTAND.holeInset), FRAME_TOP - 0.3 + UPSTAND.h - 2.1 - UPSTAND.slot * 0.7, -FRAME.plate.d / 2 + UPSTAND.t]}
+          castShadow
+        />
       ))}
     </group>
   );
@@ -470,11 +557,7 @@ function Relief({ mats, z }: { mats: MachineMaterials; z: number }) {
 }
 
 function Cover({ mats, geos, h, pointer }: { mats: MachineMaterials; geos: Geos; h: MachineHandle; pointer?: Pointer }) {
-  const { w, t, notch, d } = COVER;
-  const g = geos.cover;
-  const nb = notch.top - notch.h;
-  const zf = d / 2;
-  const midW = w - 2 * t - 2 * notch.w;
+  const zf = COVER.d / 2;
   return (
     <group
       ref={(el) => { h.cover = el; }}
@@ -483,19 +566,9 @@ function Cover({ mats, geos, h, pointer }: { mats: MachineMaterials; geos: Geos;
       onPointerOver={pointer?.onHover ? (e) => { e.stopPropagation(); pointer.onHover?.("cover"); } : undefined}
       onPointerOut={pointer?.onHover ? () => pointer.onHover?.(null) : undefined}
     >
-      <mesh geometry={g.sideGeo} material={mats.cover} position-x={-w / 2 + t} castShadow receiveShadow />
-      <mesh geometry={g.sideGeo} material={mats.cover} position-x={w / 2} castShadow receiveShadow />
-      <mesh geometry={g.mid} material={mats.cover} position-x={midW / 2} castShadow receiveShadow />
-      <mesh geometry={g.edgeLow} material={mats.cover} position-x={-w / 2 + t + notch.w} castShadow receiveShadow />
-      <mesh geometry={g.edgeLow} material={mats.cover} position-x={w / 2 - t} castShadow receiveShadow />
-      <mesh geometry={g.edgeHigh} material={mats.cover} position-x={-w / 2 + t + notch.w} castShadow receiveShadow />
-      <mesh geometry={g.edgeHigh} material={mats.cover} position-x={w / 2 - t} castShadow receiveShadow />
-      {/* the pressed pocket behind each notch */}
-      {[-1, 1].map((sx) => (
-        <mesh key={sx} material={mats.coverInside} position={[sx * (w / 2 - t - notch.w / 2), nb + notch.h / 2, zf - notch.d + t / 2]} receiveShadow>
-          <boxGeometry args={[notch.w + 0.3, notch.h, t]} />
-        </mesh>
-      ))}
+      {/* the sheet, outside and in */}
+      <mesh geometry={geos.cover} material={mats.cover} castShadow receiveShadow />
+      <mesh geometry={geos.cover} material={mats.coverInside} receiveShadow />
       {/* the lockup, raised off the front face */}
       <group ref={(el) => { h.lockup = el; }}>
         <Relief mats={mats} z={zf} />
@@ -510,15 +583,8 @@ function Cover({ mats, geos, h, pointer }: { mats: MachineMaterials; geos: Geos;
 /* ---- the whole thing ---- */
 export function Machine({ mats, handle, covered = true, pointer }: { mats: MachineMaterials; handle: MachineHandle; covered?: boolean; pointer?: Pointer }) {
   const geos = useGeometries();
-  const label = useMemo(() => makeLabelTexture(), []);
+  const labels = useMemo(() => [0, 1, 2].map((k) => makeStageLabel(k)), []);
   useEffect(() => {
-    for (const t of [mats.kdf.map, mats.kdf.normalMap, mats.gac.map, mats.gac.normalMap, mats.beads.normalMap]) {
-      if (t) {
-        t.wrapS = t.wrapT = THREE.RepeatWrapping;
-        t.repeat.set(5, 4);
-        t.needsUpdate = true;
-      }
-    }
     if (mats.mesh2.map) {
       mats.mesh2.map.wrapS = mats.mesh2.map.wrapT = THREE.RepeatWrapping;
       mats.mesh2.map.repeat.set(8, 26);
@@ -552,13 +618,16 @@ export function Machine({ mats, handle, covered = true, pointer }: { mats: Machi
       const bm = handle.bowlMats[i];
       if (bm) bm.emissive.setRGB(0.05, 0.16, 0.24).multiplyScalar(handle.lit[i] * 0.6);
     }
+    // the housings read the warm-up count before this runs (children's frame
+    // callbacks subscribe first), so the frame renders with the parts shown
+    if (handle.warm > 0) handle.warm -= 1;
   });
 
   return (
     <group>
       <Frame mats={mats} geos={geos} />
       {[0, 1, 2].map((i) => (
-        <Housing key={i} i={i} mats={mats} geos={geos} h={handle} label={label} pointer={pointer} />
+        <Housing key={i} i={i} mats={mats} geos={geos} h={handle} label={labels[i]} pointer={pointer} />
       ))}
       <Gauge k={0} mats={mats} geos={geos} h={handle} reading={0.42} />
       <Gauge k={1} mats={mats} geos={geos} h={handle} reading={0.37} />

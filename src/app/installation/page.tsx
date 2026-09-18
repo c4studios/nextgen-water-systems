@@ -69,8 +69,8 @@ export default function InstallationPage() {
               servicing. The plumber works that out on site.
             </li>
             <li>
-              <b>Water off, system in.</b> The frame is mounted, the unit is plumbed into the incoming line
-              with isolation either side, and the joints are pressure-checked before the water goes back on. Then the cover clips on.
+              <b>Water off, system in.</b> The frame is mounted and the unit is plumbed into the incoming
+              line with an isolation valve either side. Then the cover clips on.
             </li>
             <li>
               <b>Flush and hand over.</b> New cartridges are flushed through until the water runs clear, the

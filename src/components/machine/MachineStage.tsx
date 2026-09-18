@@ -14,10 +14,11 @@
  */
 import * as THREE from "three";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { EffectComposer, N8AO } from "@react-three/postprocessing";
 import { useCallback, useEffect, useMemo, useRef, type MutableRefObject } from "react";
+import { CALLOUTS, type Callout } from "@/content/callouts";
 import { Machine, createMachineHandle, type MachineHandle } from "./Machine";
-import { makeMachineMaterials } from "./materials";
+import { loadMachineMedia, makeMachineMaterials } from "./materials";
+import { BLOOM_INTENSITY, CA_OFFSET, GRAIN_OPACITY, PostChain, VIGNETTE_DARKNESS } from "./PostChain";
 import { Studio, configureStudio } from "./Studio";
 import { coverPose, LIFT_RISE } from "./coverLift";
 import { BOWL, COVER, COVER_Y, HOUSING_X } from "./dims";
@@ -92,8 +93,23 @@ const _dir = new THREE.Vector3();
 const _right = new THREE.Vector3();
 const _up = new THREE.Vector3(0, 1, 0);
 
-function Rig({ progress, h, world }: { progress: MutableRefObject<number>; h: MachineHandle; world: MutableRefObject<THREE.Group | null> }) {
+type DofHandle = { target?: THREE.Vector3; bokehScale: number; cocMaterial?: { worldFocusRange: number; worldFocusDistance: number } } | null;
+
+/** where the camera should be looking hardest, per beat: the cut housing while
+ *  one is open, the cover's lettering while the cover is on, the machine otherwise */
+export function focusPoint(p: number, out: THREE.Vector3): number {
+  const [w1, w2, w3] = interiorWindows(p);
+  const through = Math.max(w1, w2, w3);
+  const sum = w1 + w2 + w3;
+  if (sum > 0.001) out.set((w1 * X0 + w2 * X1 + w3 * X2) / sum, 30, 0);
+  else if (p < 0.2) out.set(0, COVER.lockup.name.cy, COVER.d / 2 + 1);
+  else out.set(0, 34, 0);
+  return through;
+}
+
+function Rig({ progress, h, world, dof }: { progress: MutableRefObject<number>; h: MachineHandle; world: MutableRefObject<THREE.Group | null>; dof: MutableRefObject<DofHandle> }) {
   const { camera } = useThree();
+  const focus = useRef(new THREE.Vector3(0, 34, 0));
   const tgt = useRef(new THREE.Vector3(0, 37, 0));
   const ptr = useRef(new THREE.Vector2());
   const lit = useRef([0, 0, 0]);
@@ -107,6 +123,8 @@ function Rig({ progress, h, world }: { progress: MutableRefObject<number>; h: Ma
     sampleRail("tgt", i, e, tgt.current);
     const cam = camera as THREE.PerspectiveCamera;
     const narrow = THREE.MathUtils.clamp((1.15 - cam.aspect) / 0.5, 0, 1);
+    const [w1, w2, w3] = interiorWindows(p);
+    const inside = Math.max(w1, w2, w3);
 
     // the hero borrows the scene
     HERO.mix = THREE.MathUtils.damp(HERO.mix, HERO.mixT, 5, delta);
@@ -118,14 +136,18 @@ function Rig({ progress, h, world }: { progress: MutableRefObject<number>; h: Ma
     // sits in the upper frame above the caption card
     if (narrow > 0.001 && hm < 0.999) {
       // the sideways compositions are for copy beside the machine; a phone
-      // puts the copy under it, so the machine comes back to the centre line
-      const cx = tgt.current.x * 0.8 * narrow * (1 - hm);
+      // puts the copy under it, so the machine comes back to the centre line,
+      // EXCEPT inside a stage, where the housing being opened is the subject
+      // and stays centred (stage 1 frames housing 1, not its neighbour)
+      const cx = tgt.current.x * 0.8 * narrow * (1 - hm) * (1 - inside);
       tgt.current.x -= cx;
       camera.position.x -= cx;
       _dir.copy(camera.position).sub(tgt.current);
       const dist = _dir.length();
       _dir.normalize();
-      camera.position.addScaledVector(_dir, dist * 0.42 * narrow * (1 - hm));
+      // pulled back to fit the tall frame; less inside a stage, so the one
+      // housing fills it and the neighbours fall to the edges
+      camera.position.addScaledVector(_dir, dist * (0.42 - 0.12 * inside) * narrow * (1 - hm));
       tgt.current.y -= 5 * narrow * (1 - hm);
       camera.position.y -= 5 * narrow * (1 - hm);
     }
@@ -173,7 +195,6 @@ function Rig({ progress, h, world }: { progress: MutableRefObject<number>; h: Ma
     // WIDE-FRAME COMPOSITION: the copy stands beside the machine, so on the
     // three stage beats the view is shifted sideways along the camera's right
     // vector (the same view, moved) to leave the copy column clear
-    const [w1, w2, w3] = interiorWindows(p);
     const pan = (1 - narrow) * (1 - hm) * (-9 * w1 + -22 * w2 + 9 * w3);
     if (Math.abs(pan) > 1e-3) {
       _dir.copy(tgt.current).sub(camera.position);
@@ -184,6 +205,19 @@ function Rig({ progress, h, world }: { progress: MutableRefObject<number>; h: Ma
 
     camera.up.set(0, 1, 0);
     camera.lookAt(tgt.current);
+
+    // the lens: focus rides the discussed part, the field narrows as a housing opens
+    const eff = dof.current;
+    if (eff) {
+      const through = focusPoint(p, focus.current);
+      if (hm > 0.001) focus.current.lerp(new THREE.Vector3(0, COVER.lockup.name.cy, COVER.d / 2 + 1), hm);
+      if (eff.target) eff.target.copy(focus.current);
+      if (eff.cocMaterial) {
+        eff.cocMaterial.worldFocusDistance = camera.position.distanceTo(focus.current);
+        eff.cocMaterial.worldFocusRange = (26 - through * 14) * (1 - hm) + 60 * hm;
+      }
+      eff.bokehScale = (1.6 + through * 2.2) * (1 - hm) + 1.0 * hm;
+    }
     const fov = 38 - Math.max(w1, w2, w3) * 4 + (hm > 0.001 ? (36 - 38) * hm : 0);
     if (Math.abs(cam.fov - fov) > 0.01) {
       cam.fov = fov;
@@ -227,6 +261,106 @@ function Rig({ progress, h, world }: { progress: MutableRefObject<number>; h: Ma
   return null;
 }
 
+
+/* ---- the callouts: the scene projects each anchor, the page draws the tag ---- */
+/** the paper tag's own box, relative to its dot: the leader is 74px and the
+ *  tag is centred on the dot (world.css) */
+const TAG_LEADER = 74;
+
+function CalloutDriver({ progress, host }: { progress: MutableRefObject<number>; host?: MutableRefObject<HTMLElement | null> }) {
+  const camera = useThree((st) => st.camera);
+  const size = useThree((st) => st.size);
+  const items = useRef<{ el: HTMLElement; tag: HTMLElement | null; c: Callout }[] | null>(null);
+  const v = useMemo(() => new THREE.Vector3(), []);
+  useFrame(() => {
+    const root = host?.current;
+    if (!root) return;
+    if (!items.current) {
+      items.current = CALLOUTS.map((c) => ({
+        c,
+        el: root.querySelector<HTMLElement>(`[data-callout="${c.id}"]`),
+        tag: root.querySelector<HTMLElement>(`[data-callout="${c.id}"] .jc-tag`),
+      })).filter((x): x is { el: HTMLElement; tag: HTMLElement | null; c: Callout } => !!x.el);
+    }
+    const p = progress.current;
+    const hm = HERO.mix;
+    const wide = size.width >= 900;
+    // THE NAV IS AN OBSTACLE TOO. The condensed pill floats over the top of the
+    // frame, so a tag whose paper would land under it (or under its quick-menu
+    // circle) is faded out rather than half-hidden. Read before any write, so
+    // the frame never pays for a forced layout.
+    let navBottom = 0;
+    let navLeft = 0;
+    let navRight = 0;
+    if (wide && hm < 0.999) {
+      const nav = document.querySelector<HTMLElement>("header.site-nav");
+      if (nav) {
+        const r = nav.getBoundingClientRect();
+        navBottom = r.bottom + 6;
+        navLeft = r.left - 6;
+        navRight = r.right + 6;
+      }
+    }
+    for (const { el, tag, c } of items.current) {
+      const f = 0.012;
+      let io = wide ? THREE.MathUtils.clamp(Math.min((p - c.a) / f, (c.b - p) / f), 0, 1) * (1 - hm) : 0;
+      if (io > 0.001) {
+        v.set(c.at[0], c.at[1], c.at[2]).project(camera);
+        if (v.z > 1) io = 0;
+      }
+      if (io <= 0.001) {
+        if (el.style.visibility !== "hidden") el.style.visibility = "hidden";
+        continue;
+      }
+      const x = (v.x * 0.5 + 0.5) * size.width;
+      const y = (-v.y * 0.5 + 0.5) * size.height;
+      if (navBottom > 0 && tag) {
+        const w = tag.offsetWidth || 180;
+        const h = tag.offsetHeight || 34;
+        const left = c.side === "r" ? x + TAG_LEADER : x - TAG_LEADER - w;
+        const top = y - h / 2;
+        if (top < navBottom && left < navRight && left + w > navLeft) {
+          el.style.visibility = "hidden";
+          continue;
+        }
+      }
+      el.style.visibility = "visible";
+      el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
+      el.style.setProperty("--io", io.toFixed(3));
+    }
+  });
+  return null;
+}
+
+/* the lens chain is for the set: on the hero the page is white, so the
+   vignette and the grain fade out as the hero takes the scene */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function PostDriver({ vig, grain, bloom, ca }: { vig: MutableRefObject<any>; grain: MutableRefObject<any>; bloom: MutableRefObject<any>; ca: MutableRefObject<any> }) {
+  useFrame(() => {
+    const k = 1 - HERO.mix;
+    if (vig.current && "darkness" in vig.current) vig.current.darkness = VIGNETTE_DARKNESS * k;
+    if (grain.current?.blendMode?.opacity) grain.current.blendMode.opacity.value = GRAIN_OPACITY * k;
+    // the hero's ground is HDR white so it lands on the page's white: nothing may
+    // bloom off it, and no fringe may ride the cover's edge against it either
+    if (bloom.current && "intensity" in bloom.current) bloom.current.intensity = BLOOM_INTENSITY * k;
+    const off = ca.current?.offset;
+    if (off && "set" in off) off.set(CA_OFFSET.x * k, CA_OFFSET.y * k);
+  });
+  return null;
+}
+
+/** re-arms the machine's warm-up once the studio has settled its shadow
+ *  shaders (the soft-shadow chunk recompiles everything when it mounts), so
+ *  the parts the journey reveals compile now, unseen, and never mid-scroll */
+function WarmUp({ h, mats, size }: { h: MachineHandle; mats: ReturnType<typeof makeMachineMaterials>; size: number }) {
+  useEffect(() => {
+    h.warm = 3;
+    // the cartridge media are drawn in idle time and swapped into their stand-ins
+    void loadMachineMedia(mats, size);
+  }, [h, mats, size]);
+  return null;
+}
+
 function Ready({ onReady }: { onReady?: () => void }) {
   const get = useThree((s) => s.get);
   useEffect(() => {
@@ -236,12 +370,21 @@ function Ready({ onReady }: { onReady?: () => void }) {
   return null;
 }
 
-type Props = { progress: MutableRefObject<number>; active: boolean; onReady?: () => void };
+type Props = { progress: MutableRefObject<number>; active: boolean; onReady?: () => void; callouts?: MutableRefObject<HTMLElement | null> };
 
-export default function MachineStage({ progress, active, onReady }: Props) {
+export default function MachineStage({ progress, active, onReady, callouts }: Props) {
   const h = useMemo(() => createMachineHandle(), []);
   const mats = useMemo(() => makeMachineMaterials(Q.relief), []);
   const world = useRef<THREE.Group>(null);
+  const dof = useRef<DofHandle>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const vig = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const grain = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const bloom = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ca = useRef<any>(null);
   useEffect(() => {
     if (new URLSearchParams(window.location.search).has("ngdiag")) (window as unknown as Record<string, unknown>).__mh = h;
   }, [h]);
@@ -284,17 +427,16 @@ export default function MachineStage({ progress, active, onReady }: Props) {
       onCreated={({ gl, scene }) => configureStudio(gl, scene, TIER !== "low")}
       style={{ position: "absolute", inset: 0 }}
     >
-      <Studio shadows={TIER !== "low"} />
+      <Studio shadows={TIER !== "low"} reflect={Q.reflect} contact={TIER === "high"} soft={TIER === "high"} />
       <group ref={world} position={[0, 0, 0]}>
         <Machine mats={mats} handle={h} covered pointer={pointer} />
       </group>
-      <Rig progress={progress} h={h} world={world} />
+      <WarmUp h={h} mats={mats} size={TIER === "high" ? 1024 : 512} />
+      <Rig progress={progress} h={h} world={world} dof={dof} />
+      <CalloutDriver progress={progress} host={callouts} />
+      <PostDriver vig={vig} grain={grain} bloom={bloom} ca={ca} />
       <Ready onReady={onReady} />
-      {Q.ao && (
-        <EffectComposer multisampling={TIER === "low" ? 0 : 4} enableNormalPass={false}>
-          <N8AO aoRadius={8} intensity={1.5} distanceFalloff={1.2} halfRes={Q.aoHalfRes} quality={TIER === "high" ? "high" : "low"} />
-        </EffectComposer>
-      )}
+      <PostChain tier={TIER} refs={{ dof, vig, grain, bloom, ca }} />
     </Canvas>
   );
 }
