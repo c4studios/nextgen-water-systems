@@ -14,17 +14,18 @@
  */
 import * as THREE from "three";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { useCallback, useEffect, useMemo, useRef, type MutableRefObject } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import { CALLOUTS, type Callout } from "@/content/callouts";
 import { Machine, createMachineHandle, type MachineHandle } from "./Machine";
 import { loadMachineMedia, makeMachineMaterials } from "./materials";
 import { BLOOM_INTENSITY, CA_OFFSET, GRAIN_OPACITY, PostChain, VIGNETTE_DARKNESS } from "./PostChain";
 import { Studio, configureStudio } from "./Studio";
+import { precompile } from "./precompile";
 import { coverPose, LIFT_RISE } from "./coverLift";
 import { BOWL, COVER, COVER_Y, HOUSING_X } from "./dims";
-import { HERO, HERO_OPEN_EVENT } from "@/components/blueprint/heroState";
+import { HERO, HERO_OPEN_EVENT, JOURNEY_HOVER, STAGE_RIDE } from "@/components/blueprint/heroState";
 import { journeyY } from "@/components/blueprint/journeyMap";
-import { VESSEL_BEAT_P } from "@/content/journeyStory";
+import { STORY_BEATS, VESSEL_BEAT_P } from "@/content/journeyStory";
 import { scrollToY } from "@/lib/providers/SmoothScroll";
 import { detectTier, QUALITY } from "@/components/blueprint/quality";
 
@@ -51,8 +52,11 @@ export const CAM: Key[] = [
   { p: 0.625, pos: [X2 - 9, 34, 96], tgt: [X2, 31, 0] }, // slide to stage 3
   { p: 0.72, pos: [X2 - 5, 33, 80], tgt: [X2, 30, 0] },
   { p: 0.77, pos: [96, 60, 118], tgt: [30, 50, 0] }, // the house out, right side
+  { p: 0.815, pos: [96, 60, 118], tgt: [30, 50, 0] }, // held while "every tap" reads: the orbit used to start under it and carried the machine into the copy
   { p: 0.85, pos: [112, 78, 150], tgt: [0, 34, 0] }, // orbit: the installer beat
-  { p: 0.905, pos: [-50, 58, 182], tgt: [12, 27, 6] }, // service: bowls down, cartridges hanging; copy on the right
+  { p: 0.88, pos: [112, 78, 150], tgt: [0, 34, 0] }, // held while the installer's copy reads, for the same reason
+  { p: 0.905, pos: [-32, 58, 182], tgt: [30, 27, 6] }, // service: bowls down, cartridges hanging; panned left of centre so the copy on the right stands on clean set
+  { p: 0.935, pos: [-32, 58, 182], tgt: [30, 27, 6] }, // held while the servicing copy reads: moving off early slid the machine under it
   { p: 0.955, pos: [64, 50, 194], tgt: [-12, 34, 0] }, // hand-off
   { p: 1.0, pos: [56, 46, 200], tgt: [-14, 33, 0] },
 ];
@@ -92,6 +96,7 @@ export const serviceAt = (p: number) => ss(p, 0.875, 0.93) * (1 - ss(p, 0.945, 0
 const _dir = new THREE.Vector3();
 const _right = new THREE.Vector3();
 const _up = new THREE.Vector3(0, 1, 0);
+const _slot = new THREE.Vector3();
 
 type DofHandle = { target?: THREE.Vector3; bokehScale: number; cocMaterial?: { worldFocusRange: number; worldFocusDistance: number } } | null;
 
@@ -109,10 +114,12 @@ export function focusPoint(p: number, out: THREE.Vector3): number {
 
 function Rig({ progress, h, world, dof }: { progress: MutableRefObject<number>; h: MachineHandle; world: MutableRefObject<THREE.Group | null>; dof: MutableRefObject<DofHandle> }) {
   const { camera } = useThree();
+  const size = useThree((st) => st.size);
   const focus = useRef(new THREE.Vector3(0, 34, 0));
   const tgt = useRef(new THREE.Vector3(0, 37, 0));
   const ptr = useRef(new THREE.Vector2());
   const lit = useRef([0, 0, 0]);
+  const side = useRef(0);
   useFrame((state, delta) => {
     const p = progress.current;
     const i = segIndex(p);
@@ -206,6 +213,24 @@ function Rig({ progress, h, world, dof }: { progress: MutableRefObject<number>; 
     camera.up.set(0, 1, 0);
     camera.lookAt(tgt.current);
 
+    // where each housing's front sits on screen, for a hero that pins labels
+    // to them (heroState HERO.slots); only while the hero owns the scene
+    if (hm > 0.5 && world.current) {
+      camera.updateMatrixWorld();
+      world.current.updateMatrixWorld();
+      for (let k = 0; k < 3; k++) {
+        // low on the front of each bowl, under the section window, so a mark
+        // there never covers the media when the housing is cut open
+        _slot.set(HOUSING_X[k], 11, BOWL.r + 0.5).applyMatrix4(world.current.matrixWorld).project(camera);
+        const s = HERO.slots[k];
+        s.x = _slot.x * 0.5 + 0.5;
+        s.y = -_slot.y * 0.5 + 0.5;
+        s.on = _slot.z < 1;
+      }
+    } else if (HERO.slots[0].on) {
+      for (const s of HERO.slots) s.on = false;
+    }
+
     // the lens: focus rides the discussed part, the field narrows as a housing opens
     const eff = dof.current;
     if (eff) {
@@ -223,6 +248,53 @@ function Rig({ progress, h, world, dof }: { progress: MutableRefObject<number>; 
       cam.fov = fov;
       cam.updateProjectionMatrix();
     }
+
+    // THE ENTRANCE (heroState STAGE_RIDE): while the journey's top edge is
+    // still below the top of the screen, the whole picture is drawn that far
+    // down the frame, so the machine comes up with its section instead of
+    // standing still while the page above slides off it. Read from the scroll
+    // position, not from layout, so it costs nothing per frame.
+    let ride = 0;
+    if (hm < 0.5 && Number.isFinite(STAGE_RIDE.start)) {
+      ride = THREE.MathUtils.clamp(STAGE_RIDE.start - window.scrollY, 0, size.height);
+    }
+    // THE COPY COLUMN ON A SMALLER DESKTOP. Every pose on the rail was composed
+    // at 1440 by 900, where a beat's sentences end 290px short of the frame's
+    // centre line. The picture scales with the frame's HEIGHT (the field of
+    // view is vertical) while the copy keeps its own measure, so on a smaller
+    // screen the copy reaches further into the picture: at 1024 by 768 every
+    // beat stood on a pipe or a housing, and at 1280 by 720 three did. While a
+    // beat is up the whole picture steps sideways, away from that beat's
+    // column, by exactly what the copy has gained on the 1440 composition (13px
+    // at 1280 by 720, 135px at 1024 by 768, nothing at 1366 and up). It eases
+    // over about half a second, the time the copy takes to arrive. The numbers
+    // mirror world.css (.jb--left's margin, .jbeat's measure, .jb-p's 40ch):
+    // change them together.
+    let sideT = 0;
+    if (narrow < 0.001 && hm < 0.5 && size.width > 900) {
+      const bt = STORY_BEATS.find((b) => p >= b.a && p <= b.b);
+      if (bt) {
+        const margin = THREE.MathUtils.clamp(size.width * 0.06, 24, 96);
+        const sentences = Math.min(430, size.width * 0.33, 344);
+        const composedFor = size.width / 2 - 290 * (size.height / 900);
+        const gained = Math.max(0, margin + sentences - composedFor);
+        sideT = bt.pos === "jb--left" ? gained : -gained;
+      }
+    }
+    side.current = THREE.MathUtils.damp(side.current, sideT, 5, delta);
+    if (Math.abs(side.current) < 0.25 && sideT === 0) side.current = 0;
+    const sx = Math.round(side.current * 2) / 2;
+    if (ride > 0.25 || sx !== 0) {
+      const v = cam.view;
+      if (!v || !v.enabled || v.offsetX !== -sx || v.offsetY !== -ride || v.fullWidth !== size.width || v.fullHeight !== size.height) {
+        cam.setViewOffset(size.width, size.height, -sx, -ride, size.width, size.height);
+      }
+    } else if (cam.view && cam.view.enabled) {
+      cam.clearViewOffset();
+      ride = 0;
+    }
+    STAGE_RIDE.px = ride;
+    STAGE_RIDE.side = sx;
 
     // ---- the machine follows p and the hero ----
     const jl = coverLiftAt(p);
@@ -302,31 +374,36 @@ function CalloutDriver({ progress, host }: { progress: MutableRefObject<number>;
       }
     }
     for (const { el, tag, c } of items.current) {
-      const f = 0.012;
-      let io = wide ? THREE.MathUtils.clamp(Math.min((p - c.a) / f, (c.b - p) / f), 0, 1) * (1 - hm) : 0;
-      if (io > 0.001) {
+      // IN OR OUT, ON THE CLOCK, like the copy (Journey.tsx): a tag scrubbed
+      // to the scroll rested part-drawn wherever the scroll stopped, and at
+      // the rail's own "The system" stop one tag stood at a quarter strength
+      // (finish review, 19 Sep 2026). The class runs the entrance (dot, then
+      // leader, then tag, each tag a beat after the last) and one quick fade
+      // out in world.css; this only says when, and where on the screen.
+      let on = wide && hm < 0.5 && p >= c.a && p <= c.b;
+      if (on) {
         v.set(c.at[0], c.at[1], c.at[2]).project(camera);
-        if (v.z > 1) io = 0;
+        if (v.z > 1) on = false;
       }
-      if (io <= 0.001) {
-        if (el.style.visibility !== "hidden") el.style.visibility = "hidden";
-        continue;
-      }
-      const x = (v.x * 0.5 + 0.5) * size.width;
-      const y = (-v.y * 0.5 + 0.5) * size.height;
-      if (navBottom > 0 && tag) {
-        const w = tag.offsetWidth || 180;
-        const h = tag.offsetHeight || 34;
-        const left = c.side === "r" ? x + TAG_LEADER : x - TAG_LEADER - w;
-        const top = y - h / 2;
-        if (top < navBottom && left < navRight && left + w > navLeft) {
-          el.style.visibility = "hidden";
-          continue;
+      let x = 0;
+      let y = 0;
+      if (on) {
+        x = (v.x * 0.5 + 0.5) * size.width;
+        y = (-v.y * 0.5 + 0.5) * size.height;
+        if (tag) {
+          const w = tag.offsetWidth || 180;
+          const h = tag.offsetHeight || 34;
+          const left = c.side === "r" ? x + TAG_LEADER : x - TAG_LEADER - w;
+          const top = y - h / 2;
+          if (navBottom > 0 && top < navBottom && left < navRight && left + w > navLeft) on = false;
+          // a tag that would run off the frame is left out whole: on a smaller
+          // desktop the picture stands further to one side (the copy column's
+          // step, above) and the outermost tag no longer fits
+          if (left < 8 || left + w > size.width - 8) on = false;
         }
       }
-      el.style.visibility = "visible";
-      el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
-      el.style.setProperty("--io", io.toFixed(3));
+      if (on !== el.classList.contains("is-in")) el.classList.toggle("is-in", on);
+      if (on) el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
     }
   });
   return null;
@@ -349,24 +426,55 @@ function PostDriver({ vig, grain, bloom, ca }: { vig: MutableRefObject<any>; gra
   return null;
 }
 
-/** re-arms the machine's warm-up once the studio has settled its shadow
- *  shaders (the soft-shadow chunk recompiles everything when it mounts), so
- *  the parts the journey reveals compile now, unseen, and never mid-scroll */
-function WarmUp({ h, mats, size }: { h: MachineHandle; mats: ReturnType<typeof makeMachineMaterials>; size: number }) {
+/** Compiles every program the scene draws before its first frame, in the
+ *  GPU process's own threads (precompile.ts), while the frame loop is held;
+ *  then arms the warm-up, so for the first few frames every part the journey
+ *  reveals (the section faces, the water) is drawn once, unseen inside the
+ *  closed machine, and its buffers and textures upload at load, never
+ *  mid-scroll. Runs after the canvas's layout effects: by then onCreated has
+ *  set the renderer up (tone mapping, local clipping, fog), the environment
+ *  map is in the scene and the soft-shadow chunk is patched, and every one of
+ *  them goes into the programs. */
+function Precompile({ h, mats, size, onDone }: { h: MachineHandle; mats: ReturnType<typeof makeMachineMaterials>; size: number; onDone: () => void }) {
+  const gl = useThree((s) => s.gl);
+  const scene = useThree((s) => s.scene);
+  const camera = useThree((s) => s.camera);
   useEffect(() => {
-    h.warm = 3;
+    let live = true;
     // the cartridge media are drawn in idle time and swapped into their stand-ins
     void loadMachineMedia(mats, size);
-  }, [h, mats, size]);
+    // with the post chain the scene is only ever drawn into a target; without
+    // it the canvas gets the scene, and the water's transmission pass a target
+    void precompile(gl, scene, camera, Q.ao ? ["target"] : ["screen", "target"]).then(() => {
+      if (!live) return;
+      h.warm = 3;
+      onDone();
+    });
+    return () => {
+      live = false;
+    };
+  }, [gl, scene, camera, h, mats, size, onDone]);
   return null;
 }
 
+/** Tells the page the live scene may replace the poster still. Not on mount:
+ *  the first frames compile shaders and can still carry the pose from before
+ *  the hero took the scene, and a crossfade over those showed two covers on a
+ *  phone at load (finish review, 18 Sep 2026). After a few drawn frames the
+ *  picture has settled into exactly the still's pose, so the handover is
+ *  invisible. */
+const SETTLED_FRAMES = 8;
 function Ready({ onReady }: { onReady?: () => void }) {
   const get = useThree((s) => s.get);
+  const drawn = useRef(0);
   useEffect(() => {
     if (new URLSearchParams(window.location.search).has("ngdiag")) (window as unknown as Record<string, unknown>).__r3f = get;
-    onReady?.();
-  }, [onReady, get]);
+  }, [get]);
+  useFrame(() => {
+    if (drawn.current > SETTLED_FRAMES) return;
+    drawn.current += 1;
+    if (drawn.current === SETTLED_FRAMES) onReady?.();
+  });
   return null;
 }
 
@@ -388,6 +496,18 @@ export default function MachineStage({ progress, active, onReady, callouts }: Pr
   useEffect(() => {
     if (new URLSearchParams(window.location.search).has("ngdiag")) (window as unknown as Record<string, unknown>).__mh = h;
   }, [h]);
+  // THE FRAME LOOP. Held until every program is compiled (Precompile), so no
+  // frame ever waits on a link; then it runs regardless of `active` until the
+  // scene has drawn its settled frames (Ready), so the warm-up and the post
+  // chain's first compile happen at load even if the visitor has already
+  // scrolled on; after that it follows `active`.
+  const [compiled, setCompiled] = useState(false);
+  const [settled, setSettled] = useState(false);
+  const handleCompiled = useCallback(() => setCompiled(true), []);
+  const handleReady = useCallback(() => {
+    setSettled(true);
+    onReady?.();
+  }, [onReady]);
 
   // THE TAPS. On the hero a tap on the closed cover lifts it (a drag is a
   // drag, not a tap). A tap on a housing goes to that stage's beat in the
@@ -409,16 +529,18 @@ export default function MachineStage({ progress, active, onReady, callouts }: Pr
         }
         scrollToY(journeyY(VESSEL_BEAT_P[i]));
       },
-      onHover: (what: "cover" | "housing" | null) => {
+      onHover: (what: "cover" | "housing" | null, i?: number) => {
         const live = what === "housing" || (what === "cover" && HERO.mix > 0.5 && HERO.openT < 0.5);
         document.body.style.cursor = live ? "pointer" : "";
+        // the journey's rail answers on this housing's disc (Journey.tsx)
+        JOURNEY_HOVER.k = what === "housing" && typeof i === "number" ? i : -1;
       },
     }),
     [openCover],
   );
   return (
     <Canvas
-      frameloop={active ? "always" : "never"}
+      frameloop={compiled && (active || !settled) ? "always" : "never"}
       dpr={Q.dpr}
       shadows
       camera={{ position: [0, 44, 172], fov: 38, near: 4, far: 900 }}
@@ -431,11 +553,15 @@ export default function MachineStage({ progress, active, onReady, callouts }: Pr
       <group ref={world} position={[0, 0, 0]}>
         <Machine mats={mats} handle={h} covered pointer={pointer} />
       </group>
-      <WarmUp h={h} mats={mats} size={TIER === "high" ? 1024 : 512} />
+      <Precompile h={h} mats={mats} size={TIER === "high" ? 1024 : 512} onDone={handleCompiled} />
       <Rig progress={progress} h={h} world={world} dof={dof} />
       <CalloutDriver progress={progress} host={callouts} />
       <PostDriver vig={vig} grain={grain} bloom={bloom} ca={ca} />
-      <Ready onReady={onReady} />
+      <Ready onReady={handleReady} />
+      {/* not memoised, on purpose: each re-render has the composer rebuild its
+          passes, and the rebuilt passes are the grade the page was signed off
+          with. Built only once, the journey's vignette came out darker at the
+          edges (measured 19 Sep 2026). */}
       <PostChain tier={TIER} refs={{ dof, vig, grain, bloom, ca }} />
     </Canvas>
   );

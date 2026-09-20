@@ -95,7 +95,7 @@ export function Packages() {
             Or book the free test first
             <i aria-hidden="true" />
           </a>
-          <p className="pk-note">The render is of the system; the photographs are visualisations.</p>
+          <p className="pk-note">A render of the system. The two photographs are visualisations.</p>
         </div>
       </div>
     </section>

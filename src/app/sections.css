@@ -8,8 +8,11 @@
 .kt {
   position: relative;
   z-index: 1;
+  /* at least a screen tall: it is what stands between the hero's machine and
+     the journey's, so the two are never on screen together */
+  min-height: 100svh;
   background: var(--ground);
-  padding: var(--sec-y) 0 calc(var(--sec-y) * 0.7);
+  padding: var(--sec-y) 0 calc(var(--sec-y) * 0.8);
 }
 .kt-inner {
   max-width: 1240px;
@@ -43,10 +46,6 @@
   position: relative;
   margin-top: clamp(32px, 5vh, 56px);
 }
-.kt-plate {
-  position: sticky;
-  top: 86px;
-}
 .kt-fig {
   position: relative;
   margin: 0 auto;
@@ -70,7 +69,8 @@
 .kt-line {
   stroke: var(--ink);
   stroke-width: 2.2;
-  transition: opacity 0.3s var(--ease);
+  /* the order matters: Kettle.tsx staggers the first delay per leader */
+  transition: stroke-dashoffset 0.9s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s var(--ease);
 }
 .kt-line.is-dim {
   opacity: 0.25;
@@ -159,16 +159,9 @@
 .kt-key {
   display: none;
 }
-.kt-runway {
-  height: 70svh;
-}
 @media (max-width: 860px) {
   .kt-head {
     grid-template-columns: 1fr;
-  }
-  .kt-plate {
-    position: relative;
-    top: 0;
   }
   .kt-fig,
   .kt-cap {
@@ -182,9 +175,6 @@
     width: 30px;
     height: 30px;
     font-size: 13px;
-  }
-  .kt-runway {
-    height: 0;
   }
   .kt-key {
     display: grid;
@@ -234,6 +224,108 @@
   .kt-key-row.is-held i {
     background: var(--ink);
     color: #fff;
+  }
+}
+
+/* the rest of the house: a checklist under the photograph, then the test */
+.kt-signs {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 24px clamp(24px, 4vw, 56px);
+  margin-top: clamp(40px, 6vh, 64px);
+  padding-top: clamp(28px, 4vh, 40px);
+  border-top: 1px solid var(--hairline);
+}
+.kt-signs-h {
+  margin: 0;
+  font-family: var(--font-satoshi), system-ui, sans-serif;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+.kt-signs-p {
+  margin: 10px 0 0;
+  max-width: 40ch;
+  text-wrap: pretty;
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+.kt-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.kt-answer {
+  margin: 16px 0 0;
+  min-height: 4.8em;
+  max-width: 60ch;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+.kt-answer p {
+  margin: 0 0 8px;
+}
+/* the stage is named in ink inside the sentence; the blue stays the pill's */
+.kt-answer b {
+  font-weight: 600;
+  color: var(--ink);
+}
+.kt-idle {
+  color: var(--ink-3);
+}
+.kt-act {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 26px;
+  margin-top: 6px;
+}
+.kt-cta {
+  display: inline-block;
+  padding: 16px 28px;
+  border-radius: 999px;
+  text-decoration: none;
+}
+.kt-cta > span {
+  position: relative;
+  z-index: 1;
+}
+.kt-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+  text-decoration: none;
+  transition: color 0.2s var(--ease);
+}
+.kt-more i {
+  width: 8px;
+  height: 8px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  rotate: 45deg;
+  translate: 0 -2px;
+}
+.kt-more:hover,
+.kt-more:focus-visible {
+  color: var(--accent);
+}
+@media (max-width: 900px) {
+  .kt-signs {
+    grid-template-columns: 1fr;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kt-line,
+  .kt-mark,
+  .kt-note {
+    transition: none;
   }
 }
 
@@ -744,15 +836,47 @@
 .qs-item.is-open .qs-q i::after {
   rotate: 0deg;
 }
+/* an answer opens by growing its row from nothing to its own height: a grid
+   track can interpolate 0fr to 1fr where height cannot interpolate to auto */
+.qs-a-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.46s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.qs-item.is-open .qs-a-wrap {
+  grid-template-rows: 1fr;
+}
 .qs-a {
-  padding: 0 0 24px;
+  min-height: 0;
+  overflow: hidden;
   max-width: 62ch;
   font-size: 16.5px;
   line-height: 1.65;
   color: var(--ink-2);
+  opacity: 0;
+  translate: 0 -6px;
+  transition: opacity 0.3s ease, translate 0.46s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.qs-item.is-open .qs-a {
+  opacity: 1;
+  translate: 0 0;
+  transition-delay: 0.06s;
+}
+.qs-a > :last-child {
+  margin-bottom: 24px;
 }
 .qs-a p {
-  margin: 0;
+  margin: 0 0 12px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .qs-a-wrap,
+  .qs-a {
+    transition: none;
+  }
+}
+/* the full list on the questions page */
+.qa-list {
+  margin-top: 8px;
 }
 
 /* ---- the booking section: a test or a quote ---- */
@@ -924,7 +1048,9 @@ header.site-nav .nav-ring-btn {
     gap: 8px;
     padding: 7px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.97);
+    /* solid: at 97% a row of type resting under the bar read through the pane
+       behind the transparent Call button (verdict pass, 19 Sep 2026) */
+    background: #fff;
     box-shadow: 0 0 0 1px var(--hairline), 0 18px 40px -18px rgba(23, 25, 28, 0.55);
     transform: translateY(160%);
     transition: transform 0.45s var(--ease);
@@ -968,7 +1094,17 @@ header.site-nav .nav-ring-btn {
   }
 }
 
-/* ---- the cover band: the client's concept, then the same cover modelled ---- */
+/* ---- the cover band: the client's concept, then the same cover modelled ----
+   Two tall figures made the band's row very tall, and the copy, centred in it,
+   sat under a screen of empty white. The copy now starts level with the first
+   figure and stays in view beside both as they scroll past. */
+.cb-inner {
+  align-items: start !important;
+}
+.cb-copy {
+  position: sticky;
+  top: 104px;
+}
 .cb-figs {
   display: grid;
   gap: 14px;
@@ -978,6 +1114,9 @@ header.site-nav .nav-ring-btn {
    dissolves into the band's own grid there, so the order can be: the concept,
    the heading and its notes, then the modelled cover. */
 @media (max-width: 900px) {
+  .cb-copy {
+    position: static;
+  }
   .cb-figs {
     display: contents;
   }
@@ -1015,5 +1154,1689 @@ header.site-nav .nav-ring-btn {
   .oc-h,
   .oc-answer {
     text-align: left;
+  }
+}
+
+/* ---- moving around the site ----
+   Pages: the one you leave fades out (SmoothScroll), the next fades in
+   (app/template.tsx). The wrapper the template adds is a box over the whole
+   page, so it steps aside for the pointer like main does, or it would sit
+   between the visitor and the machine. What it holds steps back in, the way
+   body's own children do, and main stays aside (the preview switcher sits
+   beside main and could not be clicked). */
+.page {
+  pointer-events: none;
+}
+.page > * {
+  pointer-events: auto;
+}
+.page > main {
+  pointer-events: none;
+}
+.page-in {
+  animation: page-in 0.44s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes page-in {
+  from {
+    opacity: 0;
+  }
+}
+html[data-leaving] .page,
+html[data-leaving] .sfoot {
+  opacity: 0;
+  transition: opacity 0.17s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-in {
+    animation: none;
+  }
+}
+/* Sections: a link to one glides it up until its own top edge meets the top
+   of the screen, so the nav floats over the section's own top padding and no
+   sliver of the section above is left showing. html's scroll-padding-top
+   stays for everything else (it keeps a focused control clear of the nav);
+   this cancels it for whole sections only. */
+main section[id],
+.tail-anchor {
+  scroll-margin-top: -96px;
+}
+
+/* ---- who fits it: the installer's own band, in the installer's livery ----
+   Aqua-Safe Plumbing & Maintenance's colours (their --teal-deep, --teal-ink
+   and --mist, from aquasafeplumbing.com.au's globals.css), their white
+   lockup and their display face for the heading. The one section on the page
+   that is not Next Gen's white and charcoal: it is the installer introducing
+   themselves. Hanken is shared by both sites, so the sentences stay in voice. */
+.aq {
+  --aq-deep: #0a3f56;
+  --aq-ink: #0c2b39;
+  --aq-mist: #eef4f7;
+  --aq-line: rgba(238, 244, 247, 0.18);
+  position: relative;
+  z-index: 1;
+  background: var(--aq-deep);
+  color: #fff;
+  padding: clamp(84px, 12vh, 140px) 0;
+}
+.aq-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+  gap: clamp(36px, 5vw, 72px);
+  align-items: start;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+.aq-logo {
+  display: inline-block;
+  border-radius: 4px;
+}
+.aq-logo img {
+  display: block;
+  width: clamp(190px, 18vw, 250px);
+  height: auto;
+}
+.aq-logo:focus-visible,
+.aq-cta:focus-visible,
+.aq-more:focus-visible,
+.aq-facts a:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 4px;
+}
+.aq-h {
+  margin: clamp(28px, 4vh, 40px) 0 0;
+  font-family: var(--font-clash), var(--font-satoshi), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: clamp(32px, 3.5vw, 50px);
+  line-height: 1.04;
+  letter-spacing: -0.005em;
+  color: #fff;
+  text-wrap: balance;
+}
+.aq-lead {
+  margin: 18px 0 0;
+  max-width: 44ch;
+  font-size: clamp(16px, 1.5vw, 18px);
+  line-height: 1.6;
+  color: rgba(238, 244, 247, 0.86);
+  text-wrap: pretty;
+}
+.aq-facts {
+  margin: clamp(26px, 4vh, 36px) 0 0;
+  border-top: 1px solid rgba(238, 244, 247, 0.55);
+}
+.aq-facts > div {
+  display: grid;
+  grid-template-columns: minmax(0, 150px) minmax(0, 1fr);
+  gap: 16px;
+  padding: 11px 0 12px;
+  border-bottom: 1px solid var(--aq-line);
+}
+.aq-facts dt {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: rgba(238, 244, 247, 0.72);
+}
+.aq-facts dd {
+  margin: 0;
+  font-size: 15.5px;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+}
+.aq-facts a {
+  color: #fff;
+  text-decoration: underline;
+  text-decoration-color: rgba(238, 244, 247, 0.45);
+  text-underline-offset: 3px;
+}
+.aq-facts a:hover {
+  text-decoration-color: #fff;
+}
+.aq-act {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 26px;
+  margin-top: clamp(26px, 4vh, 36px);
+}
+/* their button: a white pill in their ink, the way their own site sets an
+   action on teal */
+.aq-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 24px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--aq-ink);
+  font-size: 15.5px;
+  font-weight: 600;
+  text-decoration: none;
+  /* aquasafeplumbing.com.au's own --shadow-sm */
+  box-shadow: 0 6px 20px -12px rgba(10, 63, 86, 0.4);
+  transition: background-color 0.22s var(--ease);
+}
+.aq-cta:hover {
+  background: var(--aq-mist);
+}
+.aq-cta i,
+.aq-more i {
+  width: 8px;
+  height: 8px;
+  border-right: 1.5px solid currentColor;
+  border-top: 1.5px solid currentColor;
+}
+.aq-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15.5px;
+  font-weight: 500;
+  color: rgba(238, 244, 247, 0.86);
+  text-decoration: none;
+  transition: color 0.2s var(--ease);
+}
+.aq-more:hover {
+  color: #fff;
+}
+.aq-fleet {
+  margin: 0;
+}
+.aq-fleet img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  /* the shape of aquasafeplumbing.com.au's --shadow-lg, in a darker teal
+     so it still reads on their deep teal ground */
+  box-shadow: 0 34px 80px -34px rgba(4, 22, 31, 0.6);
+}
+.aq-fleet figcaption,
+.aq-jobs-cap {
+  margin-top: 10px;
+  font-size: 13px;
+  color: rgba(238, 244, 247, 0.72);
+}
+.aq-jobs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.aq-jobs li {
+  margin: 0;
+}
+.aq-jobs img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: 10px;
+}
+.aq-jobs span {
+  display: block;
+  margin-top: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #fff;
+}
+@media (max-width: 900px) {
+  .aq-inner {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 520px) {
+  .aq-facts > div {
+    grid-template-columns: minmax(0, 128px) minmax(0, 1fr);
+  }
+  .aq-jobs {
+    gap: 8px;
+  }
+}
+
+/* ---- the hero options (components/site/heroes) ----
+   Four answers to "what should a visitor do first?" over one page and one
+   machine. They share the original hero's grid, its anchor box and its proof
+   strip; each changes what the copy column asks of the visitor. */
+
+/* A: the question. A list of answers; the chosen one opens underneath its
+   row the way a question on the FAQ does, and the machine opens its stage. */
+.hero--ask .hero-copy,
+.hero--open .hero-copy,
+.hero--suburb .hero-copy {
+  padding-top: clamp(96px, 12vh, 140px);
+}
+.hero--ask .hero-h,
+.hero--open .hero-h,
+.hero--suburb .hero-h {
+  font-size: clamp(38px, 4.2vw, 62px);
+}
+.hero--ask .hero-p,
+.hero--open .hero-p,
+.hero--suburb .hero-p {
+  margin-top: clamp(14px, 2vh, 20px);
+}
+.ask-list {
+  max-width: 34rem;
+  margin-top: clamp(18px, 2.6vh, 26px);
+  border-top: 1px solid rgba(23, 25, 28, 0.2);
+}
+.ask-row {
+  border-bottom: 1px solid var(--hairline);
+}
+.ask-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 11px 4px 11px 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  font: inherit;
+  font-size: 16.5px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--ink);
+  cursor: pointer;
+  transition: color 0.2s var(--ease);
+}
+.ask-btn i {
+  position: relative;
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.5px var(--ink-3);
+  transition: box-shadow 0.2s var(--ease);
+}
+.ask-btn i::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+  transform: scale(0);
+  transition: transform 0.25s var(--ease);
+}
+/* a hover colour only where there is a hover: on a phone a tapped row would
+   otherwise keep it and read as a second blue */
+@media (hover: hover) {
+  .ask-btn:hover {
+    color: var(--accent);
+  }
+}
+.ask-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.ask-row.is-on .ask-btn i {
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+.ask-row.is-on .ask-btn i::after {
+  transform: scale(1);
+}
+.ask-a {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ask-row.is-on .ask-a {
+  grid-template-rows: 1fr;
+}
+.ask-a-in {
+  min-height: 0;
+  overflow: hidden;
+}
+.ask-a p {
+  margin: 0;
+  padding: 0 0 14px 32px;
+  max-width: 46ch;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  opacity: 0;
+  translate: 0 -4px;
+  transition: opacity 0.3s ease, translate 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ask-row.is-on .ask-a p {
+  opacity: 1;
+  translate: 0 0;
+  transition-delay: 0.06s;
+}
+.hero--ask .hero-act,
+.hero--open .hero-act {
+  margin-top: clamp(22px, 3.4vh, 32px);
+}
+
+/* B: the free test first. A suburb check (a field and a pill), a result
+   line, the action, and the whole path in one row under it. */
+.sub-check {
+  max-width: 30rem;
+  margin-top: clamp(22px, 3.4vh, 32px);
+}
+.sub-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink-3);
+}
+.sub-row {
+  display: flex;
+  gap: 8px;
+}
+.sub-row input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 50px;
+  padding: 0 14px;
+  border: 1px solid rgba(23, 25, 28, 0.5);
+  border-radius: 0;
+  background: var(--panel);
+  font: inherit;
+  font-size: 16px;
+  color: var(--ink);
+  caret-color: var(--accent);
+}
+.sub-row input::placeholder {
+  color: var(--ink-3);
+}
+.sub-row input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+.sub-go {
+  flex: 0 0 auto;
+  height: 50px;
+  padding: 0 22px;
+  border: 1px solid rgba(23, 25, 28, 0.32);
+  border-radius: 999px;
+  background: transparent;
+  font-family: var(--font-satoshi), system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background-color 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+.sub-go:hover {
+  background: rgba(23, 25, 28, 0.05);
+  border-color: rgba(23, 25, 28, 0.5);
+}
+.sub-go:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.sub-result {
+  min-height: 3.1em;
+  margin: 10px 0 0;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+.sub-result b {
+  font-weight: 600;
+  color: var(--ink);
+}
+.sub-result a {
+  color: var(--accent);
+}
+.hero--suburb .hero-act {
+  margin-top: 6px;
+}
+.sub-path {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  max-width: 38rem;
+  margin: clamp(24px, 3.6vh, 36px) 0 0;
+  padding: 16px 0 0;
+  border-top: 1px solid var(--hairline);
+  list-style: none;
+}
+.sub-path li {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13.5px;
+  line-height: 1.35;
+  color: var(--ink-2);
+}
+.sub-path i {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.5px var(--ink);
+  font-family: var(--font-satoshi), system-ui, sans-serif;
+  font-size: 12.5px;
+  font-style: normal;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* C: the open machine. Three stage rows in the copy column, a line saying
+   what the chosen one does, and a paper tag pinned under each housing. */
+.open-list {
+  display: grid;
+  gap: 8px;
+  max-width: 32rem;
+  margin-top: clamp(18px, 3vh, 26px);
+}
+.open-row {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  padding: 11px 14px 12px;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  background: var(--ground);
+  text-align: left;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: border-color 0.2s var(--ease), background-color 0.2s var(--ease);
+}
+.open-row i {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.5px var(--ink);
+  font-family: var(--font-satoshi), system-ui, sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 700;
+  color: var(--ink);
+  transition: background-color 0.2s var(--ease), color 0.2s var(--ease);
+}
+.open-row b {
+  display: block;
+  font-family: var(--font-satoshi), system-ui, sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.open-row:hover {
+  border-color: rgba(23, 25, 28, 0.26);
+}
+.open-row:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.open-row.is-on {
+  background: var(--panel);
+  border-color: rgba(23, 25, 28, 0.32);
+}
+.open-row.is-on i {
+  background: var(--ink);
+  color: #fff;
+}
+.open-job {
+  min-height: 4.8em;
+  max-width: 34rem;
+  margin: 14px 0 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+.open-idle {
+  color: var(--ink-3);
+}
+.open-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 500;
+  color: var(--accent);
+  cursor: pointer;
+}
+.open-go i {
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  rotate: 45deg;
+  translate: 0 -2px;
+}
+.hero > .open-tags {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+/* the kettle's hotspot, on a bowl: a 36px white disc with an ink ring */
+.open-tag {
+  position: absolute;
+  left: 0;
+  top: 0;
+  translate: -50% -50%;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 1.5px var(--ink), 0 8px 18px -8px rgba(23, 25, 28, 0.55);
+  font-family: var(--font-satoshi), system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.35s var(--ease), background-color 0.2s var(--ease), color 0.2s var(--ease);
+}
+.open-tag:hover,
+.open-tag.is-on {
+  background: var(--ink);
+  color: #fff;
+}
+
+/* the review switcher on /preview/<option>/ (not on the home page) */
+.hero-switch {
+  position: fixed;
+  left: 14px;
+  bottom: 14px;
+  z-index: 90;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 5px;
+  border-radius: 999px;
+  background: rgba(246, 247, 247, 0.95);
+  box-shadow: 0 0 0 1px var(--hairline), 0 14px 30px -16px rgba(23, 25, 28, 0.45);
+  font-size: 13px;
+}
+.hero-switch-t {
+  padding: 0 8px 0 10px;
+  color: var(--ink-3);
+}
+.hero-switch a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px 0 6px;
+  border-radius: 999px;
+  color: var(--ink-2);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.hero-switch a:hover {
+  background: rgba(23, 25, 28, 0.05);
+  color: var(--ink);
+}
+.hero-switch a i {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.5px currentColor;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
+}
+.hero-switch a.is-on {
+  background: var(--ink);
+  color: #fff;
+}
+.hero-switch em {
+  font-style: normal;
+  color: var(--ink-3);
+}
+.hero-switch a.is-on em {
+  color: rgba(255, 255, 255, 0.78);
+}
+/* out of the way once the hero has gone by (the phone bar lives there) */
+.hero-switch {
+  transition: opacity 0.3s var(--ease), translate 0.3s var(--ease);
+}
+.hero-switch.is-away {
+  opacity: 0;
+  translate: 0 12px;
+  pointer-events: none;
+}
+
+@media (max-width: 900px) {
+  /* phones: the machine comes up between the question and its answers, so a
+     tap on an answer shows its stage opening on the same screen */
+  .hero--ask .hero-copy,
+  .hero--open .hero-copy {
+    display: contents;
+  }
+  .hero--ask .hero-h,
+  .hero--open .hero-h {
+    grid-row: 1;
+    padding: 84px 20px 0;
+  }
+  .hero--ask .hero-p,
+  .hero--open .hero-p {
+    grid-row: 2;
+    margin: 12px 20px 0;
+  }
+  /* the hero's own action comes up under the lead, above the machine, as the
+     original hero's does: in full view on the first screen, so the phone's
+     action bar can stay down until it has scrolled away */
+  .hero--ask .hero-act,
+  .hero--open .hero-act {
+    grid-row: 3;
+    margin: 18px 20px 4px;
+  }
+  .hero--ask .hero-stage,
+  .hero--open .hero-stage {
+    grid-row: 4;
+    min-height: 34svh;
+  }
+  .hero--ask .ask-list {
+    grid-row: 5;
+    margin: 4px 20px 22px;
+  }
+  .hero--open .open-list {
+    grid-row: 5;
+    margin: 4px 20px 0;
+  }
+  .hero--open .open-job {
+    grid-row: 6;
+    margin: 12px 20px 22px;
+  }
+  .hero--ask .hero-proof,
+  .hero--open .hero-proof {
+    grid-row: 7;
+  }
+  .hero--ask .hero-h,
+  .hero--open .hero-h {
+    font-size: clamp(31px, 8.6vw, 38px);
+  }
+  .ask-btn {
+    font-size: 16px;
+    padding: 12px 0;
+  }
+  .hero--suburb .hero-copy {
+    padding-top: 84px;
+  }
+  .sub-path {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 16px;
+  }
+  .hero > .open-tags {
+    display: none;
+  }
+  .hero-switch {
+    left: 8px;
+    right: 8px;
+    /* above the phone's action bar, never over it */
+    bottom: calc(82px + env(safe-area-inset-bottom, 0px));
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    border-radius: 14px;
+  }
+  .hero-switch-t {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ask-a,
+  .ask-a p {
+    transition: none;
+  }
+}
+
+/* ---- the new pages (18 Sep 2026): servicing, resources and its reads,
+   service areas, about, contact. They use the interior sheet (Sheet.tsx);
+   these are the parts it did not have. ---- */
+.doc-crumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.doc-crumb a {
+  color: var(--ink-2);
+  text-decoration: underline;
+  text-decoration-color: rgba(23, 25, 28, 0.25);
+  text-underline-offset: 3px;
+}
+.doc-crumb a:hover {
+  color: var(--accent);
+  text-decoration-color: currentColor;
+}
+.doc-byline {
+  margin: 16px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--hairline);
+  max-width: 60ch;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ink-3);
+}
+.doc-block .spec a,
+.doc-block p a.installer-link {
+  color: var(--ink);
+}
+
+/* contact: the number, big, first */
+.contact-call {
+  margin-bottom: clamp(38px, 6vh, 62px);
+  padding: clamp(22px, 3vw, 30px) 0;
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--hairline);
+}
+.contact-phone {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  font-family: var(--font-satoshi), system-ui, sans-serif;
+  font-size: clamp(30px, 5vw, 46px);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-decoration: none;
+  transition: color 0.2s var(--ease);
+}
+.contact-phone:hover,
+.contact-phone:focus-visible {
+  color: var(--accent);
+}
+.contact-call p {
+  margin: 10px 0 0;
+  font-size: 15px;
+  color: var(--ink-2);
+}
+
+/* service areas: the check, then each region as a list in columns */
+.areas-check {
+  margin-bottom: clamp(30px, 5vh, 48px);
+}
+.areas-check .sub-check {
+  margin-top: 0;
+}
+.areas-list {
+  columns: 3 9em;
+  column-gap: 28px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.areas-list li {
+  break-inside: avoid;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--hairline);
+  font-size: 15.5px;
+  color: var(--ink);
+}
+
+/* resources: one row per read */
+.res-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--ink);
+}
+.res-list li {
+  border-bottom: 1px solid var(--hairline);
+}
+.res-item {
+  position: relative;
+  display: grid;
+  gap: 6px;
+  padding: 22px 40px 22px 0;
+  color: inherit;
+  text-decoration: none;
+}
+.res-t {
+  font-family: var(--font-satoshi), system-ui, sans-serif;
+  font-size: clamp(20px, 2.4vw, 24px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--ink);
+  transition: color 0.2s var(--ease);
+}
+.res-d {
+  max-width: 62ch;
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+.res-from {
+  font-size: 13px;
+  color: var(--ink-3);
+}
+.res-item i {
+  position: absolute;
+  right: 6px;
+  top: 30px;
+  width: 9px;
+  height: 9px;
+  border-right: 1.5px solid var(--ink-2);
+  border-top: 1.5px solid var(--ink-2);
+  rotate: 45deg;
+  transition: translate 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+.res-item:hover .res-t,
+.res-item:focus-visible .res-t {
+  color: var(--accent);
+}
+.res-item:hover i {
+  border-color: var(--accent);
+}
+.res-more {
+  margin: 22px 0 0;
+  font-size: 15px;
+  color: var(--ink-2);
+}
+
+/* an article's foot: its sources in full, then the other reads */
+.art-foot {
+  display: grid;
+  gap: clamp(30px, 5vh, 44px);
+  margin-top: clamp(20px, 3vh, 32px);
+}
+.art-foot h2 {
+  margin: 0 0 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--hairline);
+  font-family: var(--font-satoshi), system-ui, sans-serif;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.art-sources ol {
+  margin: 0;
+  padding: 0 0 0 20px;
+}
+.art-sources li {
+  padding: 5px 0;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+.art-sources li::marker {
+  color: var(--ink-3);
+}
+.art-sources a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: rgba(23, 25, 28, 0.3);
+  text-underline-offset: 3px;
+}
+.art-sources a:hover {
+  color: var(--accent);
+  text-decoration-color: currentColor;
+}
+.art-sources li span {
+  display: block;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+.art-more ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.art-more a {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 15.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+  text-decoration: none;
+}
+.art-more a i {
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid currentColor;
+  border-top: 1.5px solid currentColor;
+  rotate: 45deg;
+}
+.art-more a:hover {
+  color: var(--accent);
+}
+
+/* the hardness chart: a table drawn as a chart */
+.hc {
+  margin: 0 0 clamp(38px, 6vh, 62px);
+}
+.hc-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--ink);
+}
+.hc-title {
+  margin: 0;
+  font-family: var(--font-satoshi), system-ui, sans-serif;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.hc-title span {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--font-hanken), system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--ink-3);
+}
+.hc-sort {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--panel);
+  box-shadow: 0 0 0 1px var(--hairline);
+}
+.hc-sort button {
+  height: 32px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.hc-sort button[aria-pressed="true"] {
+  background: var(--ink);
+  color: #fff;
+}
+.hc-sort button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.hc-scroll {
+  overflow-x: auto;
+}
+.hc-table {
+  width: 100%;
+  min-width: 520px;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.hc-table th,
+.hc-table td {
+  padding: 7px 0;
+  border-bottom: 1px solid var(--hairline);
+  text-align: left;
+  vertical-align: middle;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--ink);
+}
+.hc-table thead th {
+  padding: 26px 0 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-3);
+}
+.hc-table tbody th {
+  width: 11.5em;
+  padding-right: 14px;
+  white-space: nowrap;
+}
+.hc-table tbody th sup {
+  margin-left: 2px;
+  color: var(--ink-3);
+}
+.hc-bar-h {
+  position: relative;
+}
+.hc-axis {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 4px;
+  height: 16px;
+}
+.hc-axis i {
+  position: absolute;
+  top: 0;
+  translate: -50% 0;
+  font-style: normal;
+  font-size: 13px;
+  white-space: nowrap;
+  color: var(--ink-3);
+}
+.hc-axis i.is-line {
+  color: var(--ink);
+  font-weight: 500;
+}
+.hc-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.hc-num {
+  width: 4.5em;
+  text-align: right !important;
+  padding-left: 12px !important;
+}
+.hc-range-h,
+.hc-range-v {
+  width: 9.5em;
+  color: var(--ink-3) !important;
+}
+.hc-n {
+  display: none;
+}
+.hc-track {
+  position: relative;
+  display: block;
+  height: 18px;
+  /* the soft band and the guideline's line are part of the scale */
+  background: linear-gradient(to right, rgba(23, 25, 28, 0.04) 0 24%, transparent 24%);
+}
+.hc-fill {
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  border-radius: 0 2px 2px 0;
+  background: var(--ink-3);
+}
+.hc-range {
+  position: absolute;
+  top: 50%;
+  height: 1.5px;
+  translate: 0 -50%;
+  background: var(--ink);
+}
+.hc-guide {
+  position: absolute;
+  top: -8px;
+  bottom: -8px;
+  width: 1px;
+  background: var(--ink);
+}
+.hc-table tr.is-over .hc-fill {
+  background: var(--ink);
+}
+.hc-table tr.is-over th,
+.hc-table tr.is-over .hc-num {
+  font-weight: 600;
+}
+.hc-cap {
+  margin-top: 12px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink-3);
+}
+.hc-cap a {
+  color: var(--ink-2);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+@media (max-width: 640px) {
+  .hc-range-h,
+  .hc-range-v {
+    display: none;
+  }
+  .hc-table {
+    min-width: 0;
+  }
+  .hc-table tbody th {
+    width: 9.5em;
+    white-space: normal;
+  }
+}
+
+/* the side-by-side table in the whole-house read */
+.cmp-scroll {
+  overflow-x: auto;
+  margin-top: 16px;
+}
+.cmp {
+  width: 100%;
+  min-width: 520px;
+  border-collapse: collapse;
+  border-top: 1px solid var(--ink);
+}
+.cmp th,
+.cmp td {
+  padding: 12px 14px 12px 0;
+  border-bottom: 1px solid var(--hairline);
+  text-align: left;
+  vertical-align: top;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+.cmp thead th {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink-3);
+}
+.cmp tbody th {
+  width: 28%;
+  font-weight: 600;
+}
+
+/* the phone menu: the nav's own links, then the rest of the site in pairs */
+header.site-nav .nav-sheet-more {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+header.site-nav .nav-sheet-more a {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  font-size: 15px;
+  color: var(--ink-2);
+}
+
+/* the footer: three short columns of the whole site */
+.sfoot-groups {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 26px clamp(20px, 3vw, 40px);
+}
+.sfoot-groups .sfoot-index,
+.sfoot-group ul {
+  margin-top: 14px;
+}
+.sfoot-group li.sfoot-read a {
+  padding: 8px 0;
+}
+.sfoot-group li.sfoot-read i {
+  font-family: var(--font-hanken), system-ui, sans-serif;
+  font-size: 14.5px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--ink-2);
+}
+@media (max-width: 1100px) {
+  .sfoot-groups {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 560px) {
+  .sfoot-groups {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* the placeholder mark measured 4.44:1 on the Paper band (axe, 18 Sep 2026):
+   a lighter tint of the same redline brings it to about 4.6:1 there and
+   keeps the Redline token itself untouched */
+mark.placeholder {
+  background-color: rgba(184, 65, 44, 0.07);
+}
+
+/* ---- the finish review of 18 Sep 2026 (round two), its fixes ---- */
+/* the taste check's answer names its stage in ink too: one blue, spent on the
+   action (the same rule the kettle readout now keeps) */
+.oc-answer b {
+  color: var(--ink) !important;
+}
+/* the question and the open-machine heroes are anchored at the top, so an
+   answer opening under its row pushes only what sits below it */
+@media (min-width: 901px) {
+  .hero--ask .hero-copy,
+  .hero--open .hero-copy {
+    align-self: start;
+  }
+}
+/* the phone menu: the booking row is the action, the page you are on is marked */
+header.site-nav .nav-sheet-in > a.nav-sheet-cta {
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  margin: 14px clamp(18px, 5vw, 34px) 18px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 8px 18px -12px rgba(11, 98, 184, 0.7);
+  font-family: var(--font-satoshi), system-ui, sans-serif;
+  font-size: 15.5px;
+  font-weight: 600;
+  color: #fff;
+}
+header.site-nav .nav-sheet-in > a.nav-sheet-cta:hover,
+header.site-nav .nav-sheet-in > a.nav-sheet-cta:focus-visible {
+  background: var(--deep);
+}
+header.site-nav .nav-sheet a[aria-current="page"] {
+  font-weight: 600;
+  color: var(--ink);
+}
+header.site-nav .nav-sheet a[aria-current="page"]::before {
+  content: "";
+  flex: 0 0 auto;
+  align-self: center;
+  width: 6px;
+  height: 6px;
+  margin-right: -4px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+/* the installer's own job photographs, on a light page */
+.doc-jobs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.doc-jobs img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: 10px;
+}
+.doc-jobs span {
+  display: block;
+  margin-top: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+@media (max-width: 520px) {
+  .doc-jobs {
+    gap: 8px;
+  }
+}
+/* a breadcrumb crumb never breaks inside itself: the current page drops to
+   the next line whole */
+.doc-trail {
+  flex-wrap: wrap;
+  row-gap: 6px;
+}
+.doc-trail > span,
+.doc-crumb {
+  white-space: nowrap;
+}
+/* a block that opens on a table keeps the table's own ink rule and drops the
+   heading's hairline, so two rules never stack */
+.doc-block:has(> .cmp-scroll) > h2 {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+/* the phone menu carries its own booking pill, so the action bar steps down
+   while the menu is open: one blue pill on screen */
+header.site-nav.is-open ~ .mbar {
+  translate: 0 160%;
+  opacity: 0;
+  pointer-events: none;
+}
+.mbar {
+  transition: transform 0.45s var(--ease), translate 0.3s var(--ease), opacity 0.3s var(--ease);
+}
+/* a lead picture shown whole, at its own proportions (the servicing render) */
+.doc-photo--whole img {
+  height: auto;
+  aspect-ratio: 1600 / 1072;
+}
+/* the poster (heroes/HeroPoster.tsx) is the live scene's own frame at each
+   layout, so it hands over as a short fade off the top of the same picture,
+   once the scene has drawn settled frames (MachineStage Ready). It sits on the
+   page's own white, so it needs none of the old still's feathered edges. */
+.hero-poster-pic {
+  display: contents;
+}
+.hero-still {
+  transition: opacity 0.25s ease-out;
+}
+.hero-still.hero-poster {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+/* the fixed scene layer's own ground: white under the hero, where it IS the
+   hero's background until the canvas is up; the studio grey under the journey */
+.stage-fixed {
+  background: var(--ground);
+}
+.stage-fixed.is-journey {
+  background: var(--studio);
+}
+
+/* ---- the revisit of 19 Sep 2026 ---- */
+/* A tablet in portrait takes the phone's order (the machine between the
+   question and its answers). At phone sizes on a 768px sheet it read as a phone
+   page stretched: a 38px line in a field of white. Same order, more air: a
+   bigger line, wider margins and a taller machine. */
+@media (min-width: 600px) and (max-width: 900px) {
+  .hero--ask .hero-h,
+  .hero--open .hero-h {
+    padding: 104px 36px 0;
+    font-size: clamp(40px, 6.8vw, 58px);
+  }
+  .hero--ask .hero-p,
+  .hero--open .hero-p {
+    margin: 16px 36px 0;
+    max-width: 44ch;
+    font-size: 17px;
+    line-height: 1.55;
+  }
+  .hero--ask .hero-act,
+  .hero--open .hero-act {
+    margin: 0 36px 28px;
+  }
+  .hero--ask .hero-stage,
+  .hero--open .hero-stage {
+    min-height: 40svh;
+  }
+  .hero--ask .ask-list {
+    margin: 8px 36px 28px;
+  }
+  .hero--open .open-list {
+    margin: 8px 36px 0;
+  }
+  .hero--open .open-job {
+    margin: 12px 36px 28px;
+  }
+  .hero--suburb .hero-copy,
+  .hero:not(.hero--ask):not(.hero--open) .hero-copy {
+    padding-left: 36px;
+    padding-right: 36px;
+  }
+  .hero--suburb .hero-h,
+  .hero:not(.hero--ask):not(.hero--open):not(.hero--suburb) .hero-h {
+    font-size: clamp(40px, 6.8vw, 58px);
+  }
+  .hero .hero-proof {
+    padding-left: 36px;
+    padding-right: 36px;
+    font-size: 13.5px;
+  }
+}
+/* the booking's success panel says what happens next, in order (the counters
+   are the path's own: numbers that index a sequence) */
+.tform-logged .tform-next {
+  display: grid;
+  gap: 0;
+  max-width: 30rem;
+  margin: 18px auto 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: nx;
+  border-top: 1px solid var(--ink);
+  text-align: left;
+}
+.tform-logged .tform-next li {
+  counter-increment: nx;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  column-gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--hairline);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+.tform-logged .tform-next li::before {
+  content: counter(nx);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+.tform-logged .tform-next-call {
+  margin-top: 16px;
+  font-size: 14.5px;
+  color: var(--ink-2);
+}
+.tform-logged .tform-next-call a {
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: rgba(23, 25, 28, 0.3);
+  text-underline-offset: 4px;
+}
+.tform-logged .tform-next-call a:hover,
+.tform-logged .tform-next-call a:focus-visible {
+  color: var(--accent);
+  text-decoration-color: currentColor;
+}
+
+/* ---- the design review of 19 Sep 2026, its fixes ---- */
+
+/* THE FIRST SCREEN ON A PHONE: question, machine, answers, then the action.
+   The lead says "pick what sounds like yours", and the next thing used to be
+   the Book pill, with the answers a machine's height further down. The action
+   now follows the answers it belongs to ("Book a free test for this"), and the
+   phone's action bar carries the test on the first screen until that pill
+   scrolls into view. */
+@media (max-width: 900px) {
+  .hero--ask .hero-stage,
+  .hero--open .hero-stage {
+    grid-row: 3;
+  }
+  .hero--ask .ask-list {
+    grid-row: 4;
+    margin-bottom: 8px;
+  }
+  .hero--open .open-list {
+    grid-row: 4;
+  }
+  .hero--open .open-job {
+    grid-row: 5;
+    margin-bottom: 8px;
+  }
+  .hero--ask .hero-act,
+  .hero--open .hero-act {
+    grid-row: 6;
+    margin: 0 20px 22px;
+  }
+  /* the action bar is the pill on these two first screens: it sits in the
+     thumb's reach from load, and a second pill under the answers only made the
+     bar step down and come back as it scrolled past (and showed as a blue
+     sliver under the bar at the fold) */
+  .hero--ask .hero-cta,
+  .hero--open .hero-cta {
+    display: none;
+  }
+  /* thumbs: a standalone control is at least 44px tall */
+  .hero-more,
+  .tform-call,
+  .doc-call {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+  header.site-nav .nav-burger {
+    width: 44px;
+    height: 44px;
+  }
+  .doc-trail a {
+    display: inline-block;
+    padding-block: 8px;
+  }
+  .hc-sort button {
+    height: 40px;
+  }
+}
+
+/* THE BOOKING: the fields are the booking, so they come first; the taste check
+   is the optional extra between them and the button, and it folds away behind
+   one quiet line when the visitor has already said what their water is doing */
+.tform-extra {
+  margin-top: 26px;
+  padding-top: 22px;
+  border-top: 1px solid var(--hairline);
+}
+.tform-extra .oc {
+  margin: 0;
+  max-width: none;
+}
+.tform-extra .oc-h,
+.tform-extra .oc-answer {
+  text-align: left;
+}
+.tform-extra .oc-list {
+  justify-content: flex-start;
+}
+.tform-extra-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-hanken), system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.tform-extra-open span {
+  color: var(--ink-3);
+  font-weight: 400;
+}
+.tform-extra-open i {
+  width: 8px;
+  height: 8px;
+  margin-left: 4px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  rotate: 45deg;
+  translate: 0 -2px;
+}
+.tform-extra-open:hover,
+.tform-extra-open:focus-visible {
+  color: var(--accent);
+}
+.tform-extra-open:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+/* what happens after the button, said before it is pressed */
+.tform-after {
+  margin: 14px 0 0;
+  max-width: 56ch;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+/* "What you told us": a label, not a drafting tag */
+.tform-carried span {
+  font-family: var(--font-hanken), system-ui, sans-serif;
+  font-size: 13.5px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--ink-3);
+}
+.tform-carried b {
+  color: var(--ink);
+}
+/* the stamp that says it worked is ink: red is the page's colour for an
+   unsourced figure and a failed send, and "did it work?" is the wrong thing to
+   leave someone wondering */
+.tform-stamp {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+/* the placeholder mark is set in the body face like every other label (the
+   font variable it used resolved to a monospace on the html element) */
+mark.placeholder {
+  font-family: var(--font-hanken), system-ui, sans-serif;
+}
+/* small print that ran to 90 to 106 characters a line */
+.sched-out li,
+.hc-cap,
+.doc-photo-note {
+  max-width: 72ch;
+}
+/* labels under 12px */
+.sched-m b {
+  font-size: 13px !important;
+  font-weight: 500;
+  color: var(--ink-3) !important;
+}
+.ss-stat {
+  font-size: 13px !important;
+  color: var(--ink-2) !important;
+}
+/* a path photograph waiting for its step is dimmed, not ghosted: at half
+   opacity it read as a picture that had failed to load. Wide screens only: a
+   phone has no rail to light the steps, so every photograph there is lit
+   (the rule further up), and this one must not reach it. */
+@media (min-width: 901px) {
+  .pa-fig img {
+    opacity: 0.8;
+    filter: saturate(0.7);
+  }
+}
+/* the specification and the cover band sat 26 to 40px off the page's grid:
+   the same container as every other section */
+.sps,
+.cb {
+  padding-inline: 0;
+}
+.sps-inner,
+.cb-inner {
+  padding-inline: var(--gutter);
+}
+/* a tablet keeps its wider margins on the row that moved */
+@media (min-width: 600px) and (max-width: 900px) {
+  .hero--ask .hero-act,
+  .hero--open .hero-act {
+    margin: 0 36px 28px;
+  }
+}
+
+/* the side-by-side table scrolls sideways on a phone and takes keyboard focus to do it */
+.cmp-scroll:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+
+/* ---- the finish review of 19 Sep 2026, its fixes ---- */
+/* the booking's four fields sit two and two: auto-fit dropped them three and
+   one on a 760px sheet, with "Preferred day" alone on a second row */
+.tform-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (max-width: 520px) {
+  .tform-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+/* on a phone the first screen ends on the answers: the quiet link under them
+   came to rest half under the action bar and read through its pane. The bar
+   carries the action, and the kettle section one screen down links to the
+   three stages. */
+@media (max-width: 900px) {
+  .hero--ask .hero-act,
+  .hero--open .hero-act {
+    display: none;
+  }
+  .hero--ask .ask-list,
+  .hero--open .open-job {
+    margin-bottom: 26px;
   }
 }

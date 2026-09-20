@@ -3,12 +3,11 @@ import "./globals.css";
 import "./brand.css";
 import "./world.css";
 import "./sections.css";
-import { satoshi, hanken, geistMono, michroma } from "./fonts";
+import { satoshi, hanken, michroma, clash } from "./fonts";
 import { SmoothScroll } from "@/lib/providers/SmoothScroll";
 import { DirectionContract } from "@/components/site/DirectionContract";
 import { Cursor } from "@/components/Cursor";
 import { LiquidMetalDefs } from "@/components/ui/LiquidMetal";
-import { asset } from "@/lib/asset";
 import { LAUNCHED, OG_ALT } from "@/lib/seo";
 import { localBusinessJsonLd } from "@/lib/jsonld";
 import { Nav } from "@/components/Nav";
@@ -60,27 +59,16 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en-AU" className={`${satoshi.variable} ${hanken.variable} ${geistMono.variable} ${michroma.variable}`}>
+    <html lang="en-AU" className={`${satoshi.variable} ${hanken.variable} ${michroma.variable} ${clash.variable}`}>
       <head>
         {/* the environment is a pure in-scene Lightformer studio now — no HDR
             file, nothing to preload, nothing to race */}
-        {/* Routed Gothic (SIL OFL — the digitised Leroy/drafting-template
-            lettering; licence in public/fonts). woff2 rather than TTF: 65%
-            smaller, and any browser without woff2 cannot run the WebGL journey
-            this site is built around, so a TTF fallback would never be used.
-            Declared here with asset()
-            because CSS url("/fonts/…") would skip the basePath and 404 on
-            Pages — the known raw-absolute-URL gotcha. */}
-        <style
-          // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{
-            __html: `
-@font-face{font-family:"Routed Gothic";src:url(${asset("/fonts/routed-gothic.woff2")}) format("woff2");font-display:swap}
-@font-face{font-family:"Routed Gothic Narrow";src:url(${asset("/fonts/routed-gothic-narrow.woff2")}) format("woff2");font-display:swap}
-@font-face{font-family:"Routed Gothic Half Italic";src:url(${asset("/fonts/routed-gothic-half-italic.woff2")}) format("woff2");font-display:swap}
-:root{--font-draft:"Routed Gothic";--font-draft-narrow:"Routed Gothic Narrow";--font-draft-note:"Routed Gothic Half Italic"}`,
-          }}
-        />
+        {/* The drafting face (Routed Gothic) went with the drawing-set world.
+            Its three @font-face rules stayed here for a while after; nothing
+            rendered in them (document.fonts showed all three unloaded on every
+            page, 19 Sep 2026), so they are gone, and world.css points the old
+            --font-draft variables at the body face. The woff2 files are still
+            in public/fonts with their licence. */}
       </head>
       <body>
         <DirectionContract />

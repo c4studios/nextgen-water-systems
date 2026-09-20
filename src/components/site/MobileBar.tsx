@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CONTACT } from "@/content/plates";
+import { isHomePath } from "@/content/site";
 
 /**
  * THE PHONE'S ACTION BAR.
@@ -15,7 +16,7 @@ import { CONTACT } from "@/content/plates";
 export function MobileBar() {
   const pathname = usePathname();
   const [on, setOn] = useState(false);
-  const home = pathname === "/";
+  const home = isHomePath(pathname);
   const bookHref = home ? "#book" : "/water-test/";
 
   useEffect(() => {
@@ -23,12 +24,26 @@ export function MobileBar() {
     const frame = () => {
       raf = 0;
       const vh = window.innerHeight;
-      const past = window.scrollY > vh * 0.7;
       const book = document.getElementById("book");
       const bookIn = book ? book.getBoundingClientRect().top < vh * 0.9 && book.getBoundingClientRect().bottom > 0 : false;
       const form = document.querySelector(".tform");
       const formIn = form ? form.getBoundingClientRect().top < vh && form.getBoundingClientRect().bottom > 0 : false;
-      setOn(past && !bookIn && !formIn);
+      // The test is the primary action, so the bar carries it from the first
+      // screen (a phone's nav has no book action of its own). It steps down
+      // while a page's own booking pill is on screen, counted once at least
+      // half of it shows: one blue pill per screen, and a sliver of a pill
+      // entering at the foot does not count as there.
+      let pillIn = false;
+      for (const el of document.querySelectorAll("main .lm, main .doc-btn")) {
+        const r = el.getBoundingClientRect();
+        if (r.width === 0 || r.height === 0) continue;
+        const shown = Math.min(r.bottom, vh) - Math.max(r.top, 0);
+        if (shown >= r.height * 0.5) {
+          pillIn = true;
+          break;
+        }
+      }
+      setOn(!bookIn && !formIn && !pillIn);
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(frame);

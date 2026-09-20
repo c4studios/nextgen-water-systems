@@ -5,9 +5,10 @@
  * business name under ABN 25 770 821 226 (public ABR record), which is the same
  * trading trust behind Aqua-Safe Plumbing & Maintenance.
  *
+ * The telephone is Aaron's own published number (0473 072 642), the one the
+ * site shows in the nav, the footer and every call button (docs/sources.md).
+ *
  * Deliberately absent:
- *   - telephone. No real number has been supplied; the form placeholder is a
- *     dummy. An invented number in structured data is worse than none.
  *   - Product / Offer schema with contaminant-reduction figures. The figures
  *     have since been removed from the page entirely; they must not come back
  *     here as machine-readable claims, which would be the same Australian
@@ -41,6 +42,7 @@ export const localBusinessJsonLd = {
   description:
     "Whole-home water filtration supplied and installed across the Perth metro by licensed plumbers. Three-stage systems fitted where the water enters the house, so every tap runs through one machine.",
   url: `${SITE_ORIGIN}/`,
+  telephone: "+61 473 072 642",
   identifier: {
     "@type": "PropertyValue",
     propertyID: "ABN",
@@ -85,5 +87,50 @@ export function breadcrumbJsonLd(trail: { name: string; path?: string }[]) {
       name: c.name,
       ...(c.path ? { item: `${SITE_ORIGIN}${c.path}` } : {}),
     })),
+  };
+}
+
+/** the plain text of a React node, for structured data */
+function nodeText(node: unknown): string {
+  if (node === null || node === undefined || typeof node === "boolean") return "";
+  if (typeof node === "string" || typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(nodeText).join("");
+  if (typeof node === "object" && node && "props" in node) {
+    const props = (node as { props?: { children?: unknown } }).props;
+    const inner = nodeText(props?.children);
+    const type = (node as { type?: unknown }).type;
+    return type === "p" || type === "li" ? inner + " " : inner;
+  }
+  return "";
+}
+
+/** FAQPage: every question on the questions page with the answer it shows */
+export function faqJsonLd(items: { q: string; a: unknown }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map(({ q, a }) => ({
+      "@type": "Question",
+      name: q,
+      acceptedAnswer: { "@type": "Answer", text: nodeText(a).replace(/\s+/g, " ").trim() },
+    })),
+  };
+}
+
+/** Article: a piece under /resources/, published by the business itself */
+export function articleJsonLd(a: { href: string; title: string; description: string; published: string }) {
+  const org = { "@type": "Organization", "@id": BUSINESS_ID, name: "Next Gen Water Systems", url: `${SITE_ORIGIN}/` };
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: a.title,
+    description: a.description,
+    datePublished: a.published,
+    dateModified: a.published,
+    inLanguage: "en-AU",
+    mainEntityOfPage: `${SITE_ORIGIN}${a.href}`,
+    image: `${SITE_ORIGIN}/og.jpg`,
+    author: org,
+    publisher: org,
   };
 }

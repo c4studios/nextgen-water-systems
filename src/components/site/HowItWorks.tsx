@@ -86,8 +86,8 @@ export function HowItWorks() {
             standing still.
           </h2>
           <p className="se-lead">
-            The same three stages you just scrolled through. Pick one to see it in section and read what it
-            does to the water on its way through.
+            The same three stages the film above opens up, side by side. Pick one to see it in section and
+            read what it does to the water on its way through.
           </p>
         </header>
 
@@ -167,7 +167,7 @@ export function HowItWorks() {
                 </button>
               </div>
             ))}
-            <p className="se-cap">Renders of the system in section, not photographs.</p>
+            <p className="se-cap">Renders of the system, in section.</p>
           </div>
         </div>
       </div>

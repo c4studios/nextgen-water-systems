@@ -34,6 +34,28 @@ const nextConfig = {
   assetPrefix: basePath ? `${basePath}/` : undefined,
   // Inlined into the client bundle so asset() builds correct URLs on both.
   env: { NEXT_PUBLIC_BASE_PATH: basePath },
+  // Security headers, on the Vercel target only (a static export cannot send
+  // headers, and Next warns if it is asked to). The same clickjacking pair the
+  // Aqua-Safe site sends, plus the two that cost nothing: no MIME sniffing, and
+  // a referrer that does not leak paths to other sites. Verify with curl -I
+  // against the deployment, never from this file.
+  ...(isGitHubPages
+    ? {}
+    : {
+        async headers() {
+          return [
+            {
+              source: "/(.*)",
+              headers: [
+                { key: "X-Frame-Options", value: "DENY" },
+                { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+                { key: "X-Content-Type-Options", value: "nosniff" },
+                { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+              ],
+            },
+          ];
+        },
+      }),
 };
 
 export default nextConfig;

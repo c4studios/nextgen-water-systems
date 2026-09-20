@@ -86,8 +86,8 @@ function Schedule() {
               >
                 <p>{r.d}</p>
                 <p className="sched-m">
-                  <b>How</b>
-                  {r.m}. Your free in-home test measures this one.
+                  <b>In the cartridge</b>
+                  {r.m}.
                 </p>
               </div>
             </div>
@@ -99,12 +99,12 @@ function Schedule() {
         <span className="sched-out-t">What it does not do</span>
         <ul>
           <li>
-            <b>Figures.</b> We don&rsquo;t publish removal percentages. Independent certification is still
-            in progress and we won&rsquo;t quote a number we can&rsquo;t point at.
+            <b>Figures.</b> We don&rsquo;t publish removal percentages, and we won&rsquo;t quote a number we
+            can&rsquo;t point at.
           </li>
           <li>
-            <b>PFAS, fluoride and TDS.</b> Those need reverse osmosis. This deliberately isn&rsquo;t
-            that, and anyone telling you otherwise is selling you something else.
+            <b>PFAS, fluoride and TDS.</b> Those need reverse osmosis, which is a different machine. This
+            one is not built for them.
           </li>
         </ul>
       </div>
@@ -170,9 +170,7 @@ export function SiteSpine() {
             : "A free, no-obligation in-home water test. A licensed plumber tests your actual supply at your kitchen tap and talks you through what the system would change."}
         </p>
 
-        <TasteCheck />
-
-        <BookingForm kind={kind} />
+        <BookingForm kind={kind} extra={<TasteCheck />} />
 
         <Schedule />
 

@@ -12,6 +12,7 @@
  * ?yaw=<radians>                turns the whole machine (the hero's rest pose is -0.3)
  * ?pos=x,y,z&tgt=x,y,z&fov=n    camera overrides for stills
  * ?post=1                       the page's own lens chain (AO, focus, bloom, vignette, grain), for stills
+ * ?nglens=ao,vig                 with ?post=1: only these parts of it (ao,dof,bloom,ca,vig,grain); all of it otherwise
  * ?hero=1                       the hero's palette: the white set, and the lens chain driven to nothing,
  *                               so a still cut here drops straight onto the white page
  *
@@ -69,6 +70,14 @@ function Driver({ h, params }: { h: MachineHandle; params: URLSearchParams }) {
   const flow = Number(params.get("flow") ?? 0);
   const lift = Number(params.get("lift") ?? 0);
   const service = params.get("service") === "1";
+  // ?service=2 is the journey's own service pose (MachineStage.tsx at the peak
+  // of serviceAt): each bowl unscrewed, brought forward and set down on the
+  // floor in front of the frame, the cartridges left hanging from their heads
+  const serviceSetDown = params.get("service") === "2";
+  // ?service=aside stands the three bowls upright on the floor beside the
+  // unit, the way a plumber sets them out of the way, so a still can show all
+  // three cartridges hanging from their heads (the servicing page's lead)
+  const serviceAside = params.get("service") === "aside";
   const named = VIEWS[params.get("view") ?? "iso"] ?? VIEWS.iso;
   // ?pos=x,y,z&tgt=x,y,z&fov=n override the named view (the stills use this)
   const vec = (k: string, d: [number, number, number]): [number, number, number] => {
@@ -103,6 +112,29 @@ function Driver({ h, params }: { h: MachineHandle; params: URLSearchParams }) {
           b.rotation.y = 0.35 * (i + 1);
         }
         if (c) c.position.y = 0;
+      }
+    }
+    if (serviceAside) {
+      for (let k = 0; k < 3; k++) {
+        const bowl = h.bowls[k];
+        if (!bowl) continue;
+        bowl.rotation.set(0, 0.4 * k, 0);
+        // world x a little left of the frame, one bowl-width apart; the
+        // bowls sit in their housing groups, so subtract the housing's x.
+        // Kept shallow (z 6 to 14) and wide of their own housing's axis: the
+        // section cut clips a wedge within 62 degrees of +z from that axis,
+        // and a bowl inside it would be cut too.
+        // Stage 1 furthest left, so the three read 1, 2, 3 like the housings.
+        bowl.position.set(-77 + k * 15 - HOUSING_X[k], -6 - (BOWL.bottom - 6 + 0.4), 6 + (2 - k) * 4);
+      }
+    }
+    if (serviceSetDown) {
+      for (let k = 0; k < 3; k++) {
+        const bowl = h.bowls[k];
+        if (!bowl) continue;
+        bowl.rotation.y = Math.PI * 1.5;
+        bowl.rotation.x = THREE.MathUtils.degToRad(-10);
+        bowl.position.set((k - 1) * 4, -6 - (BOWL.bottom - 6 + 0.4), 27);
       }
     }
     if (h.runs) h.runs.visible = params.get("runs") !== "0";
@@ -158,7 +190,7 @@ export function MachineDev() {
         <Driver h={h} params={params} />
         {heroSet && <HeroPalette refs={{ vig, grain, bloom }} />}
         {post ? (
-          <PostChain tier="high" focus={focus} refs={{ vig: vig as never, grain: grain as never, bloom: bloom as never }} />
+          <PostChain tier="high" lens={params.get("nglens") ?? "all"} focus={focus} refs={{ vig: vig as never, grain: grain as never, bloom: bloom as never }} />
         ) : (
           ao && (
             <EffectComposer multisampling={4}>

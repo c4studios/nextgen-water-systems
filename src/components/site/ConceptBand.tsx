@@ -28,7 +28,7 @@ export function ConceptBand() {
               loading="lazy"
               decoding="async"
             />
-            <figcaption>The client&rsquo;s brand concept. A visualisation, not a photograph of an installed system.</figcaption>
+            <figcaption>A concept image of the cover on a wall, not a photograph of an installed system.</figcaption>
           </figure>
           <figure className="cb-figure cb-figure--wide">
             <img

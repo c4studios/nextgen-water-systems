@@ -316,7 +316,7 @@ html:not([data-nggl="1"]) .hero-drag {
   height: 100svh;
   overflow: hidden;
 }
-.journey .jrail,
+/* the rail takes the pointer only while it is up (.is-on, further down) */
 .journey .jb-cue {
   pointer-events: auto;
 }
@@ -324,14 +324,73 @@ html:not([data-nggl="1"]) .hero-drag {
   position: absolute;
   inset: 0;
 }
+/* A BEAT IS IN OR OUT, ON THE CLOCK (Journey.tsx). Out: one quick fade, the
+   words where they stand. In: each word rises out of its own line, then the
+   body parts follow, 90ms apart. Nothing here reads the scroll, so nothing is
+   ever left half-set where the scroll happens to rest. */
 .jbeat {
   position: absolute;
-  max-width: 430px;
-  visibility: hidden;
+  /* the measure narrows with the frame, and the scene steps the picture aside
+     by whatever the column still gains on a narrower desktop (MachineStage.tsx
+     mirrors 430px, 33vw and the 6vw margin: change them together) */
+  max-width: min(430px, 33vw);
   /* the retired journey's .jbeat rules still sit in globals.css */
+  transform: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.22s ease-out, visibility 0s linear 0.22s;
+}
+.jbeat.is-in {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.01s linear 0.16s, visibility 0s linear 0.16s;
+}
+.jb-h .jwi {
+  transform: translate3d(0, 105%, 0);
+  opacity: 0;
+  /* out: reset once the beat has faded */
+  transition: transform 0s linear 0.24s, opacity 0s linear 0.24s;
+}
+.jbeat.is-in .jb-h .jwi {
+  transform: none;
+  opacity: 1;
+  transition:
+    transform 0.72s cubic-bezier(0.16, 1, 0.3, 1) calc(0.18s + var(--k, 0) * 42ms),
+    opacity 0.3s linear calc(0.18s + var(--k, 0) * 42ms);
+}
+.jb-part {
+  opacity: 0;
+  transform: translate3d(0, 14px, 0);
+  transition: transform 0s linear 0.24s, opacity 0s linear 0.24s;
+}
+.jbeat.is-in .jb-part {
   opacity: 1;
   transform: none;
-  transition: none;
+  transition:
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1) calc(0.46s + var(--s, 0) * 90ms),
+    opacity 0.5s ease-out calc(0.46s + var(--s, 0) * 90ms);
+}
+/* the opening beat is already there when the section arrives */
+.jbeat[data-id="cover"].is-in .jb-h .jwi,
+.jbeat[data-id="cover"].is-in .jb-part {
+  transition-delay: 0s;
+  transition-duration: 0.01s;
+}
+/* read to a screen reader, never drawn */
+.jsr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+/* a phone's Back and Next live in the card; a wide screen has the rail */
+.jb-nav {
+  display: none;
 }
 .jb--left {
   left: clamp(24px, 6vw, 96px);
@@ -340,7 +399,7 @@ html:not([data-nggl="1"]) .hero-drag {
 }
 .jb--right {
   right: clamp(24px, 6vw, 96px);
-  /* a touch above centre, so the rail's open list (bottom right) never reaches it */
+  /* a touch above centre: the compositions on the right were framed for it */
   top: 44%;
   translate: 0 -50%;
 }
@@ -376,10 +435,35 @@ html:not([data-nggl="1"]) .hero-drag {
   padding: 6px 11px;
   border: 1px solid var(--hairline);
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.75);
-  font-size: 12.5px;
+  background: rgba(255, 255, 255, 0.82);
+  font-size: 13.5px;
   font-weight: 500;
-  color: var(--ink-2);
+  color: var(--ink);
+}
+/* the visitor's own words, on the stage that is there for them: a live dot in
+   Water (water marks water, never text) and one sentence in full ink */
+.jb-you {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr);
+  column-gap: 12px;
+  align-items: start;
+  max-width: 40ch;
+  margin: 18px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid rgba(23, 25, 28, 0.22);
+  font-size: 15px;
+  line-height: 1.55;
+  font-weight: 500;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+.jb-you i {
+  width: 10px;
+  height: 10px;
+  margin-top: 0.42em;
+  border-radius: 50%;
+  background: var(--water);
+  box-shadow: 0 0 0 2px #fff, 0 2px 6px rgba(23, 25, 28, 0.3);
 }
 .jb-cue {
   display: inline-flex;
@@ -400,24 +484,311 @@ html:not([data-nggl="1"]) .hero-drag {
   rotate: 45deg;
   translate: 0 -2px;
 }
-/* the marker under the nav and the rail keep their existing furniture; the
-   rail's labels take the brand face */
-.jrail button,
-.jrail::before,
-.jstage-n,
-.jstage-t {
-  font-family: var(--font-hanken), system-ui, sans-serif !important;
-  letter-spacing: 0.04em !important;
-  text-transform: none !important;
+button.jb-cue {
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
 }
-.jrail button {
-  font-size: 12.5px !important;
+.jb-cue:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+/* the jump to the visitor's own stage stands on the set, where Action Blue
+   falls under 4.5:1: full ink and an underline there, the blue on a phone's
+   paper card */
+.jb-jump {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 5px;
+}
+@media (max-width: 900px) {
+  .jb-jump {
+    color: var(--accent);
+    text-decoration: none;
+  }
+}
+/* THE HAND-OFF. The film ends on the one thing the page wants: on a wide
+   screen the cue is the filled pill (a phone's action bar already carries it,
+   so there it stays a link) */
+@media (min-width: 901px) {
+  .jb-cue--pill {
+    margin-top: 26px;
+    padding: 16px 28px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: var(--accent);
+    box-shadow: 0 8px 18px -12px rgba(11, 98, 184, 0.7);
+    color: #fff;
+    transition: background-color 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .jb-cue--pill:hover,
+  .jb-cue--pill:focus-visible {
+    background: var(--deep);
+  }
+  .jb-cue--pill:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+    border-radius: 999px;
+  }
+}
+
+/* ---- THE RAIL: the pass through the machine ----
+   One line along the foot of the frame, left to right the way the water goes,
+   on a frosted pane like the nav's. It borrows the numbered path's language: a
+   2px rail at 14% ink, an ink fill scaled from the left, a disc that fills
+   with ink once it is reached. The current stop is named at the left; every
+   stop names itself on hover or focus; the skip sits at the far end. */
+.jline {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(18px, 3.2vh, 34px);
+  translate: -50% 0;
+  z-index: 8;
+  display: grid;
+  grid-template-columns: minmax(0, 218px) minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 26px;
+  width: min(1040px, calc(100vw - 2 * clamp(24px, 6vw, 96px)));
+  height: 50px;
+  padding: 0 8px 0 22px;
+  border-radius: 999px;
+  background: rgba(250, 251, 251, 0.93);
+  box-shadow: 0 0 0 1px var(--hairline), 0 16px 34px -20px rgba(23, 25, 28, 0.5);
+  -webkit-backdrop-filter: blur(8px) saturate(140%);
+  backdrop-filter: blur(8px) saturate(140%);
+  font-family: var(--font-hanken), system-ui, sans-serif;
+  /* up once the section has pinned (Journey.tsx), and whenever it holds focus:
+     a keyboard reaches it in page order and it shows itself */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s var(--ease);
+}
+.journey .jline.is-on,
+.journey .jline:focus-within {
+  opacity: 1;
+  pointer-events: auto;
+}
+.jline-now {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  min-width: 0;
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.jline-k {
+  flex: none;
   font-weight: 500;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
 }
-.jstage-n {
-  font-size: 11.5px !important;
+.jline-t {
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-weight: 600;
-  color: var(--accent) !important;
+  color: var(--ink);
+}
+.jline-track {
+  position: relative;
+  height: 50px;
+  /* room for the end stops' own width, so the line runs disc centre to disc centre */
+  margin: 0 14px;
+}
+.jline-track::before,
+.jline-fill {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  margin-top: -1px;
+  border-radius: 1px;
+}
+.jline-track::before {
+  background: rgba(23, 25, 28, 0.14);
+}
+.jline-fill {
+  background: var(--ink);
+  transform-origin: left center;
+  transform: scaleX(var(--fill, 0));
+}
+.jline-stop {
+  position: absolute;
+  left: calc(var(--at) * 100%);
+  top: 0;
+  translate: -50% 0;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 50px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.jline-stop > i {
+  display: grid;
+  place-items: center;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #fbfbfb;
+  box-shadow: 0 0 0 1.5px rgba(23, 25, 28, 0.42);
+  font-family: var(--font-satoshi), system-ui, sans-serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 12.5px;
+  line-height: 1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  transition:
+    background-color 0.25s var(--ease),
+    color 0.25s var(--ease),
+    box-shadow 0.25s var(--ease),
+    scale 0.25s var(--ease);
+}
+.jline-stop--n > i {
+  width: 24px;
+  height: 24px;
+  box-shadow: 0 0 0 1.5px var(--ink);
+}
+.jline-stop.is-past > i,
+.jline-stop.is-on > i {
+  background: var(--ink);
+  color: #fff;
+  box-shadow: 0 0 0 1.5px var(--ink);
+}
+.jline-stop.is-on > i {
+  scale: 1.45;
+}
+.jline-stop--n.is-on > i {
+  scale: 1.16;
+}
+/* under the pointer, or its housing is (Journey.tsx): the ring goes to full ink */
+.jline-stop.is-hover > i {
+  box-shadow: 0 0 0 1.5px var(--ink), 0 0 0 4px rgba(23, 25, 28, 0.14);
+}
+@media (hover: hover) {
+  .jline-stop:hover > i {
+    box-shadow: 0 0 0 1.5px var(--ink), 0 0 0 4px rgba(23, 25, 28, 0.14);
+  }
+}
+.jline-stop:focus-visible {
+  outline: none;
+}
+.jline-stop:focus-visible > i {
+  box-shadow: 0 0 0 1.5px var(--ink), 0 0 0 3.5px #fbfbfb, 0 0 0 5.5px var(--accent);
+}
+/* the stage the visitor's own words point at: water marks it */
+.jline-stop[data-mine]::after {
+  content: "";
+  position: absolute;
+  left: calc(50% + 7px);
+  top: 7px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--water);
+  box-shadow: 0 0 0 2px #fbfbfb;
+}
+/* every stop names itself: the callout tag's paper, over the pane */
+.jline-tip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 4px);
+  translate: -50% 0;
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  width: max-content;
+  padding: 7px 11px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 0 0 1px rgba(23, 25, 28, 0.08), 0 12px 26px -14px rgba(23, 25, 28, 0.45);
+  font-family: var(--font-hanken), system-ui, sans-serif;
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--ink-2);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.18s var(--ease), visibility 0s linear 0.18s;
+}
+.jline-tip b {
+  font-weight: 600;
+  color: var(--ink);
+}
+.jline-tip em {
+  padding-left: 8px;
+  border-left: 1px solid var(--hairline);
+  font-style: normal;
+  color: var(--ink);
+}
+.jline-stop:focus-visible .jline-tip {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+@media (hover: hover) {
+  .jline-stop:hover .jline-tip {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
+  }
+}
+.jline-skip {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  height: 36px;
+  padding: 0 14px 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  font-family: var(--font-hanken), system-ui, sans-serif;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.22s var(--ease), color 0.22s var(--ease);
+}
+.jline-skip i {
+  width: 8px;
+  height: 8px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  rotate: 45deg;
+  translate: 0 -2px;
+}
+@media (hover: hover) {
+  .jline-skip:hover {
+    background: rgba(23, 25, 28, 0.05);
+    color: var(--ink);
+  }
+}
+.jline-skip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+@media (min-width: 901px) and (max-width: 1080px) {
+  .jline {
+    /* 192: the longest name on the line ("The cover, Clips on, no screws")
+       measures 187px; at 168 four of the ten names were cut with an ellipsis */
+    grid-template-columns: minmax(0, 192px) minmax(0, 1fr) auto;
+    column-gap: 18px;
+  }
+  .jline-skip-l span {
+    display: none;
+  }
 }
 /* 900 is the phone cut's breakpoint: every beat speaks from a card at the base */
 @media (max-width: 900px) {
@@ -455,15 +826,144 @@ html:not([data-nggl="1"]) .hero-drag {
     font-size: 15px;
     line-height: 1.55;
   }
-  /* the rail is a row of dots under the marker (globals.css); the labels
-     above are for the desktop card, the phone keeps only "Skip" */
-  .jrail button {
-    font-size: 0 !important;
-    letter-spacing: 0 !important;
+  /* the rail on a phone: tucked under the nav, where it used to float across
+     the housing being shown. The stops are spaced evenly, a thumb apart, and
+     the caption card names the stop, so the rail keeps only its line and the
+     skip. */
+  .jline {
+    top: 74px;
+    bottom: auto;
+    grid-template-columns: auto auto;
+    column-gap: 2px;
+    width: auto;
+    height: 44px;
+    padding: 0 4px 0 6px;
   }
-  .jrail .jskip {
-    font-size: 11px !important;
-    letter-spacing: 0.04em !important;
+  .jline-now {
+    display: none;
+  }
+  .jline-track {
+    width: 236px;
+    height: 44px;
+    margin: 0 18px;
+  }
+  .jline-stop {
+    left: calc(var(--eq) * 100%);
+    width: 36px;
+    height: 44px;
+  }
+  .jline-stop[data-mobile-hide] {
+    display: none;
+  }
+  .jline-stop > i {
+    width: 8px;
+    height: 8px;
+  }
+  .jline-stop--n > i {
+    width: 22px;
+    height: 22px;
+    font-size: 12.5px;
+  }
+  .jline-stop.is-on > i {
+    scale: 1.4;
+  }
+  .jline-stop--n.is-on > i {
+    scale: 1.14;
+  }
+  .jline-stop[data-mine]::after {
+    left: calc(50% + 6px);
+    top: 5px;
+  }
+  .jline-tip {
+    display: none;
+  }
+  .jline-skip {
+    height: 44px;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+  .jline-skip-l span {
+    display: none;
+  }
+  .jb-you {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top-color: var(--hairline);
+    font-size: 14.5px;
+    max-width: none;
+  }
+  .jb-you i {
+    box-shadow: 0 0 0 2px #fff;
+  }
+  /* the card's paper arrives with the beat, as one short fade (a card that
+     snapped on would be the harshest thing on the screen) */
+  .jbeat::before {
+    opacity: 1;
+    transform: none;
+  }
+  .jbeat.is-in {
+    transition: opacity 0.3s ease-out 0.1s, visibility 0s linear 0.1s;
+  }
+  /* the phone's action bar is right under the card and carries the pill */
+  .jb-cue--pill {
+    display: none;
+  }
+  /* "click a housing" is a pointer's sentence; a phone has Next in its card */
+  .jbeat[data-id="reveal"] .jb-more {
+    display: none;
+  }
+  .jb-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 12px -6px -8px;
+    padding-top: 4px;
+    border-top: 1px solid var(--hairline);
+  }
+  .jb-nav button {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 44px;
+    padding: 0 6px;
+    border: 0;
+    background: none;
+    font-family: var(--font-hanken), system-ui, sans-serif;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--ink);
+    cursor: pointer;
+    pointer-events: auto;
+  }
+  .jb-nav .jb-back {
+    font-weight: 500;
+    color: var(--ink-2);
+  }
+  .jb-nav i {
+    width: 8px;
+    height: 8px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+  }
+  .jb-nav .jb-next i {
+    rotate: -45deg;
+  }
+  .jb-nav .jb-back i {
+    rotate: 135deg;
+  }
+  .jb-nav button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+@media (max-width: 380px) {
+  .jline-track {
+    width: 204px;
+  }
+  .jline-stop {
+    width: 32px;
   }
 }
 @media (max-width: 900px) and (max-height: 500px) {
@@ -478,14 +978,10 @@ html:not([data-nggl="1"]) .hero-drag {
     left: auto;
     right: 16px;
   }
-  .jstage {
-    display: none;
-  }
-  .jrail {
-    top: 12px;
-    right: 12px;
+  .jline {
+    top: 72px;
     left: auto;
-    bottom: auto;
+    right: 12px;
     translate: none;
   }
 }
@@ -494,6 +990,16 @@ html:not([data-nggl="1"]) .hero-drag {
   .stage-fixed {
     display: none;
   }
+}
+/* no WebGL, a context lost for good, or a scene that never came up
+   (Journey.tsx goStatic): the same hand-over reduced motion gets, so nobody is
+   left scrolling ten screens of empty set */
+html[data-ngstatic] .journey,
+html[data-ngstatic] .stage-fixed {
+  display: none;
+}
+html[data-ngstatic] .static-story {
+  display: block;
 }
 
 /* ===========================================================================
@@ -600,6 +1106,8 @@ html:not([data-nggl="1"]) .hero-drag {
 :root {
   --font-mono: var(--font-hanken), system-ui, sans-serif;
   --font-draft: var(--font-hanken), system-ui, sans-serif;
+  --font-draft-narrow: var(--font-hanken), system-ui, sans-serif;
+  --font-draft-note: var(--font-hanken), system-ui, sans-serif;
 }
 .nav-hint-desk,
 .nav-hint-touch,
@@ -657,26 +1165,6 @@ html:not([data-nggl="1"]) .hero-drag {
 }
 .hiw-n {
   color: var(--accent);
-}
-/* the rail card: no "STAGES" label, and "Skip the section" reads as one phrase */
-.jrail::before {
-  display: none !important;
-}
-.jrail .jskip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-.jrail .jskip .jskip-l {
-  display: inline;
-}
-.jrail .jskip .jskip-l span {
-  display: inline;
-}
-@media (max-width: 900px) {
-  .jrail .jskip .jskip-l span {
-    display: none;
-  }
 }
 /* the stage accordion on a phone: the toggle stays on the row */
 @media (max-width: 900px) {
@@ -770,14 +1258,25 @@ footer.sfoot {
   z-index: 2;
   pointer-events: none;
 }
+/* IN OR OUT, ON THE CLOCK (MachineStage CalloutDriver sets .is-in and the
+   position). In: the dot, then its leader drawn from the dot, then the tag;
+   each tag of a beat a fifth of a second after the last (--d). Out: one quick
+   fade, everything where it stands. */
 .jc {
   position: absolute;
   left: 0;
   top: 0;
   width: 0;
   height: 0;
+  opacity: 0;
   visibility: hidden;
   will-change: transform;
+  transition: opacity 0.2s ease-out, visibility 0s linear 0.2s;
+}
+.jc.is-in {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.01s linear, visibility 0s;
 }
 .jc-dot {
   position: absolute;
@@ -788,7 +1287,12 @@ footer.sfoot {
   border-radius: 50%;
   background: #fff;
   box-shadow: 0 0 0 1.5px var(--ink), 0 2px 8px rgba(23, 25, 28, 0.35);
-  transform: scale(var(--io, 1));
+  transform: scale(0);
+  transition: transform 0s linear 0.22s;
+}
+.jc.is-in .jc-dot {
+  transform: scale(1);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1) calc(0.25s + var(--d, 0) * 0.2s);
 }
 .jc-line {
   position: absolute;
@@ -796,7 +1300,12 @@ footer.sfoot {
   width: 64px;
   height: 1px;
   background: var(--ink);
-  transform: scaleX(var(--io, 1));
+  transform: scaleX(0);
+  transition: transform 0s linear 0.22s;
+}
+.jc.is-in .jc-line {
+  transform: scaleX(1);
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) calc(0.4s + var(--d, 0) * 0.2s);
 }
 .jc--r .jc-line {
   left: 6px;
@@ -811,7 +1320,10 @@ footer.sfoot {
   top: 0;
   translate: 0 -50%;
   width: max-content;
-  max-width: 230px;
+  /* narrower on a small desktop, where the picture has stepped aside for the
+     copy and the margin beside it is tight: at 1024 wide a 230px tag ran out
+     of the frame and the driver's guard dropped it */
+  max-width: min(230px, 18vw);
   padding: 7px 11px 8px;
   border-radius: 4px;
   background: rgba(255, 255, 255, 0.95);
@@ -821,7 +1333,12 @@ footer.sfoot {
   font-weight: 500;
   line-height: 1.3;
   color: var(--ink);
-  opacity: var(--io, 1);
+  opacity: 0;
+  transition: opacity 0s linear 0.22s;
+}
+.jc.is-in .jc-tag {
+  opacity: 1;
+  transition: opacity 0.35s ease-out calc(0.62s + var(--d, 0) * 0.2s);
 }
 .jc--r .jc-tag {
   left: 74px;

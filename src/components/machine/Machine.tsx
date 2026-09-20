@@ -18,7 +18,7 @@
  * the core), and a highlight per housing for the taste check.
  */
 import * as THREE from "three";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
@@ -269,6 +269,14 @@ function Housing({ i, mats, geos, h, label, pointer }: { i: number; mats: Machin
   }, []);
   const dirty = useMemo(() => new THREE.Color(DIRTY[i]), [i]);
   const clean = useMemo(() => new THREE.Color("#2ea9df"), []);
+  // the drops' colours exist from the start: instance colour is a program
+  // parameter, and three only allocates it on the first setColorAt, so a
+  // program compiled before the first frame (MachineStage Precompile) would
+  // lack it and be rebuilt the first time the water runs
+  useLayoutEffect(() => {
+    const mesh = inst.current;
+    if (mesh && !mesh.instanceColor) mesh.setColorAt(0, dirty);
+  }, [dirty]);
   const tmp = useMemo(() => ({ m: new THREE.Matrix4(), p: new THREE.Vector3(), c: new THREE.Color(), q: new THREE.Quaternion(), s: new THREE.Vector3() }), []);
   const clock = useRef(0);
   const waterRef = useRef<THREE.Mesh>(null);

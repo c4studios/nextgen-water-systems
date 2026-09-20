@@ -66,10 +66,10 @@ export default function WaterTestPage() {
 
         <Block title="Straight up">
           <p>
-            We do not publish reduction percentages. Independent certification is in progress, and until it is
-            in hand we would rather tell you the physical job each stage does than quote a number we cannot
-            stand behind. The test is the honest version of a sales pitch: it measures your water instead of
-            describing someone else&rsquo;s.
+            We do not publish reduction percentages. Until there is an independent test report to point at, we
+            would rather tell you the physical job each stage does than quote a number we cannot stand behind.
+            The test is the honest version of a sales pitch: it measures your water instead of describing
+            someone else&rsquo;s.
           </p>
           <p className="doc-note">
             Tests are carried out across the Perth metro by{" "}

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { navRoutes, ROUTES } from "@/content/site";
+import { isHomePath, navRoutes, ROUTES } from "@/content/site";
 import { CONTACT } from "@/content/plates";
 import { MenuToggleIcon } from "@/components/ui/MenuToggleIcon";
 import { RadialMenu, type RadialItem } from "@/components/ui/RadialMenu";
@@ -56,6 +56,18 @@ const GLYPHS: Record<string, React.ReactNode> = {
       <path d="M12.7 17.2h.01" />
     </g>
   ),
+  "/servicing/": (
+    <g fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M15.5 4.5a4 4 0 0 0-4.9 5.2L4 16.3 7.7 20l6.6-6.6a4 4 0 0 0 5.2-4.9l-2.4 2.4-2.6-.5-.5-2.6Z" />
+    </g>
+  ),
+  "/resources/": (
+    <g fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 3.5h8.5L18 7v13.5H6Z" />
+      <path d="M14.5 3.5V7H18" />
+      <path d="M9 11h6M9 14h6M9 17h4" />
+    </g>
+  ),
   "/water-test/": (
     <g fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 3.5c0 0 5.5 6.2 5.5 10a5.5 5.5 0 0 1-11 0c0-3.8 5.5-10 5.5-10Z" />
@@ -64,18 +76,27 @@ const GLYPHS: Record<string, React.ReactNode> = {
   ),
 };
 
-const RADIAL_ITEMS: RadialItem[] = ROUTES.map((r) => ({
-  id: r.href,
-  label: r.label,
-  href: r.href,
-  glyph: GLYPHS[r.href] ?? null,
-}));
+/* On the home page every topic in the nav is also a section of that page, so
+   the links glide to the section (SmoothScroll carries it). On any other page
+   they open the topic's own page. */
+const targetFor = (r: { href: string; homeAnchor?: string }, home: boolean) => (home && r.homeAnchor ? r.homeAnchor : r.href);
+
+const RADIAL = ["/system/", "/installation/", "/servicing/", "/questions/", "/resources/", "/water-test/"];
+const radialItems = (home: boolean): RadialItem[] =>
+  ROUTES.filter((r) => RADIAL.includes(r.href)).map((r) => ({
+    id: r.href,
+    label: r.label,
+    href: targetFor(r, home),
+    glyph: GLYPHS[r.href] ?? null,
+  }));
 
 export function Nav() {
   const [sheet, setSheet] = useState(false);
   const [menuAt, setMenuAt] = useState<{ x: number; y: number } | null>(null);
   const pathname = usePathname();
   const here = (href: string) => pathname === href || pathname === href.replace(/\/$/, "");
+  const home = isHomePath(pathname);
+  const bookHref = home ? "#book" : "/water-test/";
 
   const headRef = useRef<HTMLElement>(null);
   const ringBtnRef = useRef<HTMLButtonElement>(null);
@@ -149,7 +170,7 @@ export function Nav() {
               <Link
                 key={r.href}
                 className={cn("navlink", here(r.href) && "is-here")}
-                href={r.href}
+                href={targetFor(r, home)}
                 aria-current={here(r.href) ? "page" : undefined}
                 data-cursor
               >
@@ -162,7 +183,7 @@ export function Nav() {
               </svg>
               <span>{CONTACT.phone}</span>
             </a>
-            <Link className="nav-cta" href="/water-test/" data-cursor>
+            <Link className="nav-cta" href={bookHref} data-cursor>
               Book water test
             </Link>
           </nav>
@@ -198,18 +219,30 @@ export function Nav() {
         <nav id="ng-menu" className={cn("nav-sheet", sheet && "is-open")} aria-label="Menu">
           <div className="nav-sheet-in" {...({ inert: sheet ? undefined : "" } as Record<string, unknown>)}>
             {navRoutes.map((r) => (
-              <Link key={r.href} href={r.href} onClick={() => setSheet(false)}>
+              <Link
+                key={r.href}
+                href={targetFor(r, home)}
+                aria-current={here(r.href) ? "page" : undefined}
+                onClick={() => setSheet(false)}
+              >
                 {r.label}
               </Link>
             ))}
-            <Link className="nav-sheet-cta" href="/water-test/" onClick={() => setSheet(false)}>
+            <div className="nav-sheet-more">
+              {ROUTES.filter((r) => !r.inNav && r.href !== "/water-test/").map((r) => (
+                <Link key={r.href} href={r.href} aria-current={here(r.href) ? "page" : undefined} onClick={() => setSheet(false)}>
+                  {r.label}
+                </Link>
+              ))}
+            </div>
+            <Link className="nav-sheet-cta" href={bookHref} onClick={() => setSheet(false)}>
               Book your free water test
             </Link>
           </div>
         </nav>
       </header>
 
-      <RadialMenu items={RADIAL_ITEMS} open={!!menuAt} at={menuAt} onClose={() => setMenuAt(null)} />
+      <RadialMenu items={radialItems(home)} open={!!menuAt} at={menuAt} onClose={() => setMenuAt(null)} />
     </>
   );
 }

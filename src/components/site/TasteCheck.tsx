@@ -41,7 +41,7 @@ export function TasteCheck() {
   return (
     <div className="oc" role="group" aria-labelledby="oc-h">
       <p className="oc-h" id="oc-h">
-        What does yours taste like? <span>Tick what fits. It goes with your booking.</span>
+        What does yours taste like? <span>Optional. Tick what fits and it goes with your booking.</span>
       </p>
       <div className="oc-list">
         {TASTE_OPTIONS.map((o) => {

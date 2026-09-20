@@ -19,10 +19,25 @@ export function Sheet({
   photo,
   photoAlt,
   photoNote,
+  photoW = 1600,
+  photoH = 1073,
+  photoWhole = false,
+  trail,
+  byline,
+  after,
+  cta = true,
   children,
 }: {
   sheet: string;
   kicker: string;
+  /** crumbs between Home and this page (an article sits under Resources) */
+  trail?: { name: string; href: string }[];
+  /** a line under the lead: who wrote it, when, from what */
+  byline?: React.ReactNode;
+  /** after the body, before the closing action: an article's sources */
+  after?: React.ReactNode;
+  /** the closing "start with the test" card; off where the page is the booking */
+  cta?: boolean;
   title: React.ReactNode;
   lead: string;
   /** every sheet carries one photograph under its title block — the pages read
@@ -31,6 +46,12 @@ export function Sheet({
   photoAlt?: string;
   /** every generated photograph says so where it is shown */
   photoNote?: string;
+  /** the photograph's own pixel size, so its box is right before it loads */
+  photoW?: number;
+  photoH?: number;
+  /** show the whole picture at its own proportions instead of the sheet's
+   *  cropped band (a render whose subject runs edge to edge) */
+  photoWhole?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -43,6 +64,12 @@ export function Sheet({
             </svg>
             Home
           </Link>
+          {trail?.map((c) => (
+            <span key={c.href} className="doc-crumb">
+              <span aria-hidden="true">/</span>
+              <Link href={c.href}>{c.name}</Link>
+            </span>
+          ))}
           <span aria-hidden="true">/</span>
           <span aria-current="page">{kicker}</span>
         </nav>
@@ -50,17 +77,21 @@ export function Sheet({
         <header className="doc-head">
           <h1 className="doc-h">{title}</h1>
           <p className="doc-lead">{lead}</p>
+          {byline && <p className="doc-byline">{byline}</p>}
         </header>
 
         {photo && (
-          <figure className="doc-photo">
-            <img src={asset(photo)} alt={photoAlt || ""} width={1600} height={1073} loading="lazy" decoding="async" />
+          <figure className={`doc-photo${photoWhole ? " doc-photo--whole" : ""}`}>
+            <img src={asset(photo)} alt={photoAlt || ""} width={photoW} height={photoH} loading="lazy" decoding="async" />
             {photoNote && <figcaption className="doc-photo-note">{photoNote}</figcaption>}
           </figure>
         )}
 
         <div className="doc-body">{children}</div>
 
+        {after}
+
+        {cta && (
         <aside className="doc-cta">
           <h2>Start with the test.</h2>
           <p>
@@ -76,6 +107,7 @@ export function Sheet({
             </a>
           </div>
         </aside>
+        )}
       </div>
     </main>
   );

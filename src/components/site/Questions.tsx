@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import { FIRST_QUESTIONS, QA } from "@/content/questions";
+import { QAList } from "./QAList";
 
 /**
  * THE QUESTIONS PEOPLE ASK FIRST.
@@ -13,7 +13,6 @@ import { FIRST_QUESTIONS, QA } from "@/content/questions";
  */
 export function Questions() {
   const items = FIRST_QUESTIONS.map((q) => QA.find((x) => x.q === q)).filter((x): x is (typeof QA)[number] => !!x);
-  const [open, setOpen] = useState<number | null>(0);
 
   return (
     <section className="qs" id="questions" aria-labelledby="qs-h">
@@ -31,24 +30,7 @@ export function Questions() {
           </Link>
         </header>
 
-        <div className="qs-list">
-          {items.map((item, i) => {
-            const on = open === i;
-            return (
-              <div key={item.q} className={`qs-item${on ? " is-open" : ""}`}>
-                <h3 className="qs-q">
-                  <button type="button" aria-expanded={on} aria-controls={`qs-a-${i}`} id={`qs-q-${i}`} onClick={() => setOpen(on ? null : i)}>
-                    <span>{item.q}</span>
-                    <i aria-hidden="true" />
-                  </button>
-                </h3>
-                <div className="qs-a" id={`qs-a-${i}`} role="region" aria-labelledby={`qs-q-${i}`} hidden={!on}>
-                  {item.a}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <QAList items={items} idPrefix="qs" />
       </div>
     </section>
   );

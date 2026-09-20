@@ -129,7 +129,7 @@ export function Path() {
             Or ask for a quote
             <i aria-hidden="true" />
           </a>
-          <p className="pa-note">Photographs on this page are visualisations, not Next Gen jobs.</p>
+          <p className="pa-note">The four pictures are visualisations.</p>
         </div>
       </div>
     </section>

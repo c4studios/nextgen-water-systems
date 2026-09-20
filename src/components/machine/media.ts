@@ -97,7 +97,7 @@ async function granules(kind: "kdf" | "gac" | "beads", S: number, seed: number):
   const R = rng(seed);
   const col = canvas(S), hc = canvas(S), rc = canvas(S);
   const gc = col.getContext("2d")!;
-  const gh = hc.getContext("2d")!;
+  const gh = hc.getContext("2d", { willReadFrequently: true })!;
   const gr = rc.getContext("2d")!;
   gc.fillStyle = pal.gap;
   gc.fillRect(0, 0, S, S);
@@ -230,7 +230,7 @@ async function fibre(kind: "fibreCoarse" | "fibreMid" | "fibreFine", S: number, 
   const R = rng(seed);
   const col = canvas(S), hc = canvas(S), rc = canvas(S);
   const gc = col.getContext("2d")!;
-  const gh = hc.getContext("2d")!;
+  const gh = hc.getContext("2d", { willReadFrequently: true })!;
   const gr = rc.getContext("2d")!;
   const k = S / 1024;
   const rgb = (c: readonly number[], a = 1) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;

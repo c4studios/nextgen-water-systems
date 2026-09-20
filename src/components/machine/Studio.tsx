@@ -22,12 +22,13 @@
  * only shows its shape in a reflection, so the strips are wide.
  */
 import * as THREE from "three";
-import { useMemo } from "react";
-import { useFrame } from "@react-three/fiber";
-import { ContactShadows, Environment, Lightformer, MeshReflectorMaterial, SoftShadows } from "@react-three/drei";
+import { useMemo, useRef } from "react";
+import { useFrame, useThree } from "@react-three/fiber";
+import { ContactShadows, Environment, Lightformer, MeshReflectorMaterial } from "@react-three/drei";
 import { RectAreaLightUniformsLib } from "three/examples/jsm/lights/RectAreaLightUniformsLib.js";
 import { FLOOR_Y } from "./dims";
-import { HERO } from "@/components/blueprint/heroState";
+import { PcssShadows } from "./pcss";
+import { HERO, STAGE_RIDE } from "@/components/blueprint/heroState";
 
 /* area lights need their lookup tables once per page */
 let areaReady = false;
@@ -51,6 +52,8 @@ const SET = [hex("#c8c8c6"), hex("#a3a3a1"), hex("#6f6f6e")];
 const HERO_SET = [new THREE.Color(12, 12, 12), new THREE.Color(4.2, 4.2, 4.2), new THREE.Color(1.6, 1.6, 1.6)];
 
 function Backdrop() {
+  const height = useThree((st) => st.size.height);
+  const width = useThree((st) => st.size.width);
   const geo = useMemo(() => {
     const g = new THREE.BufferGeometry();
     // one triangle covering the whole frame
@@ -99,7 +102,11 @@ function Backdrop() {
     (u.uA.value as THREE.Color).copy(SET[0]).lerp(HERO_SET[0], m);
     (u.uB.value as THREE.Color).copy(SET[1]).lerp(HERO_SET[1], m);
     (u.uC.value as THREE.Color).copy(SET[2]).lerp(HERO_SET[2], m);
-    (u.uCenter.value as THREE.Vector2).set(0.5 + (HERO.cx - 0.5) * m, 0.56 + (1 - HERO.cy - 0.56) * m);
+    // the pool rides down with the picture while the journey is coming up (MachineStage)
+    const ride = height > 0 ? STAGE_RIDE.px / height : 0;
+    // the pool of light goes with the picture when it steps aside for the copy column
+    const sideways = width > 0 ? STAGE_RIDE.side / width : 0;
+    (u.uCenter.value as THREE.Vector2).set(0.5 + (HERO.cx - 0.5) * m + sideways, 0.56 + (1 - HERO.cy - 0.56) * m - ride);
     (u.uRadii.value as THREE.Vector2).set(0.78 - 0.1 * m, 0.98 - 0.1 * m);
   });
   return <mesh geometry={geo} material={mat} frustumCulled={false} renderOrder={-1000} />;
@@ -122,13 +129,57 @@ function makeFloorFade(): THREE.CanvasTexture | null {
   return new THREE.CanvasTexture(c);
 }
 
+/**
+ * THE CONTACT SHADOW, WIPED EACH FRAME.
+ *
+ * drei's ContactShadows draws the scene's depth from under the floor into its
+ * own target every frame and never clears it: it leaves that to the renderer's
+ * autoClear. The post chain's composer switches autoClear off for good, so the
+ * target kept every position anything had ever passed through within reach of
+ * the floor. Nothing moves down there except at servicing, when the bowls are
+ * set down and picked up again, and that left three ring marks on the floor
+ * under the reassembled machine for the rest of the visit (19 Sep 2026).
+ * autoClear goes on for the contact pass and back to what it was after it;
+ * frame callbacks run in the order their components mount, so the two hooks
+ * bracket the pass. The wipe has to be to nothing: the canvas is opaque, so
+ * its clear alpha is 1, and a target wiped with that comes back as a solid
+ * sheet of the set's grey laid over the floor. Clear alpha goes to 0 for the
+ * pass as well.
+ */
+function FrameHook({ run }: { run: (gl: THREE.WebGLRenderer) => void }) {
+  useFrame(({ gl }) => run(gl));
+  return null;
+}
+function ClearedContactShadows(props: React.ComponentProps<typeof ContactShadows>) {
+  const was = useRef({ auto: true, alpha: 1 });
+  return (
+    <>
+      <FrameHook
+        run={(gl) => {
+          was.current.auto = gl.autoClear;
+          was.current.alpha = gl.getClearAlpha();
+          gl.autoClear = true;
+          gl.setClearAlpha(0);
+        }}
+      />
+      <ContactShadows {...props} />
+      <FrameHook
+        run={(gl) => {
+          gl.autoClear = was.current.auto;
+          gl.setClearAlpha(was.current.alpha);
+        }}
+      />
+    </>
+  );
+}
+
 export function Studio({ shadows = true, reflect = true, contact = true, soft = false }: { shadows?: boolean; reflect?: boolean; contact?: boolean; soft?: boolean }) {
   const fade = useMemo(() => makeFloorFade(), []);
   useMemo(() => initAreaLights(), []);
   return (
     <>
       {/* contact-hardening shadows: soft where the caster stands off the floor */}
-      {soft && shadows && <SoftShadows size={14} samples={16} focus={0.35} />}
+      {soft && shadows && <PcssShadows size={14} samples={16} focus={0.35} />}
       <Backdrop />
       <ambientLight intensity={0.04} />
       {/* THE SOFTBOXES as real area lights: a flat face lit by one falls off
@@ -186,7 +237,7 @@ export function Studio({ shadows = true, reflect = true, contact = true, soft = 
         <shadowMaterial color="#0c0d0e" transparent opacity={0.34} />
       </mesh>
       {/* the tight contact shadow right under the feet and the bowls */}
-      {contact && <ContactShadows position={[0, FLOOR_Y + 0.05, 3]} scale={130} resolution={1024} far={9} blur={1.6} opacity={0.62} color="#0b0c0d" frames={Infinity} />}
+      {contact && <ClearedContactShadows position={[0, FLOOR_Y + 0.05, 3]} scale={130} resolution={1024} far={9} blur={1.6} opacity={0.62} color="#0b0c0d" frames={Infinity} />}
       {/* a faint blurred reflection, faded out long before any edge could show */}
       {reflect && fade && (
         <mesh rotation-x={-Math.PI / 2} position={[0, FLOOR_Y + 0.01, 8]} renderOrder={-5}>

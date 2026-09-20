@@ -1,40 +1,58 @@
 import Link from "next/link";
-import { ROUTES } from "@/content/site";
+import { ROUTES, ROUTE_GROUPS } from "@/content/site";
+import { ARTICLES } from "@/content/articles";
 import { CONTACT } from "@/content/plates";
 import C4FooterCredit from "@/components/c4-footer-credit/C4FooterCredit";
 import { INSTALLER } from "@/lib/jsonld";
 
 /**
- * The footer, on every page. Set out as an index rather than as four columns
- * of links: title, one line of what is on it. The
- * licences and the ABN are the trust block, and they are all real.
+ * The footer, on every page. Every page on the site in three short columns
+ * (the system, answers, the business), each link a title with one line of
+ * what is on it; the reads sit under Answers. The licences and the ABN are
+ * the trust block, and they are all real.
  */
 export function SiteFooter() {
   return (
     <footer className="sfoot">
       <div className="sfoot-inner">
-        <div className="sfoot-index">
-          <span className="sfoot-cap">Pages</span>
-          <ul>
-            <li>
-              <Link href="/">
-                <span>
-                  <i>The machine</i>
-                  Whole-home filtration, drawn from the mains in.
-                </span>
-              </Link>
-            </li>
-            {ROUTES.map((r) => (
-              <li key={r.href}>
-                <Link href={r.href}>
-                  <span>
-                    <i>{r.label}</i>
-                    {r.blurb}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+        <div className="sfoot-index sfoot-groups">
+          {ROUTE_GROUPS.map((g) => (
+            <div key={g.id} className="sfoot-group">
+              <span className="sfoot-cap">{g.label}</span>
+              <ul>
+                {g.id === "product" && (
+                  <li>
+                    <Link href="/">
+                      <span>
+                        <i>Home</i>
+                        Whole-home filtration for Perth, from the mains in.
+                      </span>
+                    </Link>
+                  </li>
+                )}
+                {ROUTES.filter((r) => r.group === g.id).map((r) => (
+                  <li key={r.href}>
+                    <Link href={r.href}>
+                      <span>
+                        <i>{r.label}</i>
+                        {r.blurb}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+                {g.id === "help" &&
+                  ARTICLES.map((a) => (
+                    <li key={a.href} className="sfoot-read">
+                      <Link href={a.href}>
+                        <span>
+                          <i>{a.short}</i>
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+              </ul>
+            </div>
+          ))}
         </div>
 
         <div className="sfoot-side">

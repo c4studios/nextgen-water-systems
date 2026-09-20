@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Sheet } from "@/components/site/Sheet";
-import { breadcrumbJsonLd } from "@/lib/jsonld";
+import { breadcrumbJsonLd, faqJsonLd } from "@/lib/jsonld";
 import { pageOg } from "@/lib/seo";
 import { QA } from "@/content/questions";
+import { QAList } from "@/components/site/QAList";
 
 export const metadata: Metadata = {
   title: "Questions",
@@ -37,14 +38,12 @@ export default function QuestionsPage() {
         photoAlt="A plain glass of water standing on a dark benchtop beside a draining rack, window light from the left"
         photoNote="Visualisation, not a photograph of a Next Gen home."
       >
-        <dl className="qa">
-          {QA.map(({ q, a }) => (
-            <div key={q}>
-              <dt>{q}</dt>
-              <dd>{a}</dd>
-            </div>
-          ))}
-        </dl>
+        <QAList items={QA} idPrefix="qa" className="qa-list" />
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(QA)) }}
+        />
       </Sheet>
     </>
   );

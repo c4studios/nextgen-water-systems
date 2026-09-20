@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { SIGNS_KEY } from "@/content/signs";
+
+/* what the hero options hand over (components/site/heroes): the answer to
+   "what's your water doing?" and a checked suburb */
+const ASK_KEY = "ngw:ask";
+const SUBURB_KEY = "ngw:suburb";
 import { CONTACT } from "@/content/plates";
 import { FORM_ENDPOINT } from "@/content/booking";
 
@@ -14,25 +20,57 @@ type SubmitState = "idle" | "sending" | "logged" | "error";
 
 export type BookingKind = "test" | "quote";
 
-export function BookingForm({ kind = "test" }: { kind?: BookingKind }) {
+/**
+ * `extra` is an optional block set between the fields and the button (the home
+ * page's taste check). The fields come first: they are the booking. When the
+ * visitor has already said what their water is doing, further up the page, the
+ * extra folds away behind one quiet line instead of asking again.
+ */
+export function BookingForm({ kind = "test", extra }: { kind?: BookingKind; extra?: ReactNode }) {
   const [state, setState] = useState<SubmitState>("idle");
+  const [extraOpen, setExtraOpen] = useState(false);
   // What the visitor told the taste key upstream. It rides along so the
   // technician knows what he is walking into before he is on the doorstep,
   // which is the whole reason that component earns its place.
-  const [taste, setTaste] = useState("");
+  const [tasteOnly, setTasteOnly] = useState("");
+  // and what they ticked under the kettle photograph (content/signs.ts)
+  const [signs, setSigns] = useState("");
+  const [ask, setAsk] = useState("");
+  const taste = [ask, signs && `noticed ${signs}`, tasteOnly].filter(Boolean).join("; ");
+  const suburbRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const read = () => {
       try {
-        setTaste(sessionStorage.getItem("ngw:taste") || "");
+        setTasteOnly(sessionStorage.getItem("ngw:taste") || "");
+        setSigns(sessionStorage.getItem(SIGNS_KEY) || "");
+        setAsk(sessionStorage.getItem(ASK_KEY) || "");
+        fillSuburb(sessionStorage.getItem(SUBURB_KEY) || "");
       } catch {
         /* private mode */
       }
     };
     read();
-    const onTaste = (e: Event) => setTaste((e as CustomEvent<string>).detail || "");
+    const onTaste = (e: Event) => setTasteOnly((e as CustomEvent<string>).detail || "");
+    const onSigns = (e: Event) => setSigns((e as CustomEvent<string>).detail || "");
+    const onAsk = (e: Event) => setAsk((e as CustomEvent<string>).detail || "");
+    const onSuburb = (e: Event) => fillSuburb((e as CustomEvent<string>).detail || "");
+    // a checked suburb fills the field only while it is empty: never over
+    // something the visitor typed themselves
+    function fillSuburb(v: string) {
+      const input = suburbRef.current;
+      if (v && input && !input.value.trim()) input.value = v;
+    }
     window.addEventListener("ngw:taste", onTaste);
-    return () => window.removeEventListener("ngw:taste", onTaste);
+    window.addEventListener(SIGNS_KEY, onSigns);
+    window.addEventListener(ASK_KEY, onAsk);
+    window.addEventListener(SUBURB_KEY, onSuburb);
+    return () => {
+      window.removeEventListener("ngw:taste", onTaste);
+      window.removeEventListener(SIGNS_KEY, onSigns);
+      window.removeEventListener(ASK_KEY, onAsk);
+      window.removeEventListener(SUBURB_KEY, onSuburb);
+    };
   }, []);
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -70,15 +108,28 @@ export function BookingForm({ kind = "test" }: { kind?: BookingKind }) {
   };
 
   if (state === "logged") {
+    // The moment after someone hands over a phone number is the one they are
+    // least sure about. Say what happens next, in order, and promise nothing
+    // about timing that the installer has not agreed to.
     return (
       <div className="tform-logged" role="status">
         <span className="tform-stamp">Request logged</span>
         <p>
-          {FORM_ENDPOINT
-            ? kind === "quote"
-              ? "Done. We'll call to talk through your house and book the test the quote follows."
-              : "Done. We'll call to confirm a time, and there's no obligation after it."
-            : "Your email is ready to send. Fire it off and we'll call to confirm a time."}
+          {kind === "quote"
+            ? "Done. Here is what happens now."
+            : "Done, and there is no obligation after the test. Here is what happens now."}
+        </p>
+        <ol className="tform-next">
+          <li>We call you on the number you left to agree a day.</li>
+          <li>A licensed plumber tests your water at your own kitchen tap.</li>
+          <li>
+            {kind === "quote"
+              ? "You get the result explained, and the quote is written for your house."
+              : "You get the result explained. A quote follows only if you ask for one."}
+          </li>
+        </ol>
+        <p className="tform-next-call">
+          Rather not wait? Call <a href={`tel:${CONTACT.phone.replace(/\s/g, "")}`}>{CONTACT.phone}</a>.
         </p>
       </div>
     );
@@ -100,7 +151,7 @@ export function BookingForm({ kind = "test" }: { kind?: BookingKind }) {
         </label>
         <label>
           <span>Suburb</span>
-          <input name="suburb" type="text" autoComplete="address-level2" required placeholder="e.g. Joondalup" />
+          <input ref={suburbRef} name="suburb" type="text" autoComplete="address-level2" required placeholder="e.g. Joondalup" />
         </label>
         <label>
           <span>Phone</span>
@@ -111,6 +162,21 @@ export function BookingForm({ kind = "test" }: { kind?: BookingKind }) {
           <input name="day" type="text" placeholder="optional" />
         </label>
       </div>
+      {extra &&
+        (ask || signs ? (
+          <div className="tform-extra">
+            {!extraOpen && (
+              <button type="button" className="tform-extra-open" aria-expanded="false" onClick={() => setExtraOpen(true)}>
+                Add how it tastes
+                <span> (optional)</span>
+                <i aria-hidden="true" />
+              </button>
+            )}
+            {extraOpen && extra}
+          </div>
+        ) : (
+          <div className="tform-extra">{extra}</div>
+        ))}
       <div className="tform-actions">
         <button className="tform-submit lm" type="submit" disabled={state === "sending"}>
           {state === "sending" ? "Sending…" : kind === "quote" ? "Ask for a quote" : "Book your free water test"}
@@ -119,6 +185,11 @@ export function BookingForm({ kind = "test" }: { kind?: BookingKind }) {
           or call {CONTACT.phone}
         </a>
       </div>
+      <p className="tform-after">
+        {kind === "quote"
+          ? "We call you to talk it through and agree a day for the free test the quote follows."
+          : "We call you to agree a day. The test is free, and nothing follows it unless you ask."}
+      </p>
       {state === "error" && (
         <p className="tform-err" role="alert">
           That didn&rsquo;t send. Call {CONTACT.phone} and we&rsquo;ll book it over the phone.

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { goTo } from "@/lib/providers/SmoothScroll";
 import { cn } from "@/lib/cn";
 
 /**
@@ -118,7 +119,7 @@ export function RadialMenu({
       }
       if ((e.key === "Enter" || e.key === " ") && active != null) {
         e.preventDefault();
-        router.push(items[active].href);
+        if (!goTo(items[active].href)) router.push(items[active].href);
         onClose();
       }
     };
@@ -134,7 +135,7 @@ export function RadialMenu({
   const cy = Math.min(Math.max(at.y, pad), window.innerHeight - pad);
 
   const go = (i: number) => {
-    router.push(items[i].href);
+    if (!goTo(items[i].href)) router.push(items[i].href);
     onClose();
   };
 
