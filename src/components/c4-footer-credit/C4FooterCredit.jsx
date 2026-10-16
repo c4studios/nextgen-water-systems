@@ -26,17 +26,28 @@ const MARK_CENTER_SHIFT = 0.187;
 
 const LOCKUP_TRANSFORM = 'translate(18 -273) scale(1.5)';
 
+/* Light-footer values; the isDark branch of useFooterColours replaces them.
+   NOTE the resting arc is painted with mono.cArc (cBaseRef sits at opacity 1
+   from rest), not dormant.cArc — dormant.cArc is unused. Tune mono.cArc to
+   change the arc at rest.
+
+   The light tuning comes from Brady Electrical's copy (9 and 10 Sep 2026),
+   taken into the master on 17 Oct 2026 after NextGen's light footer showed
+   the same fault. On white the C at rest is 8.52:1 and the 4 sits a step back
+   at 3.26:1 (body) and 3.98:1 (arm), the way the C leads on dark. The values
+   before put the C at 1.27:1 and the 4 at 1.97:1 and 1.71:1, so the mark read
+   as a pale smudge and the C all but vanished. (WCAG ratios, recomputed
+   17 Oct.) */
 const COLOURS = {
   dormant: {
-    // dark enough to read on a light footer (was #b8b9ba, 1.9:1)
-    fourBody: '#5d5f61',
-    fourArm: '#6e7072',
-    cArc: '#cfcdcb',
+    fourBody: '#8b8f92',
+    fourArm: '#7c8083',
+    cArc: '#4a4d4f',
   },
   mono: {
     fourBody: '#414243',
     fourArm: '#6c6d6d',
-    cArc: '#e6e4e2',
+    cArc: '#4a4d4f',
     text: '#1a1a1b',
   },
   colour: {
@@ -365,20 +376,58 @@ function getFixedLetterHinge(letterNode, hingeOrigin) {
    INTERNAL HOOKS — replaces site-wide ThemeContext dependency
    ================================================================= */
 
-function parseCssRgb(value) {
+/* A computed background colour as sRGB 0 to 255, or null when it's
+   transparent or can't be read. Browsers report legacy colours as rgb(), but
+   a colour set in a newer space comes back in that space: oklch(), lab(),
+   color(). Tailwind v4's whole palette is oklch. So anything that isn't rgb()
+   is painted onto a 1 x 1 canvas and read back as sRGB.
+   Before 17 Oct 2026 only rgb() was read. An oklch footer was skipped as if
+   it were transparent, the badge fell back to the visitor's OS theme, and
+   "Studios" came out near-black on a dark footer (brain site_issues 177). */
+let colourProbe;
+
+function parseCssColour(value) {
   if (!value || value === 'transparent') return null;
-  const match = value.match(/rgba?\(([^)]+)\)/i);
-  if (!match) return null;
 
-  const [r, g, b, a = 1] = match[1]
-    .split(',')
-    .map((part) => Number.parseFloat(part.trim()));
+  const legacy = value.match(/^rgba?\(([^)]+)\)$/i);
+  if (legacy) {
+    const [r, g, b, a = 1] = legacy[1]
+      .split(/[\s,/]+/)
+      .filter(Boolean)
+      .map((part) => Number.parseFloat(part));
 
-  if (![r, g, b].every(Number.isFinite) || !Number.isFinite(a) || a === 0) {
-    return null;
+    if (![r, g, b].every(Number.isFinite) || !Number.isFinite(a) || a === 0) {
+      return null;
+    }
+
+    return { r, g, b };
   }
 
-  return { r, g, b };
+  if (typeof document === 'undefined') return null;
+  if (typeof CSS !== 'undefined' && CSS.supports && !CSS.supports('color', value)) return null;
+
+  try {
+    if (colourProbe === undefined) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1;
+      canvas.height = 1;
+      colourProbe = canvas.getContext('2d', { willReadFrequently: true }) || null;
+    }
+    if (!colourProbe) return null;
+
+    colourProbe.clearRect(0, 0, 1, 1);
+    /* a value the canvas can't take leaves fillStyle as it was, so start
+       from transparent: an unreadable colour then reads as no colour */
+    colourProbe.fillStyle = 'rgba(0, 0, 0, 0)';
+    colourProbe.fillStyle = value;
+    colourProbe.fillRect(0, 0, 1, 1);
+    const [r, g, b, a] = colourProbe.getImageData(0, 0, 1, 1).data;
+    if (a === 0) return null;
+
+    return { r, g, b };
+  } catch {
+    return null;
+  }
 }
 
 function isDarkBackground(element) {
@@ -386,7 +435,7 @@ function isDarkBackground(element) {
 
   let node = element?.parentElement || document.body;
   while (node && node !== document.documentElement) {
-    const rgb = parseCssRgb(window.getComputedStyle(node).backgroundColor);
+    const rgb = parseCssColour(window.getComputedStyle(node).backgroundColor);
     if (rgb) {
       const luminance = (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) / 255;
       return luminance < 0.45;
@@ -394,7 +443,7 @@ function isDarkBackground(element) {
     node = node.parentElement;
   }
 
-  const bodyRgb = parseCssRgb(window.getComputedStyle(document.body).backgroundColor);
+  const bodyRgb = parseCssColour(window.getComputedStyle(document.body).backgroundColor);
   if (bodyRgb) {
     const luminance = (0.2126 * bodyRgb.r + 0.7152 * bodyRgb.g + 0.0722 * bodyRgb.b) / 255;
     return luminance < 0.45;
@@ -439,6 +488,7 @@ function useFooterColours(colorScheme, rootRef) {
   return useMemo(() => {
     const dormant = { ...COLOURS.dormant };
     const mono = { ...COLOURS.mono };
+    const colour = { ...COLOURS.colour };
 
     if (isDark) {
       dormant.fourBody = '#606264';
@@ -448,9 +498,17 @@ function useFooterColours(colorScheme, rootRef) {
       mono.fourArm = '#8a8b8c';
       mono.cArc = '#d0cecc';
       mono.text = '#e8e6e3';
+    } else {
+      // The near-white colour-state arc is 1.12:1 on white, so hovering used
+      // to delete the C and leave "4 Studios". Hold the arc dark (9.38:1); the
+      // red and green 4 still leads the colour state.
+      colour.cArc = '#43474a';
     }
 
-    return { dormant, mono, colour: COLOURS.colour };
+    // The soft #555 bubble behind the mark reads as a glow on a dark footer and
+    // as a dirty smudge on a light one, where it sits behind the C and eats the
+    // local contrast that makes the letterform legible. Dark only.
+    return { dormant, mono, colour, haze: isDark ? 0.15 : 0 };
   }, [isDark]);
 }
 
@@ -556,7 +614,7 @@ export default function C4FooterCredit({
   const backdropRef = useRef(null);
 
   const h = typeof size === 'number' ? size : (SIZES[size] || SIZES.default);
-  const { dormant, mono, colour } = useFooterColours(colorScheme, rootRef);
+  const { dormant, mono, colour, haze } = useFooterColours(colorScheme, rootRef);
   const uid = useId();
 
   const w = Math.round(h * FULL_ASPECT);
@@ -610,7 +668,10 @@ export default function C4FooterCredit({
 
     gsap.set(wordGroupRef.current, { y: 0, opacity: 1 });
     if (backdropRef.current) {
-      gsap.set(backdropRef.current, { attr: { cx: 206, cy: 389, rx: 165, ry: 120 }, opacity: 0.15 });
+      // opacity deliberately left to the JSX attribute (haze): the auto
+      // light/dark probe resolves after mount, and an inline style written here
+      // would freeze the initial value.
+      gsap.set(backdropRef.current, { attr: { cx: 206, cy: 389, rx: 165, ry: 120 } });
     }
 
     /* Reduced motion keeps every stage, with the movement taken out: the
@@ -926,7 +987,7 @@ export default function C4FooterCredit({
             cx="206" cy="389"
             rx="165" ry="120"
             fill="#555"
-            opacity="0.15"
+            opacity={haze}
             filter={`url(#${backdropBlurId})`}
           />
 
